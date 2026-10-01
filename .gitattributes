@@ -1,0 +1,4 @@
+* text=auto eol=lf
+# Byte-exact files: hashes and fixtures must not be rewritten
+forecasts/sealed/** -text
+tests/fixtures/raw/** -text
