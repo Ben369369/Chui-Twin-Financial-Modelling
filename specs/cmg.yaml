@@ -1,0 +1,98 @@
+ticker: CMG
+name: Chipotle Mexican Grill
+template: operating
+industry: restaurant
+period: quarter
+history_start: 2014Q1
+
+kpis:
+  # lag: yoy rates and margins are persistent; prior on the coefficient of last quarter's value.
+  transactions: {unit: pct, lag: {prior_mean: 0.7, prior_sd: 0.2}, description: "comparable restaurant transactions, yoy %"}
+  check:        {unit: pct, lag: {prior_mean: 0.7, prior_sd: 0.2}, description: "comparable average check, yoy %"}
+  # Modeled directly, not as transactions + check: CMG disclosed transactions and
+  # check consistently only from ~2023, so the formula would leave comps with ~14 quarters.
+  comps:        {unit: pct, lag: {prior_mean: 0.7, prior_sd: 0.2}, description: "comparable restaurant sales, yoy %"}
+  rlom:         {unit: pct, lag: {prior_mean: 0.8, prior_sd: 0.15}, description: "restaurant level operating margin, % of revenue"}
+
+primitives: [demand, capacity, price, input_cost, labor, sentiment, expansion]
+
+signals:
+  - series: "fred:RSFSDP"            # Census MRTS retail sales, food services and drinking places
+    primitive: demand
+    confidence: 0.5
+    half_life_days: 45
+    transform: yoy_log
+  - series: "wiki:Chipotle_Mexican_Grill"
+    primitive: demand
+    confidence: 0.25
+    half_life_days: 30
+    transform: yoy_log
+    notes: >
+      Attention, not sentiment direction: views spike in both launches and
+      food-safety scares. Low confidence; leave-one-out decides if it stays.
+  - series: "fred:CUSR0000SEFV"      # CPI food away from home, SA
+    primitive: price
+    confidence: 0.5
+    half_life_days: 60
+    transform: yoy_log
+  - series: "bls:CES7072200003"      # avg hourly earnings, food services and drinking places
+    primitive: labor
+    confidence: 0.6
+    half_life_days: 60
+    transform: yoy_log
+  - series: "fred:APU0000703112"     # avg price, ground beef 100% beef, per lb
+    primitive: input_cost
+    lag_days: 30
+    confidence: 0.4
+    half_life_days: 60
+    transform: yoy_log
+  - series: "fred:APU0000706111"     # avg price, chicken, fresh whole, per lb
+    primitive: input_cost
+    lag_days: 30
+    confidence: 0.3
+    half_life_days: 60
+    transform: yoy_log
+
+edges:
+  - {from: demand,     to: comps,        prior_mean: 0.8,  prior_sd: 0.3}
+  - {from: price,      to: comps,        prior_mean: 0.4,  prior_sd: 0.3}
+  - {from: demand,     to: transactions, prior_mean: 1.0,  prior_sd: 0.3}
+  - {from: price,      to: check,        prior_mean: 1.0,  prior_sd: 0.3}
+  - {from: input_cost, to: rlom,         prior_mean: -0.5, prior_sd: 0.3}
+  - {from: labor,      to: rlom,         prior_mean: -0.4, prior_sd: 0.3}
+  - {from: price,      to: rlom,         prior_mean: 0.3,  prior_sd: 0.3}
+  - {from: demand,     to: rlom,         prior_mean: 0.3,  prior_sd: 0.3}
+
+baselines: [naive_last, seasonal_naive, guidance, consensus]
+
+ground_truth:
+  edgar:
+    cik: "1058090"
+    forms: ["8-K"]
+    items: ["2.02"]
+    # Earnings 8-Ks filed without item 2.02 (2016Q2 was filed under 9.01 only).
+    include_accessions: ["0001058090-16-000078"]
+    # Ordered regex rules per KPI; first match wins. (?P<value>) is the number,
+    # (?P<dir>) flips the sign when it contains a negative word. Exact highlight
+    # bullets come first because headlines round ("9% comparable sales growth").
+    rules:
+      comps:
+        # 2016Q4 bullet: "for the month of December increased 14.7% and declined 4.8% for the full quarter"
+        - pattern: 'comparable restaurant sales for the month of \w+ (?:increased|decreased|declined) [\d.]+ ?% and (?P<dir>increased|decreased|declined) (?P<value>\d+(?:\.\d+)?) ?% for the full quarter'
+        - pattern: 'comparable restaurant sales (?P<dir>increased|decreased|declined|grew|fell) (?:by )?(?P<value>\d+(?:\.\d+)?) ?%'
+        - pattern: '(?P<value>\d+(?:\.\d+)?) ?% (?P<dir>increase|decrease|decline) in comparable restaurant sales'
+        - pattern: 'comparable restaurant sales (?P<dir>increasing|decreasing|declining|increase|decrease|accelerate to|of) (?P<value>\d+(?:\.\d+)?) ?%'
+      transactions:
+        - pattern: 'comparable restaurant transactions (?P<dir>increased|decreased|declined|grew) (?:by )?(?P<value>\d+(?:\.\d+)?) ?%'
+        - pattern: '(?P<dir>higher|lower) transactions of (?:nearly |approximately |about )?(?P<value>\d+(?:\.\d+)?) ?%'
+        - pattern: '(?P<value>\d+(?:\.\d+)?) ?% (?P<dir>increase|decrease|decline) in (?:comparable restaurant )?transactions'
+        - pattern: '(?P<value>\d+(?:\.\d+)?) ?% (?P<dir>fewer|more) comparable restaurant transactions'
+        - pattern: '(?P<value>\d+(?:\.\d+)?) ?% comparable restaurant transactions (?P<dir>growth|decline)'
+      check:
+        - pattern: '(?P<value>\d+(?:\.\d+)?) ?% (?P<dir>increase|decrease|decline) in (?:the )?average check'
+        - pattern: 'average check (?P<dir>increase|decrease|growth|decline) of (?:nearly |approximately |about )?(?P<value>\d+(?:\.\d+)?) ?%'
+        - pattern: '(?P<dir>higher|lower) average check of (?P<value>\d+(?:\.\d+)?) ?%'
+        - pattern: 'average check (?P<dir>increased|decreased|declined) (?:by )?(?P<value>\d+(?:\.\d+)?) ?%'
+      rlom:
+        - pattern: 'restaurant level operating margin ?1? (?:was|of) (?P<value>\d+(?:\.\d+)?) ?%'
+        - pattern: 'restaurant level operating margin (?:increased|decreased) to (?P<value>\d+(?:\.\d+)?) ?%'

@@ -1,0 +1,15 @@
+ticker: ZZZ
+name: Dummy Corp
+template: _dummy
+period: quarter
+history_start: 2015Q1
+signals:
+  - {series: "syn:a", primitive: flux_q, confidence: 0.8, half_life_days: 20, transform: level}
+  - {series: "syn:b", primitive: flux_q, sign: -1, confidence: 0.6, half_life_days: 20, transform: level}
+  - {series: "syn:c", primitive: glim_7, confidence: 0.8, half_life_days: 20, transform: level}
+  - {series: "syn:d", primitive: warp_z, confidence: 0.5, half_life_days: 20, transform: level}
+kpis:
+  zorp:  {unit: pct}
+  blix:  {unit: pct, lag: {prior_mean: 0.3, prior_sd: 0.2}}
+  zblx:  {unit: pct, formula: "zorp + 2 * blix"}
+baselines: [naive_last, seasonal_naive, guess]

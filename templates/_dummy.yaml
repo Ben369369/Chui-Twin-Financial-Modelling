@@ -1,0 +1,15 @@
+# Test-only template. Made-up names prove the engine never depends on real ones.
+name: _dummy
+description: nonsense primitives for tests/test_template_agnostic.py
+primitives:
+  - {name: flux_q,  persistence: 0.5}
+  - {name: warp_z,  persistence: 0.8}
+  - {name: glim_7,  persistence: 0.3}
+edges:
+  - {from: warp_z, to: flux_q, prior_mean: 0.5, prior_sd: 0.1}
+  - {from: flux_q, to: zorp,   prior_mean: 1.0, prior_sd: 0.2}
+  - {from: glim_7, to: blix,   prior_mean: -0.6, prior_sd: 0.2}
+kpis:
+  zorp:  {unit: pct}
+  blix:  {unit: pct}
+  zblx:  {unit: pct, formula: "zorp + 2 * blix"}

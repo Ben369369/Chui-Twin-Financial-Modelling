@@ -1,0 +1,36 @@
+name: operating
+description: >
+  Businesses whose revenue is volume times price, served by physical capacity:
+  restaurants, retail, airlines, hotels, homebuilders, transport.
+  Edge coefficients are in standardized units (child sd per parent sd).
+
+primitives:
+  - {name: demand,     persistence: 0.6, description: "underlying customer demand or volume"}
+  - {name: capacity,   persistence: 0.9, description: "ability to serve demand (stores, seats, flights, units)"}
+  - {name: price,      persistence: 0.7, description: "realized price per unit"}
+  - {name: input_cost, persistence: 0.7, description: "cost of goods, commodities, fuel"}
+  - {name: labor,      persistence: 0.8, description: "wage and staffing pressure"}
+  - {name: sentiment,  persistence: 0.5, description: "brand trust, safety events, public attention"}
+  - {name: expansion,  persistence: 0.9, description: "new capacity pipeline"}
+
+# Default causal edges among primitives. These drive how innovations and
+# scenario shocks propagate. Fixed before looking at outcomes.
+edges:
+  - {from: sentiment, to: demand,   prior_mean: 0.4,  prior_sd: 0.2}
+  - {from: price,     to: demand,   prior_mean: -0.3, prior_sd: 0.15}
+  - {from: expansion, to: capacity, prior_mean: 0.5,  prior_sd: 0.2}
+  - {from: labor,     to: price,    prior_mean: 0.3,  prior_sd: 0.15}
+  - {from: input_cost, to: price,   prior_mean: 0.2,  prior_sd: 0.15}
+  # Default KPI structure: volume x price, and a unit margin.
+  - {from: demand,     to: volume,      prior_mean: 1.0,  prior_sd: 0.3}
+  - {from: capacity,   to: volume,      prior_mean: 0.2,  prior_sd: 0.2}
+  - {from: price,      to: unit_price,  prior_mean: 1.0,  prior_sd: 0.3}
+  - {from: input_cost, to: unit_margin, prior_mean: -0.5, prior_sd: 0.3}
+  - {from: labor,      to: unit_margin, prior_mean: -0.4, prior_sd: 0.3}
+  - {from: price,      to: unit_margin, prior_mean: 0.3,  prior_sd: 0.3}
+
+kpis:
+  volume:      {unit: pct, description: "year-over-year change in units served"}
+  unit_price:  {unit: pct, description: "year-over-year change in revenue per unit"}
+  growth:      {unit: pct, formula: "volume + unit_price", description: "like-for-like revenue growth"}
+  unit_margin: {unit: pct, description: "operating margin at the unit level"}

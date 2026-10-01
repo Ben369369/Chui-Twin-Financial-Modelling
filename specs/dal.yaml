@@ -1,0 +1,66 @@
+ticker: DAL
+name: Delta Air Lines
+template: operating
+industry: airline
+period: quarter
+history_start: 2014Q1
+# COVID collapse and recovery (revenue growth -88% to +385%) is a regime break, not
+# something these signals should be calibrated on. Still forecast and scored.
+exclude_from_calibration: ["2020Q1:2022Q4"]
+
+kpis:
+  revenue_growth: {unit: pct, lag: {prior_mean: 0.6, prior_sd: 0.2}, description: "total operating revenue, yoy %"}
+  op_margin:      {unit: pct, lag: {prior_mean: 0.7, prior_sd: 0.2}, description: "GAAP operating margin, % of revenue"}
+
+primitives: [demand, capacity, price, input_cost, labor, sentiment]
+
+signals:
+  - series: "tsa:checkpoint_throughput"   # daily TSA checkpoint travelers (from 2019)
+    primitive: demand
+    confidence: 0.6
+    half_life_days: 30
+    transform: yoy_log
+  - series: "wiki:Delta_Air_Lines"
+    primitive: demand
+    confidence: 0.2
+    half_life_days: 30
+    transform: yoy_log
+  - series: "fred:CUSR0000SETG01"         # CPI airline fares, SA
+    primitive: price
+    confidence: 0.5
+    half_life_days: 60
+    transform: yoy_log
+  - series: "fred:DJFUELUSGULF"           # US Gulf Coast kerosene-type jet fuel, daily
+    primitive: input_cost
+    confidence: 0.7
+    half_life_days: 30
+    transform: yoy_log
+  - series: "bls:CES4348100003"           # avg hourly earnings, air transportation
+    primitive: labor
+    confidence: 0.5
+    half_life_days: 60
+    transform: yoy_log
+
+edges:
+  - {from: demand,     to: revenue_growth, prior_mean: 0.8,  prior_sd: 0.3}
+  - {from: price,      to: revenue_growth, prior_mean: 0.4,  prior_sd: 0.3}
+  - {from: capacity,   to: revenue_growth, prior_mean: 0.2,  prior_sd: 0.2}
+  - {from: input_cost, to: op_margin,      prior_mean: -0.6, prior_sd: 0.3}
+  - {from: labor,      to: op_margin,      prior_mean: -0.3, prior_sd: 0.3}
+  - {from: price,      to: op_margin,      prior_mean: 0.4,  prior_sd: 0.3}
+  - {from: demand,     to: op_margin,      prior_mean: 0.4,  prior_sd: 0.3}
+
+baselines: [naive_last, seasonal_naive, guidance, consensus]
+
+ground_truth:
+  # XBRL company facts: GAAP, same structure for every SEC filer. Press-release
+  # text mixes GAAP/adjusted margins and compared 2021-22 revenue to 2019.
+  # Revenue concept changed with ASC 606 (2018); concepts are tried in order.
+  xbrl:
+    cik: "27904"
+    rules:
+      revenue_growth: {kind: yoy, concepts: [RevenueFromContractWithCustomerExcludingAssessedTax, Revenues]}
+      op_margin:
+        kind: ratio
+        numerator: [OperatingIncomeLoss]
+        denominator: [RevenueFromContractWithCustomerExcludingAssessedTax, Revenues]
