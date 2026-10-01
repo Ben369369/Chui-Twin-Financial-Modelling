@@ -125,6 +125,8 @@ class ResolvedSpec:
             "ticker": self.ticker,
             "template": self.template,
             "period": self.period,
+            "history_start": self.history_start,
+            "excluded_periods": sorted(self.excluded_periods),
             "primitives": [p.model_dump() for p in self.primitives],
             "kpis": {k: v.model_dump() for k, v in sorted(self.kpis.items())},
             "signals": [s.model_dump() for s in self.signals],

@@ -4,15 +4,19 @@ template: operating
 industry: restaurant
 period: quarter
 history_start: 2014Q1
+# COVID exclusion was tested 2026-10-01 and made out-of-COVID scores slightly worse, so it is off.
 
 kpis:
-  # lag: yoy rates and margins are persistent; prior on the coefficient of last quarter's value.
-  transactions: {unit: pct, lag: {prior_mean: 0.7, prior_sd: 0.2}, description: "comparable restaurant transactions, yoy %"}
-  check:        {unit: pct, lag: {prior_mean: 0.7, prior_sd: 0.2}, description: "comparable average check, yoy %"}
+  # Year-over-year KPIs use target: change: the news since the last report is in how the
+  # signals moved since then (tested 2026-10-01: level + lag lost to naive on every KPI).
+  transactions: {unit: pct, target: change, description: "comparable restaurant transactions, yoy %"}
+  check:        {unit: pct, target: change, description: "comparable average check, yoy %"}
   # Modeled directly, not as transactions + check: CMG disclosed transactions and
   # check consistently only from ~2023, so the formula would leave comps with ~14 quarters.
-  comps:        {unit: pct, lag: {prior_mean: 0.7, prior_sd: 0.2}, description: "comparable restaurant sales, yoy %"}
-  rlom:         {unit: pct, lag: {prior_mean: 0.8, prior_sd: 0.15}, description: "restaurant level operating margin, % of revenue"}
+  comps:        {unit: pct, target: change, description: "comparable restaurant sales, yoy %"}
+  rlom:         {unit: pct, target: change, description: "restaurant level operating margin, % of revenue"}
+  # Total revenue growth (XBRL): comps plus new restaurants, so store count matters here.
+  revenue_growth: {unit: pct, target: change, description: "total revenue, yoy %"}
 
 primitives: [demand, capacity, price, input_cost, labor, sentiment, expansion]
 
@@ -53,8 +57,30 @@ signals:
     half_life_days: 60
     transform: yoy_log
 
+  - series: "gdelt:tone:chipotle"     # average tone of news mentioning Chipotle (from 2017)
+    primitive: sentiment
+    confidence: 0.5
+    half_life_days: 21
+    transform: level
+  - series: "sitemap:chipotle_stores" # US restaurant pages on the store locator (Wayback from 2022)
+    primitive: capacity
+    confidence: 0.6
+    half_life_days: 60
+    transform: yoy_log
+  - series: "sitemap:chipotle_jobs"   # open postings on the careers site (Wayback from late 2023)
+    primitive: labor
+    confidence: 0.3
+    half_life_days: 30
+    transform: yoy_log
+    notes: More postings can mean expansion or turnover; low confidence until validated.
+
 edges:
   - {from: demand,     to: comps,        prior_mean: 0.8,  prior_sd: 0.3}
+  - {from: sentiment,  to: comps,        prior_mean: 0.3,  prior_sd: 0.3}
+  - {from: sentiment,  to: transactions, prior_mean: 0.3,  prior_sd: 0.3}
+  - {from: demand,     to: revenue_growth, prior_mean: 0.6, prior_sd: 0.3}
+  - {from: price,      to: revenue_growth, prior_mean: 0.3, prior_sd: 0.3}
+  - {from: capacity,   to: revenue_growth, prior_mean: 0.6, prior_sd: 0.3}
   - {from: price,      to: comps,        prior_mean: 0.4,  prior_sd: 0.3}
   - {from: demand,     to: transactions, prior_mean: 1.0,  prior_sd: 0.3}
   - {from: price,      to: check,        prior_mean: 1.0,  prior_sd: 0.3}
@@ -66,6 +92,11 @@ edges:
 baselines: [naive_last, seasonal_naive, guidance, consensus]
 
 ground_truth:
+  xbrl:
+    cik: "1058090"
+    rules:
+      # CMG reported revenue as FoodAndBeverageRevenue before 2017 (it was ~99% of revenue).
+      revenue_growth: {kind: yoy, concepts: [RevenueFromContractWithCustomerExcludingAssessedTax, Revenues, FoodAndBeverageRevenue]}
   edgar:
     cik: "1058090"
     forms: ["8-K"]

@@ -61,7 +61,7 @@ class Forecast:
                 for p in f.history.periods[-4:]
             },
             "kpi_models": {
-                k: {"parents": m.parents, "has_lag": m.has_lag, "coef_mean": m.coef_mean.tolist(), "sigma": m.sigma,
+                k: {"parents": m.parents, "lags": m.lags, "coef_mean": m.coef_mean.tolist(), "sigma": m.sigma,
                     "n_obs": m.n_obs}
                 for k, m in f.models.items()
             },

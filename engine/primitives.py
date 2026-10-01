@@ -7,6 +7,7 @@ template YAML.
 from __future__ import annotations
 
 from pathlib import Path
+from typing import Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -49,12 +50,19 @@ class KPIDef(BaseModel):
     formula: str | None = None
     # Adds y[t-1] as a regressor. Use for persistent KPIs (year-over-year rates, margins).
     lag: LagPrior | None = None
+    # Adds y[t - one year] as a regressor. Use for seasonal levels (e.g. quarterly margins).
+    seasonal_lag: LagPrior | None = None
+    # "change": model y[t] - y[t-1] from changes in parent states since the last period.
+    # Suits year-over-year KPIs, where the news since the last report is in the signal changes.
+    target: Literal["level", "change"] = "level"
     description: str = ""
 
     @model_validator(mode="after")
     def _lag_needs_model(self) -> "KPIDef":
-        if self.lag is not None and self.formula:
-            raise ValueError("formula KPIs are derived and cannot have a lag term")
+        if (self.lag is not None or self.seasonal_lag is not None) and self.formula:
+            raise ValueError("formula KPIs are derived and cannot have lag terms")
+        if self.target == "change" and (self.formula or self.lag is not None or self.seasonal_lag is not None):
+            raise ValueError("target: change already conditions on y[t-1]; it excludes formula and lag terms")
         return self
 
 

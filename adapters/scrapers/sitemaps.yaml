@@ -1,0 +1,21 @@
+# Named sitemap counters. Series "sitemap:<name>" counts the URLs matching
+# count_pattern across the listed sitemaps (sitemap indexes are followed).
+# Adding a company's store locator or careers site is a config entry, not code.
+# Check robots.txt and terms first and log the source in provenance.md.
+
+chipotle_stores:
+  entity_id: CMG
+  unit: restaurants
+  description: US restaurant pages on the Chipotle store locator
+  sitemaps: ["https://locations.chipotle.com/sitemap.xml"]
+  # /<state>/<city>/<address> with nothing after it (drops /order-delivery and city pages)
+  count_pattern: '^https://locations\.chipotle\.com/[a-z]{2}/[^/]+/[^/]+/?$'
+
+chipotle_jobs:
+  entity_id: CMG
+  unit: postings
+  description: open job postings on the Chipotle careers site (robots.txt disallows only /search-jobs/)
+  sitemaps: ["https://jobs.chipotle.com/sitemap.xml"]
+  count_pattern: '^https://jobs\.chipotle\.com/job/'
+  # Before Nov 2023 the careers sitemap listed at most 500 URLs: truncated, not a count.
+  min_valid: 1000

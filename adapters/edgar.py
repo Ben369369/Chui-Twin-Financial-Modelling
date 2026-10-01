@@ -241,6 +241,15 @@ def extract_ground_truth(snapshots: list[RawSnapshot], entity_id: str, freq: str
 
 # ---- XBRL company facts -> ground truth ---------------------------------------
 
+# Common us-gaap revenue concepts, most specific first. Specs may override.
+REVENUE_CONCEPTS = [
+    "RevenueFromContractWithCustomerExcludingAssessedTax",
+    "Revenues",
+    "SalesRevenueNet",
+    "SalesRevenueGoodsNet",
+    "RevenueFromContractWithCustomerIncludingAssessedTax",
+]
+
 @dataclass(frozen=True)
 class Fact:
     period: str
@@ -305,7 +314,9 @@ def xbrl_ground_truth(snap: RawSnapshot, entity_id: str, freq: str, rules: dict[
             first = fs[0]
             when = first.filed
             if kind == "yoy":
-                base = _known_by(main.get(shift(p, -4), []), when)
+                # Compare like with like: concepts can differ in scope across a switch.
+                prior = main.get(shift(p, -4), [])
+                base = _known_by([f for f in prior if f.concept == first.concept], when) or _known_by(prior, when)
                 if base is None or base.value == 0:
                     continue
                 value, detail = 100.0 * (first.value / base.value - 1.0), f"{first.concept} vs {base.accn}"

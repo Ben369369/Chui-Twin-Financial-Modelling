@@ -7,8 +7,8 @@ Per path:
     (b_e sampled once per path from the edge prior)
   - scenario shocks add a decaying delta to a primitive, propagated to
     children through the same sampled edge coefficients
-  - modeled KPIs = sampled regression coefficients . [1, parent states, (y[t-1])] + noise,
-    where y[t-1] is the reported value if known at as_of, else the path's own simulated value
+  - modeled KPIs = sampled regression coefficients . [1, parent states, (y[t-k] per lag)] + noise,
+    where y[t-k] is the reported value if known at as_of, else the path's own simulated value
   - formula KPIs evaluated element-wise on the sampled components
 """
 
@@ -156,7 +156,7 @@ def simulate(
     # Lag terms chain through unreported periods, so simulate every period from the
     # first unreported one up to the last requested; output only what was asked for.
     released = [p for by_p in reported.values() for p in by_p]
-    if any(m.has_lag for m in models.values()) and released:
+    if any(m.needs_previous for m in models.values()) and released:
         first_open = shift(max(released, key=lambda p: diff(p, origin)), 1)
         last = max(periods, key=lambda p: diff(p, origin))
         extra = [p for p in span(first_open, last) if p not in periods]
@@ -170,9 +170,22 @@ def simulate(
     state_out = {p: np.empty((n_paths, len(periods))) for p in prims}
     formulas = rspec.formulas
     simulated: dict[str, dict[str, np.ndarray]] = {}
+    sim_states: dict[str, dict[str, np.ndarray]] = {}
 
-    def lagged(kpi: str, t: str) -> np.ndarray | float:
+    def change_input(prim: str, t: str, x_t: np.ndarray, d_t) -> np.ndarray | float:
+        """State change since t-1 for change-target KPIs. Where both periods are estimated,
+        use estimated means (as calibration does) so state noise is not double counted."""
         prev = shift(t, -1)
+        est_t, est_p = history.get(prim, t), history.get(prim, prev)
+        if est_t is not None and est_p is not None:
+            d_p = shock_deltas(rspec, shocks, prev, edge_b)[prim] if shocks else 0.0
+            return (est_t.mean + d_t) - (est_p.mean + d_p)
+        if prev in sim_states:
+            return x_t - sim_states[prev][prim]
+        return x_t - (est_p.mean if est_p is not None else 0.0)
+
+    def lagged(kpi: str, t: str, k: int) -> np.ndarray | float:
+        prev = shift(t, -k)
         if prev in reported.get(kpi, {}):
             return reported[kpi][prev]
         if prev in simulated:
@@ -195,11 +208,14 @@ def simulate(
                 m, c = models[k], coefs[k]
                 y = c[:, 0].copy()
                 for j, pr in enumerate(m.parents):
-                    y += c[:, 1 + j] * xs[pr]
-                if m.has_lag:
-                    y += c[:, -1] * lagged(k, t)
+                    y += c[:, 1 + j] * (change_input(pr, t, xs[pr], d[pr]) if m.target == "change" else xs[pr])
+                if m.target == "change":
+                    y += lagged(k, t, 1)
+                for li, lag in enumerate(m.lags):
+                    y += c[:, 1 + len(m.parents) + li] * lagged(k, t, lag)
                 values[k] = y + m.sigma * rng.standard_normal(n_paths)
             kpi_out[k][:, i] = values[k]
         simulated[t] = values
+        sim_states[t] = xs
 
     return SimulationResult(periods=list(periods), kpis=kpi_out, states=state_out, n_paths=n_paths, seed=seed, shocks=shocks)

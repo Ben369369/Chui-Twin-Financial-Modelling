@@ -56,7 +56,7 @@ def main() -> None:
     print("\nKPI models:")
     for k, m in fitted.models.items():
         terms = ", ".join(f"{pr} {c:+.2f}" for pr, c in zip(m.parents, m.coef_mean[1:]))
-        lag = f", lag {m.lag_coef:+.2f}" if m.has_lag else ""
+        lag = "".join(f", y[t-{k}] {m.lag_coef(k):+.2f}" for k in m.lags)
         print(f"  {k:14s} n={m.n_obs:2d} sigma={m.sigma:5.2f}  {terms}{lag}")
     print("\nForecast:")
     for k, by_p in fc.summary.items():

@@ -3,8 +3,8 @@
 For a modeled KPI at period t:
     E[y_t] = a + sum_j b_j * E[x_j,t]
 and E[x_j,t] = rho_j^k * sum_s contribution_s + shock deltas, where k is the
-number of periods past the last estimated period. A lag term phi * y[t-1] is
-its own driver ("<kpi>[t-1]") when y[t-1] is reported; otherwise the previous
+number of periods past the last estimated period. A lag term phi * y[t-k] is
+its own driver ("<kpi>[t-k]") when y[t-k] is reported; otherwise that
 period's drivers carry forward scaled by phi. Each term keeps the source refs
 of the observations behind it. Formula KPIs are linearized at the
 component means (exact for linear formulas such as sums).
@@ -41,6 +41,8 @@ def _state_terms(rspec: ResolvedSpec, history: StateHistory, prim: str, period: 
     src = period if k <= 0 else history.latest_period
     decay = 1.0 if k <= 0 else rho**k
     est = history.get(prim, src)
+    if est is None:  # before the start of state history
+        return []
     return [(s, decay * v, history.refs_for(s, src)) for s, v in est.contributions.items()]
 
 
@@ -55,7 +57,7 @@ def driver_waterfall(
 ) -> dict[str, list[Contribution]]:
     """reported: kpi -> period -> GroundTruth known at as_of (feeds lag terms)."""
     reported = reported or {}
-    previous: dict[str, list[Contribution]] | None = None
+    previous: dict[str, dict[str, list[Contribution]]] = {}
     mean_b = {(e.source, e.target): e.prior_mean for e in rspec.primitive_edges}
     deltas = shock_deltas(rspec, list(shocks), period, mean_b) if shocks else {}
     shock_name = "shock:" + "+".join(s.label or s.primitive for s in shocks) if shocks else ""
@@ -77,26 +79,36 @@ def driver_waterfall(
         else:
             m = models[kpi]
             rows.append(Contribution(kpi, period, BASELINE, None, float(m.coef_mean[0])))
+            change = m.target == "change"
+            prev_deltas = shock_deltas(rspec, list(shocks), shift(period, -1), mean_b) if change and shocks else {}
             for j, prim in enumerate(m.parents):
                 b = float(m.coef_mean[1 + j])
-                for series, v, refs in _state_terms(rspec, history, prim, period):
+                terms = {sr: (v, refs) for sr, v, refs in _state_terms(rspec, history, prim, period)}
+                if change:  # each signal's contribution to the change in state since the previous period
+                    before = {sr: v for sr, v, _ in _state_terms(rspec, history, prim, shift(period, -1))}
+                    for sr in before.keys() - terms.keys():
+                        terms[sr] = (0.0, [])
+                    terms = {sr: (v - before.get(sr, 0.0), refs) for sr, (v, refs) in terms.items()}
+                for series, (v, refs) in terms.items():
                     rows.append(Contribution(kpi, period, prim, series, b * v, refs))
-                if deltas and deltas.get(prim):
-                    rows.append(Contribution(kpi, period, prim, shock_name, b * float(deltas[prim])))
-            if m.has_lag:
-                phi, prev = m.lag_coef, shift(period, -1)
+                dlt = float(deltas.get(prim, 0.0)) - (float(prev_deltas.get(prim, 0.0)) if change else 0.0)
+                if dlt:
+                    rows.append(Contribution(kpi, period, prim, shock_name, b * dlt))
+            for k in ([1] if change else m.lags):
+                phi, prev = (1.0 if change else m.lag_coef(k)), shift(period, -k)
+                label = f"{kpi}[t-{k}]"
                 known = reported.get(kpi, {}).get(prev)
                 if known is not None:
-                    rows.append(Contribution(kpi, period, f"{kpi}[t-1]", None, phi * known.value, [known.source_ref]))
+                    rows.append(Contribution(kpi, period, label, None, phi * known.value, [known.source_ref]))
                 elif lag_is_gap(reported, kpi, prev):
-                    rows.append(Contribution(kpi, period, f"{kpi}[t-1]", "imputed:historical_mean", phi * m.y_mean))
+                    rows.append(Contribution(kpi, period, label, "imputed:historical_mean", phi * m.y_mean))
                 else:
                     if _depth >= MAX_LAG_DEPTH:
                         raise ValueError(f"{kpi}: no reported value within {MAX_LAG_DEPTH} periods before {period}")
-                    if previous is None:
-                        previous = driver_waterfall(rspec, history, models, prev, shocks, reported, _depth + 1)
+                    if prev not in previous:
+                        previous[prev] = driver_waterfall(rspec, history, models, prev, shocks, reported, _depth + 1)
                     rows += [Contribution(kpi, period, c.driver, c.signal, phi * c.value, c.source_refs)
-                             for c in previous[kpi]]
+                             for c in previous[prev][kpi]]
         out[kpi] = rows
         totals[kpi] = sum(r.value for r in rows)
     return out

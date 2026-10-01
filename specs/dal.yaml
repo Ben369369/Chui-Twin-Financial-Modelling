@@ -10,7 +10,12 @@ exclude_from_calibration: ["2020Q1:2022Q4"]
 
 kpis:
   revenue_growth: {unit: pct, lag: {prior_mean: 0.6, prior_sd: 0.2}, description: "total operating revenue, yoy %"}
-  op_margin:      {unit: pct, lag: {prior_mean: 0.7, prior_sd: 0.2}, description: "GAAP operating margin, % of revenue"}
+  # Airline margins are seasonal (summer peak, Q1 trough): same quarter last year carries most of the signal.
+  op_margin:
+    unit: pct
+    lag: {prior_mean: 0.3, prior_sd: 0.2}
+    seasonal_lag: {prior_mean: 0.6, prior_sd: 0.2}
+    description: "GAAP operating margin, % of revenue"
 
 primitives: [demand, capacity, price, input_cost, labor, sentiment]
 
@@ -41,8 +46,15 @@ signals:
     half_life_days: 60
     transform: yoy_log
 
+  - series: "gdelt:tone:delta air lines"   # average tone of news mentioning Delta Air Lines (from 2017)
+    primitive: sentiment
+    confidence: 0.5
+    half_life_days: 21
+    transform: level
+
 edges:
   - {from: demand,     to: revenue_growth, prior_mean: 0.8,  prior_sd: 0.3}
+  - {from: sentiment,  to: revenue_growth, prior_mean: 0.2,  prior_sd: 0.2}
   - {from: price,      to: revenue_growth, prior_mean: 0.4,  prior_sd: 0.3}
   - {from: capacity,   to: revenue_growth, prior_mean: 0.2,  prior_sd: 0.2}
   - {from: input_cost, to: op_margin,      prior_mean: -0.6, prior_sd: 0.3}

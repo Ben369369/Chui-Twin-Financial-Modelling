@@ -5,11 +5,13 @@ from __future__ import annotations
 from adapters.base import Adapter
 from adapters.bls import BlsAdapter
 from adapters.fred import FredAdapter
+from adapters.gdelt import GdeltAdapter
+from adapters.scrapers.sitemap import SitemapAdapter
 from adapters.tsa import TsaAdapter
 from adapters.wikimedia import WikimediaAdapter
 
 REGISTRY: dict[str, type[Adapter]] = {
-    cls.prefix: cls for cls in (FredAdapter, BlsAdapter, WikimediaAdapter, TsaAdapter)
+    cls.prefix: cls for cls in (FredAdapter, BlsAdapter, WikimediaAdapter, TsaAdapter, SitemapAdapter, GdeltAdapter)
 }
 
 
