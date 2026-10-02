@@ -10,6 +10,7 @@ A shock is primitive:period:size_in_sd[:half_life_periods].
 from __future__ import annotations
 
 import argparse
+import subprocess
 import sys
 from collections import defaultdict
 from datetime import datetime, timezone
@@ -78,8 +79,12 @@ def main() -> None:
 
     if args.seal:
         path, digest = seal(fc.to_record(), ROOT / "forecasts" / "sealed")
-        print(f"\nSealed {path.relative_to(ROOT)}\nsha256 {digest}\n"
-              "Publish this hash somewhere timestamped (a pushed commit, a message to your mentor) before the outcome.")
+        print(f"\nSealed {path.relative_to(ROOT)}\nsha256 {digest}")
+        # Independent timestamp: anchor the hash in Bitcoin via OpenTimestamps (writes <file>.ots).
+        r = subprocess.run([sys.executable, str(ROOT / "scripts" / "ots.py"), "stamp", str(path)],
+                           capture_output=True, text=True)
+        print("OpenTimestamps: " + ("stamped, Bitcoin proof pending (run_daily.py upgrades it)"
+                                    if r.returncode == 0 else f"failed ({r.stderr.strip()[-200:]}); stamp manually"))
 
 
 if __name__ == "__main__":

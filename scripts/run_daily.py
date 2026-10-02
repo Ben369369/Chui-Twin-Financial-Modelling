@@ -12,6 +12,7 @@ Schedule with Windows Task Scheduler or cron, e.g. daily at 07:00 local.
 from __future__ import annotations
 
 import argparse
+import subprocess
 import sys
 import traceback
 from datetime import date, timedelta
@@ -61,6 +62,13 @@ def main() -> None:
             except Exception as e:
                 failures.append(f"{rspec.ticker} ground truth")
                 print(f"  FAIL {type(e).__name__}: {e}")
+
+    # Embed Bitcoin proofs into sealed-forecast timestamps once the calendars have them.
+    for ots in sorted((ROOT / "forecasts" / "sealed").glob("*.ots")):
+        r = subprocess.run([sys.executable, str(ROOT / "scripts" / "ots.py"), "upgrade", str(ots)],
+                           capture_output=True, text=True)
+        out = r.stdout + r.stderr
+        print(f"  ots  {ots.name}: {'complete' if 'Success' in out or 'already complete' in out else 'pending'}")
 
     if failures:
         print(f"{len(failures)} failures: {failures}")
