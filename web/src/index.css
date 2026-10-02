@@ -1,64 +1,80 @@
 @import "tailwindcss";
 
-/* Chart and UI tokens. Values are the validated reference palette (dataviz skill):
-   slots 1-2 and the blue/red diverging poles pass all checks in both modes. */
+/* Chui Trading brand (from the letterhead: navy logo block, navy serif headings, navy rule)
+   on the chrome; validated data palette on the charts. Data slots and diverging poles were
+   re-validated against these exact surfaces (light #ffffff, dark #141b33): all checks pass. */
 :root {
   color-scheme: light;
-  --page: #f9f9f7;
-  --surface-1: #fcfcfb;
-  --text-primary: #0b0b0b;
-  --text-secondary: #52514e;
-  --text-muted: #898781;
-  --grid: #e1e0d9;
-  --axis: #c3c2b7;
-  --border: rgba(11, 11, 11, 0.1);
+  --brand: #1b2a5a; /* logo block, headings, primary actions */
+  --brand-ink: #ffffff; /* text on the logo block */
+  --brand-soft: #e8ecf6; /* navy wash for selected states */
+  --heading: #1b2a5a; /* letterhead navy headings */
+  --page: #f6f7fb;
+  --surface-1: #ffffff;
+  --text-primary: #0f1730;
+  --text-secondary: #4a5068;
+  --text-muted: #80869a;
+  --grid: #e3e6ef;
+  --axis: #c3c8d6;
+  --border: rgba(27, 42, 90, 0.12);
+  --shadow: 0 1px 2px rgba(15, 23, 48, 0.06), 0 8px 24px rgba(15, 23, 48, 0.06);
   --series-1: #2a78d6; /* baseline forecast / reported */
   --series-2: #eb6834; /* scenario */
   --pos: #2a78d6; /* diverging: pushes the KPI up */
   --neg: #e34948; /* diverging: pushes it down */
   --good-text: #006300;
   --bad-text: #b42828;
-  --wash: #f0efec;
+  --wash: #eef1f8;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) {
     color-scheme: dark;
-    --page: #0d0d0d;
-    --surface-1: #1a1a19;
+    --brand: #2c3f7c;
+    --brand-ink: #ffffff;
+    --brand-soft: #22305e;
+    --heading: #ffffff;
+    --page: #0b1022;
+    --surface-1: #141b33;
     --text-primary: #ffffff;
-    --text-secondary: #c3c2b7;
-    --text-muted: #898781;
-    --grid: #2c2c2a;
-    --axis: #383835;
+    --text-secondary: #c2c7d8;
+    --text-muted: #8a90a6;
+    --grid: #232c4a;
+    --axis: #39446a;
     --border: rgba(255, 255, 255, 0.1);
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
     --series-1: #3987e5;
     --series-2: #d95926;
     --pos: #3987e5;
     --neg: #e66767;
     --good-text: #0ca30c;
     --bad-text: #e66767;
-    --wash: #383835;
+    --wash: #1c2546;
   }
 }
 
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --page: #0d0d0d;
-  --surface-1: #1a1a19;
+  --brand: #2c3f7c;
+  --brand-ink: #ffffff;
+  --brand-soft: #22305e;
+  --heading: #ffffff;
+  --page: #0b1022;
+  --surface-1: #141b33;
   --text-primary: #ffffff;
-  --text-secondary: #c3c2b7;
-  --text-muted: #898781;
-  --grid: #2c2c2a;
-  --axis: #383835;
+  --text-secondary: #c2c7d8;
+  --text-muted: #8a90a6;
+  --grid: #232c4a;
+  --axis: #39446a;
   --border: rgba(255, 255, 255, 0.1);
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 8px 24px rgba(0, 0, 0, 0.25);
   --series-1: #3987e5;
   --series-2: #d95926;
   --pos: #3987e5;
   --neg: #e66767;
   --good-text: #0ca30c;
   --bad-text: #e66767;
-  --wash: #383835;
+  --wash: #1c2546;
 }
 
 html,
@@ -68,10 +84,27 @@ body {
   font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
 }
 
+/* Letterhead serif, for the wordmark and section headings only. Numbers and charts stay sans. */
+.serif {
+  font-family: Georgia, "Times New Roman", serif;
+  letter-spacing: -0.01em;
+}
+
+.brand-heading {
+  color: var(--heading);
+}
+
 .card {
   background: var(--surface-1);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.card.lift:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow), 0 12px 32px rgba(15, 23, 48, 0.08);
 }
 
 .muted {
@@ -89,14 +122,76 @@ body {
 button.chip {
   border: 1px solid var(--border);
   border-radius: 999px;
-  padding: 4px 12px;
+  padding: 5px 13px;
   font-size: 13px;
   color: var(--text-secondary);
+  background: var(--surface-1);
+  transition: background 150ms ease, color 150ms ease, transform 120ms ease, border-color 150ms ease;
+}
+
+button.chip:hover {
+  border-color: var(--brand);
+  color: var(--text-primary);
+}
+
+button.chip:active {
+  transform: scale(0.96);
 }
 
 button.chip[aria-pressed="true"] {
-  background: var(--text-primary);
-  color: var(--surface-1);
+  background: var(--brand);
+  border-color: var(--brand);
+  color: var(--brand-ink);
+}
+
+button.chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+button.primary {
+  background: var(--brand);
+  color: var(--brand-ink);
+  border-radius: 999px;
+  padding: 6px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  transition: filter 150ms ease, transform 120ms ease;
+}
+
+button.primary:hover {
+  filter: brightness(1.15);
+}
+
+button.primary:active {
+  transform: scale(0.97);
+}
+
+button.primary:disabled {
+  opacity: 0.5;
+}
+
+input.search {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 13px;
+  font-size: 13px;
+  background: var(--surface-1);
+  color: var(--text-primary);
+  min-width: 180px;
+}
+
+input.search:focus {
+  outline: 2px solid var(--brand);
+  outline-offset: 1px;
+}
+
+input[type="range"] {
+  accent-color: var(--brand);
+}
+
+:root[data-theme="dark"] input[type="range"] {
+  accent-color: var(--series-1);
 }
 
 table.data th {
@@ -104,13 +199,101 @@ table.data th {
   font-weight: 600;
   font-size: 12px;
   color: var(--text-secondary);
-  padding: 6px 8px;
+  padding: 8px;
   border-bottom: 1px solid var(--axis);
+  white-space: nowrap;
+}
+
+table.data th button {
+  font-weight: 600;
 }
 
 table.data td {
-  padding: 6px 8px;
+  padding: 7px 8px;
   font-size: 13px;
   border-bottom: 1px solid var(--grid);
   font-variant-numeric: tabular-nums;
+}
+
+table.data tbody tr {
+  transition: background 120ms ease;
+}
+
+table.data tbody tr.clickable:hover {
+  background: var(--wash);
+  cursor: pointer;
+}
+
+/* ---- motion ------------------------------------------------------------ */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes draw {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes wipe {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* Charts render fully at once; the reveal is a CSS wipe, which the browser always completes. */
+.chart-wipe .recharts-surface {
+  animation: wipe 900ms cubic-bezier(0.3, 0.7, 0.2, 1) both;
+  animation-delay: 120ms;
+}
+
+.reveal {
+  animation: rise 520ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+.fade-in {
+  animation: fade 380ms ease both;
+}
+
+.rule-draw {
+  transform-origin: left;
+  animation: draw 700ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .fade-in,
+  .rule-draw,
+  .chart-wipe .recharts-surface {
+    animation: none;
+  }
+  .card,
+  button.chip,
+  button.primary {
+    transition: none;
+  }
 }

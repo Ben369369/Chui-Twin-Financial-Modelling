@@ -14,14 +14,14 @@ function Panel({ title, sub, table, children }: { title: string; sub?: string; t
     <section className="card p-4">
       <div className="mb-3 flex items-start justify-between gap-4">
         <div>
-          <h3 className="font-semibold">{title}</h3>
+          <h3 className="serif brand-heading text-lg font-semibold">{title}</h3>
           {sub && <p className="text-xs muted">{sub}</p>}
         </div>
         <button className="chip shrink-0" aria-pressed={asTable} onClick={() => setAsTable(!asTable)}>
           {asTable ? 'Chart' : 'Table'}
         </button>
       </div>
-      {asTable ? <div className="overflow-x-auto">{table}</div> : children}
+      {asTable ? <div className="fade-in overflow-x-auto">{table}</div> : <div className="chart-wipe">{children}</div>}
     </section>
   )
 }
@@ -252,7 +252,7 @@ export function DriversChart({ kpi, period, rows }: { kpi: string; period: strin
         </ResponsiveContainer>
       )}
       {picked && (
-        <div className="mt-3 rounded-md p-3 text-xs" style={{ background: 'var(--wash)' }}>
+        <div key={picked.name} className="fade-in mt-3 rounded-md p-3 text-xs" style={{ background: 'var(--wash)' }}>
           <div className="mb-1 font-semibold">{picked.name}: sources</div>
           <ul className="list-disc space-y-1 pl-4 break-all secondary">
             {picked.refs.slice(0, 6).map((r) => <li key={r}>{r}</li>)}
