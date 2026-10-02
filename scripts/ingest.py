@@ -19,7 +19,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from adapters import adapter_for  # noqa: E402
-from adapters.edgar import DOCUMENT_PATTERN, EdgarAdapter, extract_ground_truth, filings, xbrl_ground_truth  # noqa: E402
+from adapters.edgar import DOCUMENT_PATTERN, EdgarAdapter, extract_ground_truth, extract_guidance, filings, xbrl_ground_truth  # noqa: E402
 from adapters.http import load_snapshots  # noqa: E402
 from engine.spec import load_spec  # noqa: E402
 from storage import db  # noqa: E402
@@ -61,14 +61,15 @@ def ingest_ground_truth(rspec, conn, start: date, reparse: bool) -> None:
     if "xbrl" in rspec.ground_truth:
         ingest_xbrl(rspec, conn, reparse)
     cfg = rspec.ground_truth.get("edgar")
-    if not cfg or not cfg.get("rules"):
+    if not cfg:
         return
     cik = str(int(cfg["cik"]))
     cached = [s for s in load_snapshots("edgar") if s.params.get("cik") == cik]
     if not reparse:
         edgar = EdgarAdapter()
         subs = edgar.fetch_submissions(cik)
-        have = {s.params.get("accession") for s in cached if s.params.get("kind") in ("index", "document")}
+        # Cached = documents saved, or an HTML index already checked by type and found none.
+        have = {s.params.get("accession") for s in cached if s.params.get("kind") in ("document", "index_html")}
         extra = set(cfg.get("include_accessions", []))
         wanted = filings(subs, cfg.get("forms", ["8-K"]), cfg.get("items"))
         wanted += [f for f in filings(subs, cfg.get("forms", ["8-K"])) if f.accession in extra]
@@ -78,7 +79,9 @@ def ingest_ground_truth(rspec, conn, start: date, reparse: bool) -> None:
             cached += edgar.fetch_documents(f, cfg.get("document_pattern", DOCUMENT_PATTERN))
         db.save_snapshots(conn, subs)
     pattern = cfg.get("document_pattern", DOCUMENT_PATTERN)
-    docs = [s for s in cached if s.params.get("kind") == "document" and re.search(pattern, s.params["document"], re.I)]
+    typed = {s.params["accession"] for s in cached if s.params.get("kind") == "index_html"}
+    docs = [s for s in cached if s.params.get("kind") == "document"
+            and (re.search(pattern, s.params["document"], re.I) or s.params["accession"] in typed)]
     rows, report = extract_ground_truth(docs, rspec.ticker, rspec.period, cfg.get("rules", {}))
 
     # Several exhibits can describe one period (e.g. a later restatement); keep the first release.
@@ -87,6 +90,12 @@ def ingest_ground_truth(rspec, conn, start: date, reparse: bool) -> None:
         first.setdefault((g.period, g.kpi), g)
     db.save_ground_truth(conn, list(first.values()))
 
+    if cfg.get("guidance"):
+        ext = extract_guidance(docs, rspec.ticker, rspec.period, cfg["guidance"])
+        conn.execute("DELETE FROM external_forecasts WHERE entity_id = ? AND source = 'guidance'", (rspec.ticker,))
+        db.save_external(conn, ext)
+        print(f"  guidance: {len(ext)} rows, periods {sorted({e.period for e in ext})}")
+
     periods = sorted({r["period"] for r in report if r["period"]})
     found = Counter(k for (p, k) in first)
     print(f"  {len(docs)} exhibits, {len(periods)} periods detected ({periods[0] if periods else '-'} .. {periods[-1] if periods else '-'})")
@@ -94,7 +103,7 @@ def ingest_ground_truth(rspec, conn, start: date, reparse: bool) -> None:
         missing = [p for p in periods if (p, kpi) not in first]
         print(f"  {kpi:14s} {found[kpi]:3d}/{len(periods)}  missing: {missing[:12]}{' ...' if len(missing) > 12 else ''}")
     undated = [r["accession"] for r in report if not r["period"]]
-    if undated:
+    if undated and cfg.get("rules"):
         print(f"  exhibits with no detectable period: {undated}")
 
 

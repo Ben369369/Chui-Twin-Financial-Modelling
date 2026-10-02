@@ -1,6 +1,6 @@
 """Daily job: refresh every series used by any spec, then refresh ground truth.
 
-    python scripts/run_daily.py                 # all specs/*.yaml, last 400 days of signals
+    python scripts/run_daily.py                 # specs/*.yaml and specs/auto/*.yaml, last 400 days
     python scripts/run_daily.py --days 30
 
 Each series is fetched once even when several specs use it (TSA serves every
@@ -32,7 +32,8 @@ def main() -> None:
     ap.add_argument("--skip-ground-truth", action="store_true")
     args = ap.parse_args()
 
-    specs = [load_spec(p, ROOT / "templates") for p in sorted((ROOT / "specs").glob("*.yaml"))]
+    paths = sorted((ROOT / "specs").glob("*.yaml")) + sorted((ROOT / "specs" / "auto").glob("*.yaml"))
+    specs = [load_spec(p, ROOT / "templates") for p in paths]
     conn = db.connect()
     end, start = date.today() + timedelta(days=1), date.today() - timedelta(days=args.days)
     failures = []

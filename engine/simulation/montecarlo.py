@@ -74,8 +74,10 @@ def lag_is_gap(reported: dict[str, dict], kpi: str, prev: str) -> bool:
     never reported. Such gaps are imputed with the KPI's historical mean."""
     if not reported.get(kpi):
         return True
-    released = {p for by_p in reported.values() for p in by_p}
-    return prev in released or diff(prev, max(reported[kpi])) < 0
+    released = [p for by_p in reported.values() for p in by_p]
+    latest = max(released, key=lambda p: diff(p, prev))
+    # Anything at or before the latest released period is in the past: missing means undisclosed.
+    return diff(prev, latest) <= 0
 
 
 def shock_deltas(

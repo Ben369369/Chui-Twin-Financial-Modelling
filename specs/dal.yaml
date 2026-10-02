@@ -76,3 +76,21 @@ ground_truth:
         kind: ratio
         numerator: [OperatingIncomeLoss]
         denominator: [RevenueFromContractWithCustomerExcludingAssessedTax, Revenues]
+  # Earnings releases: no KPI rules (XBRL covers KPIs), only management guidance.
+  # Guidance is for ADJUSTED revenue (ex refinery sales) while the KPI is GAAP: approximate bar.
+  # Pre-2023 outlooks compared with 2019, not the prior year, so rules require YoY wording.
+  edgar:
+    cik: "27904"
+    forms: ["8-K"]
+    items: ["2.02"]
+    rules: {}
+    guidance:
+      revenue_growth:
+        - pattern: '(?P<q>[1-4])Q(?P<yy>\d\d)\s+(?:Forecast\s+)?(?:FY\s?\d{4}\s+Forecast\d?\s+)?Total Revenue\s?\d?\s+YoY\s+(?P<lo_dir>Up|Down|\+|-)?\s?(?P<lo>\d+(?:\.\d+)?)\s?%?\s?-\s?(?P<hi_dir>up|down)?\s?(?P<hi>\d+(?:\.\d+)?)\s?%'
+          period: explicit
+        - pattern: 'expect (?:the )?(?:March|June|September|December) quarter (?:adjusted |total )?revenue (?:growth )?to be (?P<lo>\d+(?:\.\d+)?) to (?P<hi>\d+(?:\.\d+)?) percent higher than (?:the prior year|(?!2019)20\d\d)'
+          period: release_quarter
+        - pattern: 'expect total revenue (?:growth )?to be (?P<lo>flat|\d+(?:\.\d+)?) to up (?P<hi>\d+(?:\.\d+)?) percent compared to the prior year'
+          period: release_quarter
+        - pattern: 'expect total revenue growth of (?P<lo>\d+(?:\.\d+)?) to (?P<hi>\d+(?:\.\d+)?) percent compared to the (?:March|June|September|December) quarter 20\d\d'
+          period: release_quarter

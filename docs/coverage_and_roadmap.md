@@ -20,16 +20,19 @@ The engine itself is industry-agnostic. Industry structure lives in templates, a
 | Needs a new template | Banks, insurers | FFIEC call reports, Fed H.8, HMDA, CFPB complaints, NAIC filings | `bank` (roadmap) |
 | Needs a new engine module | Clinical-stage biotech, event-driven names | ClinicalTrials.gov, Drugs@FDA, FDA advisory calendars | `event` (roadmap) |
 
-## Current state (October 9 submission)
+## Current state (updated October 1)
 
-- **Engine:** state estimation, Monte Carlo simulation, driver attribution, counterfactual attribution, walk-forward evaluation. Shared by every twin.
+- **Engine:** state estimation, Monte Carlo simulation with scenario shocks, driver waterfall, leave-one-signal-out attribution, and walk-forward evaluation. Shared by every twin. KPIs can be modeled as levels, with optional last-quarter and same-quarter-last-year terms, or as changes since the last report.
 - **Template:** `operating`, with seven primitives (demand, capacity, price, input cost, labor, sentiment, expansion).
-- **Twins:** Chipotle (restaurant, deep model with scraped menu prices, store openings and job postings) and Delta (airline, built on the same engine from a spec file).
-- **Evaluation:** every twin is scored the same way against management guidance, a seasonal naive baseline and consensus, using forecast error, interval coverage and CRPS.
+- **Hand-built twins:**
+  - Chipotle: 59 quarters of comps and margin extracted from earnings releases; store count and job postings from public sitemaps, with history from the Internet Archive; news tone; macro signals.
+  - Delta: GAAP KPIs from XBRL; TSA throughput, jet fuel and airfare CPI; management guidance extracted from releases.
+- **Twin factory (onboarding v0):** `scripts/make_twin.py <TICKER>` resolves the company at SEC, picks an industry pack by SIC code, attaches shared industry signals plus the company's Wikipedia article and news query, pulls KPIs from XBRL, and backtests. No hand-written config. Packs exist for restaurants, airlines, hotels, homebuilders and general retail.
+- **Evaluation:** every twin is scored the same way against naive (last quarter), seasonal naive and, where available, management guidance, using MAE, CRPS and 80% interval coverage. Results are in `docs/portfolio_scorecard.md`.
 
 ## Expansion order
 
-1. **LLM-assisted onboarding (by finals).** Given a ticker, an LLM reads the latest 10-K, identifies KPIs and drivers, maps them to template primitives, selects signals from the adapter catalog and drafts a spec for human review. Target: a working twin with a backtest scorecard in under one hour.
+1. **LLM-assisted onboarding (by finals).** The rule-based factory already turns a ticker into a scored twin in minutes. v1 adds an LLM that reads the latest 10-K, picks company-specific KPIs (comps, RevPAR, deliveries) and drivers beyond the pack defaults, and drafts the extraction rules for its earnings releases. Every extracted value keeps its source span.
 2. **Third twin in a third industry (by finals).** A homebuilder, built mainly through onboarding, with the time taken recorded.
 3. **Shock library (by finals).** Food-safety scares, fuel spikes, strikes and rate shocks, each with a measured decay profile reused as priors across companies.
 4. **Remaining strong-fit industries.** Hotels, retail, cruise lines and freight reuse existing adapters, so each new company is mostly a spec file.

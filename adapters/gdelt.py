@@ -28,7 +28,8 @@ class GdeltAdapter(Adapter):
     prefix = "gdelt"
 
     def __init__(self, client: PoliteClient | None = None):
-        self.client = client or PoliteClient(min_interval_s=6.0, backoff_s=10.0)
+        # Fail fast on rate limits: run_daily.py fetches any missing series again tomorrow.
+        self.client = client or PoliteClient(min_interval_s=6.0, max_retries=1, backoff_s=30.0)
 
     def params_for_series(self, series: str) -> dict:
         kind, _, query = super().params_for_series(series)["query"].partition(":")

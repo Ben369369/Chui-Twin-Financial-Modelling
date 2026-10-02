@@ -20,13 +20,16 @@ from datetime import date, datetime, time, timedelta, timezone
 
 from adapters.base import Adapter
 from adapters.http import PoliteClient, read_raw, save_raw, snapshot_ref
-from engine.observation import GroundTruth, Observation, RawSnapshot
+from engine.observation import ExternalForecast, GroundTruth, Observation, RawSnapshot
 from engine.periods import period_of, shift
 
 SUBMISSIONS = "https://data.sec.gov/submissions/CIK{cik10}.json"
 SUBMISSIONS_PAGE = "https://data.sec.gov/submissions/{name}"
 FILING_INDEX = "https://www.sec.gov/Archives/edgar/data/{cik}/{acc}/index.json"
 FILING_DOC = "https://www.sec.gov/Archives/edgar/data/{cik}/{acc}/{name}"
+FILING_INDEX_HTML = "https://www.sec.gov/Archives/edgar/data/{cik}/{acc}/{accession}-index.htm"
+DOCUMENT_TYPE_PREFIX = "EX-99"
+_TYPED_DOC = re.compile(r'<a href="[^"]*/([^"/]+)">[^<]*</a>\s*</td>\s*<td[^>]*>\s*([A-Z0-9.\-]+)\s*</td>')
 COMPANYFACTS = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik10}.json"
 
 NEGATIVE_WORDS = re.compile(r"decreas|declin|lower|down|negative|fell|fewer|drop|reduc", re.I)
@@ -88,7 +91,16 @@ class EdgarAdapter(Adapter):
         snaps = [save_raw(self.source, idx.content, idx_url, dict(base, kind="index"), "json",
                           label=f"{filing.accession}_index")]
         names = [i["name"] for i in idx.json()["directory"]["item"]]
-        for name in (n for n in names if re.search(name_pattern, n, re.I)):
+        wanted = [n for n in names if re.search(name_pattern, n, re.I)]
+        if not wanted:
+            # File names are not reliable (e.g. "deltaairlinesannouncesjune.htm"); fall back to the
+            # document type column of the filing's HTML index.
+            html_url = FILING_INDEX_HTML.format(cik=int(filing.cik), acc=acc, accession=filing.accession)
+            h = self.client.get(html_url)
+            snaps.append(save_raw(self.source, h.content, html_url, dict(base, kind="index_html"), "htm",
+                                  label=f"{filing.accession}_index_html"))
+            wanted = [n for n, t in _TYPED_DOC.findall(h.text) if t.upper().startswith(DOCUMENT_TYPE_PREFIX)]
+        for name in wanted:
             url = FILING_DOC.format(cik=int(filing.cik), acc=acc, name=name)
             d = self.client.get(url)
             snaps.append(save_raw(self.source, d.content, url, dict(base, kind="document", document=name),
@@ -334,3 +346,49 @@ def xbrl_ground_truth(snap: RawSnapshot, entity_id: str, freq: str, rules: dict[
                 confidence=0.99, verified=False,
             ))
     return rows
+
+
+# ---- guidance in earnings releases -> external forecasts ------------------------
+
+_FLAT = re.compile(r"^\s*(flat|unchanged)\s*$", re.I)
+
+
+def _signed(number: str | None, direction: str | None) -> float:
+    if number is None or _FLAT.match(number):
+        return 0.0
+    v = float(number)
+    return -v if direction and NEGATIVE_WORDS.search(direction) or direction in ("-", "−") else v
+
+
+def extract_guidance(snapshots: list[RawSnapshot], entity_id: str, freq: str,
+                     rules: dict[str, list[dict]]) -> list[ExternalForecast]:
+    """rules: {kpi: [{pattern, period: explicit | release_quarter}]}.
+    Patterns use groups lo, hi (numbers or "flat"), optional lo_dir / hi_dir (sign words),
+    and for period: explicit, q (1-4) and yy (two-digit year). The value is the range midpoint.
+    release_quarter = the quarter in progress when the release was filed."""
+    out: list[ExternalForecast] = []
+    for snap in snapshots:
+        if snap.params.get("kind") != "document":
+            continue
+        text = html_to_text(read_raw(snap))
+        accepted = datetime.fromisoformat(snap.params["acceptance"])
+        for kpi, candidates in rules.items():
+            for i, rule in enumerate(candidates):
+                m = re.search(rule["pattern"], text, re.I)
+                if not m:
+                    continue
+                g = m.groupdict()
+                lo = _signed(g.get("lo"), g.get("lo_dir"))
+                hi = _signed(g.get("hi"), g.get("hi_dir") or g.get("lo_dir"))
+                if rule.get("period", "release_quarter") == "explicit":
+                    period = f"20{g['yy']}Q{g['q']}"
+                else:
+                    period = period_of(accepted.date(), freq)
+                out.append(ExternalForecast(
+                    entity_id=entity_id, period=period, kpi=kpi, source="guidance", value=(lo + hi) / 2,
+                    available_at=accepted,
+                    source_ref=f"SEC {snap.params['accession']} {snap.params['document']} | {snapshot_ref(snap)} "
+                               f"| rule {i} | span: {m.group(0)!r}",
+                ))
+                break
+    return out

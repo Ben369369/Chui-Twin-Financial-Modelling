@@ -36,6 +36,13 @@ For each modeled KPI *k* with parent primitives *j*:
 - Only ground truth with `available_at ≤ as_of` is used. Periods listed in `exclude_from_calibration` are skipped.
 - If y_{t−1} is missing but that period was reported (the company did not disclose this KPI), it is imputed with the historical mean.
 
+Two optional structures, chosen per KPI in the spec:
+
+- **`seasonal_lag`** adds y_{t−s}, where s is one year of periods. It suits seasonal levels such as quarterly airline margins.
+- **`target: change`** models Δy_t = a + Σ_j b_j·Δx_{j,t} + ε and forecasts y_t = y_{t−1} + Δy_t. It suits year-over-year KPIs, where the news since the last report is in how the signals moved since then. The drift *a* has a tight prior (0.1·sd of Δy) because a rate cannot drift forever. Where both periods have estimates, the simulation differences the estimated state means, matching calibration, so state noise is not counted twice.
+
+How each structure was chosen (2026-10-01): for CMG, level + lag lost to naive on every KPI, and change mode brought comps and revenue growth to parity on MAE. For DAL revenue growth, lag beat change mode (+0.12 vs +0.03 CRPS skill), so DAL keeps the lag. **These choices were made on the same backtest that is reported, which is mild selection bias.** The sealed Q3 forecast (resolves Oct 28) and twins built by the factory, which use the pack defaults with no tuning, are the clean tests.
+
 Formula KPIs (e.g. `a + b`) are derived and never calibrated.
 
 ## 4. Simulation (`engine/simulation/montecarlo.py`)

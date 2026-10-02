@@ -187,3 +187,13 @@ Week of Sep 30: scrapers running daily, CMG ground-truth table from EDGAR, publi
 - SEC User-Agent comes from env var `CHUI_SEC_USER_AGENT`, never hardcoded.
 - Series names encode their query: `fred:<id>`, `wiki:<article>`, `tsa:checkpoint_throughput`. The adapter registry in `adapters/__init__.py` routes by prefix.
 - `tests/test_engine_no_company_code.py` greps `engine/` for tickers, template primitive names and series prefixes. Keep it passing.
+
+## Implementation notes (added Oct 1)
+
+- **Twin factory:** `scripts/make_twin.py <TICKER ...> --scorecard docs/portfolio_scorecard.md`. SEC lookup → SIC → `onboarding/industry_packs.yaml` → `specs/auto/<ticker>.yaml` → ingest → backtest. Hand-built specs in `specs/` win over auto specs for the same ticker.
+- **Entity resolution must be verified:** a Wikipedia article is accepted only if its infobox lists the ticker, and the GDELT query comes from that verified title. (Unverified name matching mapped D.R. Horton to "Horton (Dr. Seuss)".)
+- **KPI structures**, chosen per KPI in the spec: level (+ `lag`, `seasonal_lag`) or `target: change`. Record why a structure was chosen in the spec comment. Choices made on the reported backtest are selection-biased; say so.
+- **Scrapers:** generic `adapters/scrapers/sitemap.py` configured by `sitemaps.yaml` (store locators, careers), with history from the Wayback Machine. Chipotle menu prices are not scraped: they sit behind an API key in the site's JavaScript.
+- **EDGAR documents:** match exhibits by file name, then fall back to the EX-99 type in the filing's HTML index. Management guidance is extracted by spec rules into `external_forecasts` (source `guidance`).
+- **GDELT** rate-limits hard (one request per 5 s, then long cool-downs). It fails fast; `scripts/fill_missing.py` refetches missing series slowly.
+- **API:** `uvicorn api.main:app` (read-only; forecasts, scenarios via `?shock=primitive:period:size[:half_life]`, history, scorecard).
