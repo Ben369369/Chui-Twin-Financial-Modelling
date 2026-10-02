@@ -303,12 +303,20 @@ def quarterly_facts(facts: dict, concepts: list[str], freq: str = "quarter", uni
             if nine:
                 out.setdefault(p, []).append(Fact(p, float(fy["val"]) - float(nine[-1]["val"]),
                                                   date.fromisoformat(fy["filed"]), fy["accn"], concept, True))
-    return {p: sorted(fs, key=lambda f: (f.filed, f.derived)) for p, fs in out.items()}
+    # Earliest filing first (point in time); within one filing, the highest-priority concept wins.
+    # Concepts differ in scope: McDonald's tags company-operated sales as SalesRevenueGoodsNet next to
+    # total Revenues, and taking the narrower one put its "margin" near 100%.
+    rank = {c: i for i, c in enumerate(concepts)}
+    return {p: sorted(fs, key=lambda f: (f.filed, rank[f.concept], f.derived)) for p, fs in out.items()}
 
 
 def _known_by(facts: list[Fact], when: date) -> Fact | None:
+    """The most recent filing's value as of `when`; within that filing, the highest-priority concept."""
     known = [f for f in facts if f.filed <= when]
-    return known[-1] if known else None
+    if not known:
+        return None
+    latest = max(f.filed for f in known)
+    return next(f for f in known if f.filed == latest)
 
 
 def xbrl_ground_truth(snap: RawSnapshot, entity_id: str, freq: str, rules: dict[str, dict]) -> list[GroundTruth]:
@@ -337,6 +345,9 @@ def xbrl_ground_truth(snap: RawSnapshot, entity_id: str, freq: str, rules: dict[
                 if den is None or den.value == 0:
                     continue
                 value, detail = 100.0 * first.value / den.value, f"{first.concept}/{den.concept}"
+                if rule.get("max") is not None and value > rule["max"]:
+                    print(f"  xbrl {kpi} {p}: {value:.1f} exceeds max {rule['max']} ({detail}); dropped as a scope mismatch")
+                    continue
             else:
                 value, detail = first.value * float(rule.get("scale", 1.0)), first.concept
             rows.append(GroundTruth(

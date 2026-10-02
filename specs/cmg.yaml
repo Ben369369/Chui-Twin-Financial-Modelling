@@ -9,14 +9,14 @@ history_start: 2014Q1
 kpis:
   # Year-over-year KPIs use target: change: the news since the last report is in how the
   # signals moved since then (tested 2026-10-01: level + lag lost to naive on every KPI).
-  transactions: {unit: pct, target: change, description: "comparable restaurant transactions, yoy %"}
-  check:        {unit: pct, target: change, description: "comparable average check, yoy %"}
+  transactions: {unit: pct, bounds: [-100, null], target: change, description: "comparable restaurant transactions, yoy %"}
+  check:        {unit: pct, bounds: [-100, null], target: change, description: "comparable average check, yoy %"}
   # Modeled directly, not as transactions + check: CMG disclosed transactions and
   # check consistently only from ~2023, so the formula would leave comps with ~14 quarters.
-  comps:        {unit: pct, target: change, anchor: consensus, description: "comparable restaurant sales, yoy %"}
-  rlom:         {unit: pct, target: change, description: "restaurant level operating margin, % of revenue"}
+  comps:        {unit: pct, bounds: [-100, null], target: change, anchor: consensus, description: "comparable restaurant sales, yoy %"}
+  rlom:         {unit: pct, bounds: [null, 100], target: change, description: "restaurant level operating margin, % of revenue"}
   # Total revenue growth (XBRL): comps plus new restaurants, so store count matters here.
-  revenue_growth: {unit: pct, target: change, description: "total revenue, yoy %"}
+  revenue_growth: {unit: pct, bounds: [-100, null], target: change, description: "total revenue, yoy %"}
 
 primitives: [demand, capacity, price, input_cost, labor, sentiment, expansion]
 

@@ -41,6 +41,7 @@ class SimulationResult:
     n_paths: int
     seed: int
     shocks: list[Shock] = field(default_factory=list)
+    clipped: dict[str, dict[str, float]] = field(default_factory=dict)  # kpi -> period -> share of paths
 
     def quantiles(self, kpi: str, period: str, qs=(0.1, 0.5, 0.9)) -> list[float]:
         col = self.kpis[kpi][:, self.periods.index(period)]
@@ -59,6 +60,9 @@ class SimulationResult:
                     "mean": float(arr[:, i].mean()),
                     "sd": float(arr[:, i].std()),
                 }
+                share = self.clipped.get(k, {}).get(p, 0.0)
+                if share > 0:
+                    out[k][p]["clipped_share"] = share
         return out
 
 
@@ -168,12 +172,14 @@ def simulate(
             full = simulate(rspec, history, models, list(periods) + extra, n_paths, seed, shocks, reported, anchors)
             keep = [full.periods.index(p) for p in periods]
             return SimulationResult(list(periods), {k: v[:, keep] for k, v in full.kpis.items()},
-                                    {k: v[:, keep] for k, v in full.states.items()}, n_paths, seed, shocks)
+                                    {k: v[:, keep] for k, v in full.states.items()}, n_paths, seed, shocks,
+                                    {k: {p: c for p, c in by.items() if p in periods} for k, by in full.clipped.items()})
     coefs = {k: _mvn(rng, m.coef_mean, m.coef_cov, n_paths) for k, m in models.items()}
     kpi_out = {k: np.empty((n_paths, len(periods))) for k in rspec.kpi_order()}
     state_out = {p: np.empty((n_paths, len(periods))) for p in prims}
     formulas = rspec.formulas
     simulated: dict[str, dict[str, np.ndarray]] = {}
+    clipped: dict[str, dict[str, float]] = {}
     sim_states: dict[str, dict[str, np.ndarray]] = {}
 
     def change_input(prim: str, t: str, x_t: np.ndarray, d_t) -> np.ndarray | float:
@@ -219,8 +225,18 @@ def simulate(
                 for li, lag in enumerate(m.lags):
                     y += c[:, 1 + len(m.parents) + li] * lagged(k, t, lag)
                 values[k] = y + m.sigma * rng.standard_normal(n_paths)
+            bounds = rspec.kpis[k].bounds
+            if bounds is not None:
+                lo = -np.inf if bounds[0] is None else bounds[0]
+                hi = np.inf if bounds[1] is None else bounds[1]
+                v = np.asarray(values[k], dtype=float)
+                share = float(np.mean((v < lo) | (v > hi)))
+                if share > 0:
+                    clipped.setdefault(k, {})[t] = share
+                values[k] = np.clip(v, lo, hi)  # clip before storing so later lags see valid values
             kpi_out[k][:, i] = values[k]
         simulated[t] = values
         sim_states[t] = xs
 
-    return SimulationResult(periods=list(periods), kpis=kpi_out, states=state_out, n_paths=n_paths, seed=seed, shocks=shocks)
+    return SimulationResult(periods=list(periods), kpis=kpi_out, states=state_out, n_paths=n_paths, seed=seed, shocks=shocks,
+                            clipped=clipped)

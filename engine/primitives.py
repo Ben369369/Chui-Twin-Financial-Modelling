@@ -59,6 +59,9 @@ class KPIDef(BaseModel):
     # external forecast source (e.g. "guidance"), falling back to the last reported value
     # for periods without one. Anchoring on guidance models the surprise versus guidance.
     anchor: str = "last_reported"
+    # Hard operating limits [low, high] (either may be null). Simulated paths are clipped to them,
+    # e.g. a margin cannot exceed 100% and revenue cannot fall more than 100%.
+    bounds: tuple[float | None, float | None] | None = None
     description: str = ""
 
     @model_validator(mode="after")
@@ -69,6 +72,10 @@ class KPIDef(BaseModel):
             raise ValueError("target: change already conditions on y[t-1]; it excludes formula and lag terms")
         if self.anchor != "last_reported" and self.target != "change":
             raise ValueError("anchor applies only to target: change")
+        if self.bounds is not None:
+            lo, hi = self.bounds
+            if lo is not None and hi is not None and lo >= hi:
+                raise ValueError(f"bounds must satisfy low < high, got {self.bounds}")
         return self
 
 

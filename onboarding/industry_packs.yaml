@@ -7,10 +7,11 @@ defaults:
   history_start: 2014Q1
   kpis:
     # Revenue growth from XBRL; change mode stays close to naive when signals are weak.
-    revenue_growth: {unit: pct, target: change, description: "total revenue, yoy %"}
+    revenue_growth: {unit: pct, bounds: [-100, null], target: change, description: "total revenue, yoy %"}
     # Operating margin from XBRL; seasonal businesses lean on the same quarter last year.
     op_margin:
       unit: pct
+      bounds: [null, 100]
       lag: {prior_mean: 0.3, prior_sd: 0.2}
       seasonal_lag: {prior_mean: 0.6, prior_sd: 0.2}
       description: "GAAP operating margin, % of revenue"

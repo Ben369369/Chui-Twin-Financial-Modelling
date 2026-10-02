@@ -9,10 +9,12 @@ exclude_from_calibration: []
 kpis:
   revenue_growth:
     unit: pct
+    bounds: [-100, null]
     target: change
     description: total revenue, yoy %
   op_margin:
     unit: pct
+    bounds: [null, 100]
     lag:
       prior_mean: 0.3
       prior_sd: 0.2
@@ -94,6 +96,7 @@ ground_truth:
         - RevenueFromContractWithCustomerIncludingAssessedTax
       op_margin:
         kind: ratio
+        max: 100
         numerator:
         - OperatingIncomeLoss
         denominator: *id001

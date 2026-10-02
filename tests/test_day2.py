@@ -179,3 +179,14 @@ def test_anchor_on_external_forecast():
     fc = fitted.forecast(["2024Q4"], n_paths=5000)
     assert abs(fc.summary["zorp"]["2024Q4"]["mean"] - target.value) < 1.0
     assert any(c.driver == "zorp[guess]" and c.source_refs == ["test:2024Q4"] for c in fc.waterfall["2024Q4"]["zorp"])
+
+
+def test_bounds_clip_paths_and_report_share():
+    rspec = _variant(zorp={"unit": "pct", "bounds": [-1.0, 1.0]})
+    obs, gt, _, _ = generate(rspec, "2015Q1", "2024Q4")
+    fc = Twin(rspec, obs, gt).fit(datetime(2025, 2, 15, tzinfo=timezone.utc)).forecast(["2025Q1"], n_paths=4000)
+    col = fc.sim.kpis["zorp"][:, 0]
+    assert col.min() >= -1.0 and col.max() <= 1.0
+    assert 0 < fc.summary["zorp"]["2025Q1"]["clipped_share"] <= 1
+    with pytest.raises(ValueError):
+        KPIDef(unit="pct", bounds=[2.0, 1.0])

@@ -1,6 +1,6 @@
 # Portfolio scorecard
 
-Generated 2026-10-02 21:05 UTC by `scripts/make_twin.py`. Walk-forward from 2017Q1, refit at every earnings release on data available at that moment. COVID quarters (2020Q1-2021Q4), plus any regime break a spec excludes from calibration (travel: through 2022Q4), are excluded from scoring. Factory twins use industry-pack defaults with no per-company tuning. Build time (s) is shown when the twin was built in this run; factory builds took 17-209 s on 2026-10-01, mostly waiting on rate limits. CRPS skill = 1 - CRPS(twin) / CRPS(baseline): positive means the twin is better.
+Generated 2026-10-02 21:38 UTC by `scripts/make_twin.py`. Walk-forward from 2017Q1, refit at every earnings release on data available at that moment. COVID quarters (2020Q1-2021Q4), plus any regime break a spec excludes from calibration (travel: through 2022Q4), are excluded from scoring. Factory twins use industry-pack defaults with no per-company tuning. Build time (s) is shown when the twin was built in this run; factory builds took 17-209 s on 2026-10-01, mostly waiting on rate limits. CRPS skill = 1 - CRPS(twin) / CRPS(baseline): positive means the twin is better.
 
 | Ticker | Industry | Built by | Build s | Signals | Quarters | KPI | MAE twin | MAE naive | MAE seasonal | Skill vs naive | Skill vs seasonal | 80% coverage |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -25,10 +25,10 @@ Generated 2026-10-02 21:05 UTC by `scripts/make_twin.py`. Walk-forward from 2017
 | MAR | hotels | factory | - | 5 | 26 | revenue_growth | 4.73 | 4.11 | 19.96 | -0.07 | +0.72 | 0.92 |
 | MAR | hotels | factory | - | 5 | 26 | op_margin | 2.34 | 2.72 | 1.75 | +0.20 | +0.23 | 0.77 |
 | MCD | restaurants | factory | - | 6 | 30 | revenue_growth | 4.04 | 3.80 | 9.80 | -0.02 | +0.59 | 0.90 |
-| MCD | restaurants | factory | - | 6 | 30 | op_margin | 8.93 | 7.08 | 12.06 | -0.20 | +0.31 | 0.90 |
+| MCD | restaurants | factory | - | 6 | 30 | op_margin | 3.45 | 3.56 | 4.14 | -0.01 | +0.15 | 0.93 |
 | PHM | homebuilders | factory | - | 7 | 27 | revenue_growth | 4.74 | 4.45 | 11.94 | +0.33 | +0.61 | 0.96 |
-| SBUX | restaurants | factory | - | 6 | 29 | revenue_growth | 6.37 | 5.03 | 10.71 | +0.05 | +0.42 | 0.81 |
-| SBUX | restaurants | factory | - | 6 | 29 | op_margin | 1.99 | 2.43 | 3.27 | +0.63 | +0.64 | 0.86 |
+| SBUX | restaurants | factory | - | 6 | 29 | revenue_growth | 6.35 | 5.04 | 10.72 | +0.05 | +0.42 | 0.81 |
+| SBUX | restaurants | factory | - | 6 | 29 | op_margin | 2.01 | 2.43 | 3.27 | +0.55 | +0.58 | 0.90 |
 | TGT | general_retail | factory | - | 5 | 31 | revenue_growth | 2.90 | 3.08 | 6.11 | +0.01 | +0.47 | 0.77 |
 | TGT | general_retail | factory | - | 5 | 31 | op_margin | 1.12 | 1.27 | 1.68 | -0.05 | +0.26 | 0.90 |
 | TXRH | restaurants | factory | - | 6 | 29 | revenue_growth | 4.83 | 4.15 | 7.74 | +0.13 | +0.52 | 0.93 |
@@ -36,6 +36,6 @@ Generated 2026-10-02 21:05 UTC by `scripts/make_twin.py`. Walk-forward from 2017
 | UAL | airlines | factory | - | 6 | 26 | revenue_growth | 3.78 | 4.13 | 17.22 | +0.45 | +0.81 | 0.81 |
 | UAL | airlines | factory | - | 6 | 26 | op_margin | 2.20 | 4.57 | 2.99 | +0.52 | +0.27 | 1.00 |
 | WMT | general_retail | factory | - | 5 | 31 | revenue_growth | 1.23 | 1.21 | 2.62 | -0.02 | +0.49 | 0.84 |
-| WMT | general_retail | factory | - | 5 | 31 | op_margin | 0.43 | 0.58 | 0.52 | +0.16 | +0.16 | 0.87 |
+| WMT | general_retail | factory | - | 5 | 31 | op_margin | 0.43 | 0.58 | 0.52 | +0.15 | +0.16 | 0.87 |
 
 Twin beats naive (CRPS) on 21 of 33 KPI series.

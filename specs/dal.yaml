@@ -10,9 +10,10 @@ exclude_from_calibration: ["2020Q1:2022Q4"]
 
 kpis:
   # Anchored on management guidance: models the surprise vs guidance from signal moves since it was issued.
-  revenue_growth: {unit: pct, target: change, anchor: guidance, description: "total operating revenue, yoy %"}
+  revenue_growth: {unit: pct, bounds: [-100, null], target: change, anchor: guidance, description: "total operating revenue, yoy %"}
   # Airline margins are seasonal (summer peak, Q1 trough): same quarter last year carries most of the signal.
   op_margin:
+    bounds: [null, 100]
     unit: pct
     lag: {prior_mean: 0.3, prior_sd: 0.2}
     seasonal_lag: {prior_mean: 0.6, prior_sd: 0.2}
@@ -75,6 +76,7 @@ ground_truth:
       revenue_growth: {kind: yoy, concepts: [RevenueFromContractWithCustomerExcludingAssessedTax, Revenues]}
       op_margin:
         kind: ratio
+        max: 100
         numerator: [OperatingIncomeLoss]
         denominator: [RevenueFromContractWithCustomerExcludingAssessedTax, Revenues]
   # Earnings releases: no KPI rules (XBRL covers KPIs), only management guidance.
