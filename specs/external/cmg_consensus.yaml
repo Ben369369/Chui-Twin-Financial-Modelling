@@ -1,0 +1,45 @@
+# Consensus estimates for CMG comparable restaurant sales, hand-entered from published news coverage.
+# Consensus data itself is licensed (FactSet, Visible Alpha, ...); these are figures reported in public
+# articles, each verified against the article text on 2026-10-02. Source: Zacks Equity Research
+# "Key Metrics" articles, syndicated by Yahoo Finance and Finviz.
+#
+# Point in time: the articles are published right after the release, but the figure they quote is the
+# pre-release consensus. available_at is therefore set 1 hour before the release (the same as_of the
+# backtest uses), not the article time.
+#
+# The "actual" in each quote matches our EDGAR extraction for that quarter, a cross-check of both.
+source: consensus
+entity_id: CMG
+kpi: comps
+available: before_release
+rows:
+  - period: 2025Q1
+    value: 2.0
+    url: https://finviz.com/news/32555/chipotle-cmg-q1-earnings-how-key-metrics-compare-to-wall-street-estimates
+    published: 2025-04-23
+    quote: "Comparable restaurant sales increase: -0.4% versus the 11-analyst average estimate of 2%."
+  - period: 2025Q2
+    value: -2.8
+    url: https://finviz.com/news/113137/chipotle-cmg-q2-earnings-taking-a-look-at-key-metrics-versus-estimates
+    published: 2025-07-23
+    quote: "Comparable restaurant sales increase: -4% versus the 10-analyst average estimate of -2.8%."
+  - period: 2025Q3
+    value: 0.5
+    url: https://uk.finance.yahoo.com/news/chipotle-cmg-q3-earnings-taking-220003364.html
+    published: 2025-10-29
+    quote: "Comparable restaurant sales increase: 0.3% compared to the 0.5% average estimate based on nine analysts."
+  - period: 2025Q4
+    value: -2.8
+    url: https://finance.yahoo.com/news/chipotle-cmg-reports-q4-earnings-233002618.html
+    published: 2026-02-03
+    quote: "Comparable restaurant sales increase: -2.5% versus -2.8% estimated by 10 analysts on average."
+  - period: 2026Q1
+    value: -0.6
+    url: https://finance.yahoo.com/markets/stocks/articles/chipotle-cmg-reports-q1-earnings-220001680.html
+    published: 2026-04-29
+    quote: "Comparable restaurant sales increase: 0.5% compared to the -0.6% average estimate based on nine analysts."
+  - period: 2026Q2
+    value: 1.4
+    url: https://finance.yahoo.com/markets/stocks/articles/chipotle-cmg-q2-earnings-key-220002587.html
+    published: 2026-07-29
+    quote: "Comparable restaurant sales increase: 2.2% versus 1.4% estimated by eight analysts on average."

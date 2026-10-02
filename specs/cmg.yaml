@@ -13,7 +13,7 @@ kpis:
   check:        {unit: pct, target: change, description: "comparable average check, yoy %"}
   # Modeled directly, not as transactions + check: CMG disclosed transactions and
   # check consistently only from ~2023, so the formula would leave comps with ~14 quarters.
-  comps:        {unit: pct, target: change, description: "comparable restaurant sales, yoy %"}
+  comps:        {unit: pct, target: change, anchor: consensus, description: "comparable restaurant sales, yoy %"}
   rlom:         {unit: pct, target: change, description: "restaurant level operating margin, % of revenue"}
   # Total revenue growth (XBRL): comps plus new restaurants, so store count matters here.
   revenue_growth: {unit: pct, target: change, description: "total revenue, yoy %"}
@@ -92,6 +92,8 @@ edges:
 baselines: [naive_last, seasonal_naive, guidance, consensus]
 
 ground_truth:
+  # Consensus comps from published news coverage, verified quotes (see the file header).
+  manual_external: [specs/external/cmg_consensus.yaml]
   xbrl:
     cik: "1058090"
     rules:

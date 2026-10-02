@@ -43,6 +43,10 @@ Two optional structures, chosen per KPI in the spec:
 
 How each structure was chosen (2026-10-01): for CMG, level + lag lost to naive on every KPI, and change mode brought comps and revenue growth to parity on MAE. For DAL revenue growth, lag beat change mode (+0.12 vs +0.03 CRPS skill), so DAL keeps the lag. **These choices were made on the same backtest that is reported, which is mild selection bias.** The sealed Q3 forecast (resolves Oct 28) and twins built by the factory, which use the pack defaults with no tuning, are the clean tests.
 
+**Anchors (expectation gap).** A change KPI may set `anchor: <source>` (e.g. `guidance`, `consensus`). It then models the surprise y_t − e_t, where e_t is the latest forecast from that source published before y_t was reported, from the same state changes. It falls back to y_{t−1} for periods without one. Once at least 3 anchored periods exist, it is fitted on anchored periods only, because surprises versus an expert forecast are several times smaller than changes versus last quarter. The intercept prior is loose here (1·sd), since a systematic beat rate is real. Results (2026-10-02):
+- DAL revenue growth anchored on guidance: MAE 2.73 vs naive 4.15 over 26 quarters; CRPS skill +0.28 vs guidance on the 13 guided quarters.
+- CMG comps anchored on consensus: MAE 2.53 vs consensus 1.00 over 6 quarters. **Consensus still wins.** Analysts see information free public data does not.
+
 Formula KPIs (e.g. `a + b`) are derived and never calibrated.
 
 ## 4. Simulation (`engine/simulation/montecarlo.py`)

@@ -30,5 +30,5 @@ Every source the system touches. Checked on the date shown. Raw responses are st
 |---|---|---|
 | chipotle.com menu prices | **Not built (decided 2026-10-01)** | Store pages list menu items without prices. Prices come from `services.chipotle.com`, an API gated by a subscription key embedded in the site's JavaScript. Extracting that key to call the API would be getting around an access control, which our scraper rules forbid. |
 | Google Trends | Not built | No public API. `pytrends` is an unofficial client and automated querying conflicts with Google's terms. An official Trends API alpha exists with gated access. |
-| Consensus estimates (FactSet, Visible Alpha, etc.) | Not available | Licensed data. A legal substitute is needed: hand-entered from public press coverage with source_ref, or dropped as a baseline. |
+| Consensus estimates (FactSet, Visible Alpha, etc.) | Not accessed directly | Licensed data. Instead, consensus figures **reported in public news coverage** are hand-entered with URL and verbatim quote: `specs/external/cmg_consensus.yaml` (Zacks Equity Research "Key Metrics" articles via Yahoo Finance and Finviz, 2025Q1 to 2026Q2, verified 2026-10-02). Each is dated 1 hour before the release, because the quoted figure is the pre-release consensus. |
 | EIA API, USDA AMS MARS | Planned | Free, but each needs a registered API key. |

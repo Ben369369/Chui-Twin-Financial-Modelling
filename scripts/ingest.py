@@ -10,9 +10,11 @@ from __future__ import annotations
 
 import argparse
 import re
+
+import yaml
 import sys
 from collections import Counter
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -22,6 +24,7 @@ from adapters import adapter_for  # noqa: E402
 from adapters.edgar import DOCUMENT_PATTERN, EdgarAdapter, extract_ground_truth, extract_guidance, filings, xbrl_ground_truth  # noqa: E402
 from adapters.http import load_snapshots  # noqa: E402
 from engine.spec import load_spec  # noqa: E402
+from engine.observation import ExternalForecast  # noqa: E402
 from storage import db  # noqa: E402
 
 
@@ -60,9 +63,40 @@ def ingest_ground_truth(rspec, conn, start: date, reparse: bool) -> None:
     conn.commit()
     if "xbrl" in rspec.ground_truth:
         ingest_xbrl(rspec, conn, reparse)
+    manual = rspec.ground_truth.get("manual_external", [])
     cfg = rspec.ground_truth.get("edgar")
-    if not cfg:
-        return
+    if cfg:
+        ingest_edgar(rspec, conn, start, reparse, cfg)
+    for path in manual:
+        ingest_manual_external(rspec, conn, ROOT / path)
+
+
+def ingest_manual_external(rspec, conn, path: Path) -> None:
+    """Hand-entered external forecasts (e.g. consensus from news coverage), each with URL and quote.
+    'available: before_release' dates a row 1 hour before that period's first reported KPI."""
+    cfg = yaml.safe_load(path.read_text(encoding="utf-8"))
+    gt = db.load_ground_truth(conn, rspec.ticker)
+    release = {}
+    for g in gt:
+        release[g.period] = min(release.get(g.period, g.available_at), g.available_at)
+    rows = []
+    for r in cfg["rows"]:
+        if "available_at" in r:
+            when = datetime.fromisoformat(str(r["available_at"]))
+        elif cfg.get("available") == "before_release" and r["period"] in release:
+            when = release[r["period"]] - timedelta(hours=1)
+        else:
+            continue  # not yet reported: no release to date it against; enter available_at explicitly
+        rows.append(ExternalForecast(
+            entity_id=cfg["entity_id"], period=r["period"], kpi=r.get("kpi", cfg["kpi"]), source=cfg["source"],
+            value=float(r["value"]), available_at=when,
+            source_ref=f"{r['url']} (published {r['published']}) | quote: {r['quote']!r} | file: {path.name}"))
+    conn.execute("DELETE FROM external_forecasts WHERE entity_id = ? AND source = ?", (cfg["entity_id"], cfg["source"]))
+    db.save_external(conn, rows)
+    print(f"  {cfg['source']}: {len(rows)} hand-entered rows from {path.name}")
+
+
+def ingest_edgar(rspec, conn, start: date, reparse: bool, cfg: dict) -> None:
     cik = str(int(cfg["cik"]))
     cached = [s for s in load_snapshots("edgar") if s.params.get("cik") == cik]
     if not reparse:
