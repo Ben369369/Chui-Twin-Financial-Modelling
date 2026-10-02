@@ -13,12 +13,14 @@ GET  /scorecard                           docs/portfolio_scorecard.md as text
 
 from __future__ import annotations
 
+import json
 from datetime import datetime, timezone
 from functools import lru_cache
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Query
 
+from adapters.http import data_root
 from engine.estimation.calibration import latest_by_period
 from engine.simulation.montecarlo import Shock
 from engine.spec import ResolvedSpec, load_spec
@@ -37,11 +39,19 @@ def spec_paths() -> dict[str, Path]:
     return out
 
 
-@lru_cache(maxsize=64)
 def _twin(ticker: str) -> tuple[ResolvedSpec, Twin, str]:
     paths = spec_paths()
     if ticker not in paths:
         raise HTTPException(404, f"no twin for {ticker}; known: {sorted(paths)}")
+    # Cache until the spec or the database changes, so refreshed data shows without a restart.
+    db_file = data_root() / "chui.sqlite"
+    stamp = (paths[ticker].stat().st_mtime, db_file.stat().st_mtime if db_file.exists() else 0.0)
+    return _load_twin(ticker, str(paths[ticker]), stamp)
+
+
+@lru_cache(maxsize=64)
+def _load_twin(ticker: str, spec_path: str, stamp: tuple[float, float]) -> tuple[ResolvedSpec, Twin, str]:
+    paths = {ticker: Path(spec_path)}
     rspec = load_spec(paths[ticker], ROOT / "templates")
     conn = db.connect()
     twin = Twin(rspec, db.load_observations(conn, [s.series for s in rspec.signals]),
@@ -118,7 +128,7 @@ def history(ticker: str, as_of: str | None = None) -> dict:
 
 @app.get("/scorecard")
 def scorecard() -> dict:
-    path = ROOT / "docs" / "portfolio_scorecard.md"
+    path = ROOT / "docs" / "portfolio_scorecard.json"
     if not path.exists():
-        raise HTTPException(404, "run scripts/make_twin.py --scorecard docs/portfolio_scorecard.md first")
-    return {"markdown": path.read_text(encoding="utf-8")}
+        raise HTTPException(404, "run scripts/make_twin.py --specs ... --scorecard docs/portfolio_scorecard.md first")
+    return json.loads(path.read_text(encoding="utf-8"))

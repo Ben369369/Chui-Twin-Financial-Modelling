@@ -1,0 +1,511 @@
+{
+ "generated": "2026-10-02T20:54:40+00:00",
+ "test_from": "2017Q1",
+ "twins": [
+  {
+   "ticker": "CMG",
+   "industry": "restaurant",
+   "built_by": "hand",
+   "seconds": null,
+   "signals": 9,
+   "score": {
+    "gt_quarters": 65,
+    "test_quarters": 30,
+    "kpis": {
+     "transactions": {
+      "n": 18,
+      "mae_twin": 4.052297535459072,
+      "mae_naive": 2.55,
+      "mae_seasonal": 7.100000000000001,
+      "skill_naive": -0.1368454654744211,
+      "skill_seasonal": 0.6298425244017745,
+      "coverage80": 0.6111111111111112
+     },
+     "check": {
+      "n": 13,
+      "mae_twin": 1.202481157599148,
+      "mae_naive": 0.7727272727272727,
+      "mae_seasonal": 1.0666666666666667,
+      "skill_naive": -0.06534624425076352,
+      "skill_seasonal": 0.4828374104027108,
+      "coverage80": 0.6153846153846154
+     },
+     "comps": {
+      "n": 30,
+      "mae_twin": 3.8211614319618787,
+      "mae_naive": 3.693333333333333,
+      "mae_seasonal": 9.209999999999999,
+      "skill_naive": -0.03937970127770285,
+      "skill_seasonal": 0.5669676233257156,
+      "coverage80": 0.9333333333333333
+     },
+     "rlom": {
+      "n": 30,
+      "mae_twin": 1.7664407915466924,
+      "mae_naive": 1.65,
+      "mae_seasonal": 2.136666666666667,
+      "skill_naive": -0.07324951227268284,
+      "skill_seasonal": 0.23984561730952259,
+      "coverage80": 1.0
+     },
+     "revenue_growth": {
+      "n": 30,
+      "mae_twin": 3.856017132624019,
+      "mae_naive": 3.9230386659007284,
+      "mae_seasonal": 9.482172864204735,
+      "skill_naive": -0.05820548470746134,
+      "skill_seasonal": 0.5564334307570704,
+      "coverage80": 0.9666666666666667
+     }
+    }
+   }
+  },
+  {
+   "ticker": "DAL",
+   "industry": "airline",
+   "built_by": "hand",
+   "seconds": null,
+   "signals": 6,
+   "score": {
+    "gt_quarters": 62,
+    "test_quarters": 26,
+    "kpis": {
+     "revenue_growth": {
+      "n": 26,
+      "mae_twin": 2.600849448206326,
+      "mae_naive": 4.150133790913115,
+      "mae_seasonal": 15.774919506681965,
+      "skill_naive": 0.3829173642771956,
+      "skill_seasonal": 0.8579937853804732,
+      "coverage80": 0.7307692307692307
+     },
+     "op_margin": {
+      "n": 26,
+      "mae_twin": 2.386656839627789,
+      "mae_naive": 5.0301340756954795,
+      "mae_seasonal": 2.76330898838471,
+      "skill_naive": 0.36898594579979493,
+      "skill_seasonal": 0.009612999479125417,
+      "coverage80": 1.0
+     }
+    }
+   }
+  },
+  {
+   "ticker": "AAL",
+   "industry": "airlines",
+   "built_by": "factory",
+   "seconds": null,
+   "signals": 6,
+   "score": {
+    "gt_quarters": 50,
+    "test_quarters": 26,
+    "kpis": {
+     "revenue_growth": {
+      "n": 26,
+      "mae_twin": 3.7871484075965025,
+      "mae_naive": 3.7970816166808965,
+      "mae_seasonal": 14.59627283698667,
+      "skill_naive": 0.10696599713180821,
+      "skill_seasonal": 0.7505032472010966,
+      "coverage80": 0.9615384615384616
+     },
+     "op_margin": {
+      "n": 26,
+      "mae_twin": 2.6024488799615124,
+      "mae_naive": 5.677554995223189,
+      "mae_seasonal": 4.177195759957194,
+      "skill_naive": 0.49291251883398035,
+      "skill_seasonal": 0.3604209788928454,
+      "coverage80": 0.8461538461538461
+     }
+    }
+   }
+  },
+  {
+   "ticker": "DHI",
+   "industry": "homebuilders",
+   "built_by": "factory",
+   "seconds": null,
+   "signals": 7,
+   "score": {
+    "gt_quarters": 63,
+    "test_quarters": 30,
+    "kpis": {
+     "revenue_growth": {
+      "n": 30,
+      "mae_twin": 4.875915071524694,
+      "mae_naive": 5.067112905484794,
+      "mae_seasonal": 9.354634952480916,
+      "skill_naive": 0.12683180890902468,
+      "skill_seasonal": 0.5174623447310205,
+      "coverage80": 0.9
+     }
+    }
+   }
+  },
+  {
+   "ticker": "DRI",
+   "industry": "restaurants",
+   "built_by": "factory",
+   "seconds": null,
+   "signals": 6,
+   "score": {
+    "gt_quarters": 66,
+    "test_quarters": 30,
+    "kpis": {
+     "revenue_growth": {
+      "n": 30,
+      "mae_twin": 5.31926955473126,
+      "mae_naive": 3.9620313959861995,
+      "mae_seasonal": 12.521221534642219,
+      "skill_naive": -0.029067940955363136,
+      "skill_seasonal": 0.6260462933029495,
+      "coverage80": 0.9
+     },
+     "op_margin": {
+      "n": 30,
+      "mae_twin": 2.1350674993356207,
+      "mae_naive": 1.9595005191235884,
+      "mae_seasonal": 0.9068318755350989,
+      "skill_naive": 0.10998019887625932,
+      "skill_seasonal": 0.027000616453697224,
+      "coverage80": 0.9666666666666667
+     }
+    }
+   }
+  },
+  {
+   "ticker": "HLT",
+   "industry": "hotels",
+   "built_by": "factory",
+   "seconds": null,
+   "signals": 5,
+   "score": {
+    "gt_quarters": 54,
+    "test_quarters": 26,
+    "kpis": {
+     "revenue_growth": {
+      "n": 26,
+      "mae_twin": 4.71752471823042,
+      "mae_naive": 4.551802900565419,
+      "mae_seasonal": 14.295048776326903,
+      "skill_naive": -0.046842765846712764,
+      "skill_seasonal": 0.6675432682667942,
+      "coverage80": 0.8846153846153846
+     },
+     "op_margin": {
+      "n": 26,
+      "mae_twin": 2.1062108093041725,
+      "mae_naive": 3.0566193697376693,
+      "mae_seasonal": 1.7085751138940977,
+      "skill_naive": 0.29788638576970494,
+      "skill_seasonal": -0.10999833354114386,
+      "coverage80": 0.9615384615384616
+     }
+    }
+   }
+  },
+  {
+   "ticker": "LEN",
+   "industry": "homebuilders",
+   "built_by": "factory",
+   "seconds": null,
+   "signals": 7,
+   "score": {
+    "gt_quarters": 64,
+    "test_quarters": 30,
+    "kpis": {
+     "revenue_growth": {
+      "n": 30,
+      "mae_twin": 9.34417546790596,
+      "mae_naive": 9.503402168423385,
+      "mae_seasonal": 20.09223086952084,
+      "skill_naive": -0.03865036004741462,
+      "skill_seasonal": 0.5047460143517928,
+      "coverage80": 0.8333333333333334
+     },
+     "op_margin": {
+      "n": 13,
+      "mae_twin": 3.37441853933106,
+      "mae_naive": 3.7452739677308027,
+      "mae_seasonal": 4.173349908869826,
+      "skill_naive": 0.15954661764922073,
+      "skill_seasonal": 0.16517760096113632,
+      "coverage80": 0.6923076923076923
+     }
+    }
+   }
+  },
+  {
+   "ticker": "LUV",
+   "industry": "airlines",
+   "built_by": "factory",
+   "seconds": null,
+   "signals": 6,
+   "score": {
+    "gt_quarters": 74,
+    "test_quarters": 26,
+    "kpis": {
+     "revenue_growth": {
+      "n": 26,
+      "mae_twin": 3.1959480301623517,
+      "mae_naive": 3.369535705932008,
+      "mae_seasonal": 12.820653460277871,
+      "skill_naive": 0.07099211240226821,
+      "skill_seasonal": 0.7785357634073605,
+      "coverage80": 0.8461538461538461
+     },
+     "op_margin": {
+      "n": 26,
+      "mae_twin": 4.099381436338195,
+      "mae_naive": 4.696404969860886,
+      "mae_seasonal": 2.754681412716788,
+      "skill_naive": 0.09282508794693844,
+      "skill_seasonal": -0.41208020372812015,
+      "coverage80": 0.7307692307692307
+     }
+    }
+   }
+  },
+  {
+   "ticker": "MAR",
+   "industry": "hotels",
+   "built_by": "factory",
+   "seconds": null,
+   "signals": 5,
+   "score": {
+    "gt_quarters": 68,
+    "test_quarters": 26,
+    "kpis": {
+     "revenue_growth": {
+      "n": 26,
+      "mae_twin": 4.729679247729823,
+      "mae_naive": 4.105234144876205,
+      "mae_seasonal": 19.95781065053526,
+      "skill_naive": -0.06982990863428973,
+      "skill_seasonal": 0.7221144589271584,
+      "coverage80": 0.9230769230769231
+     },
+     "op_margin": {
+      "n": 26,
+      "mae_twin": 2.3374518538926092,
+      "mae_naive": 2.715300617889899,
+      "mae_seasonal": 1.7468716940086613,
+      "skill_naive": 0.2049714334736179,
+      "skill_seasonal": 0.22734692043383198,
+      "coverage80": 0.7692307692307693
+     }
+    }
+   }
+  },
+  {
+   "ticker": "MCD",
+   "industry": "restaurants",
+   "built_by": "factory",
+   "seconds": null,
+   "signals": 6,
+   "score": {
+    "gt_quarters": 73,
+    "test_quarters": 30,
+    "kpis": {
+     "revenue_growth": {
+      "n": 30,
+      "mae_twin": 4.040138334620384,
+      "mae_naive": 3.796343320353306,
+      "mae_seasonal": 9.802012953804143,
+      "skill_naive": -0.01548260862816786,
+      "skill_seasonal": 0.5873894435220002,
+      "coverage80": 0.9
+     },
+     "op_margin": {
+      "n": 30,
+      "mae_twin": 8.927525912439785,
+      "mae_naive": 7.081265321591417,
+      "mae_seasonal": 12.060569504403723,
+      "skill_naive": -0.19908739821852972,
+      "skill_seasonal": 0.3104079961531928,
+      "coverage80": 0.9
+     }
+    }
+   }
+  },
+  {
+   "ticker": "PHM",
+   "industry": "homebuilders",
+   "built_by": "factory",
+   "seconds": null,
+   "signals": 7,
+   "score": {
+    "gt_quarters": 61,
+    "test_quarters": 27,
+    "kpis": {
+     "revenue_growth": {
+      "n": 27,
+      "mae_twin": 4.739069903761112,
+      "mae_naive": 4.450074304901557,
+      "mae_seasonal": 11.939981134654847,
+      "skill_naive": 0.3311133963522038,
+      "skill_seasonal": 0.6078984517842168,
+      "coverage80": 0.9629629629629629
+     }
+    }
+   }
+  },
+  {
+   "ticker": "SBUX",
+   "industry": "restaurants",
+   "built_by": "factory",
+   "seconds": null,
+   "signals": 6,
+   "score": {
+    "gt_quarters": 69,
+    "test_quarters": 29,
+    "kpis": {
+     "revenue_growth": {
+      "n": 26,
+      "mae_twin": 6.3671269707467255,
+      "mae_naive": 5.031347277986932,
+      "mae_seasonal": 10.711747901035055,
+      "skill_naive": 0.05453775941787342,
+      "skill_seasonal": 0.42388629822193347,
+      "coverage80": 0.8076923076923077
+     },
+     "op_margin": {
+      "n": 29,
+      "mae_twin": 1.991794501370856,
+      "mae_naive": 2.4304769463046205,
+      "mae_seasonal": 3.2686785079709653,
+      "skill_naive": 0.6299499695185143,
+      "skill_seasonal": 0.6362605389590349,
+      "coverage80": 0.8620689655172413
+     }
+    }
+   }
+  },
+  {
+   "ticker": "TGT",
+   "industry": "general_retail",
+   "built_by": "factory",
+   "seconds": null,
+   "signals": 5,
+   "score": {
+    "gt_quarters": 69,
+    "test_quarters": 31,
+    "kpis": {
+     "revenue_growth": {
+      "n": 31,
+      "mae_twin": 2.904558508063615,
+      "mae_naive": 3.0787340307318116,
+      "mae_seasonal": 6.114863345383136,
+      "skill_naive": 0.011514676592878748,
+      "skill_seasonal": 0.47118761053401714,
+      "coverage80": 0.7741935483870968
+     },
+     "op_margin": {
+      "n": 31,
+      "mae_twin": 1.1169900829866322,
+      "mae_naive": 1.2701777516075492,
+      "mae_seasonal": 1.6811218384349078,
+      "skill_naive": -0.048738021328498915,
+      "skill_seasonal": 0.25731948441729546,
+      "coverage80": 0.9032258064516129
+     }
+    }
+   }
+  },
+  {
+   "ticker": "TXRH",
+   "industry": "restaurants",
+   "built_by": "factory",
+   "seconds": null,
+   "signals": 6,
+   "score": {
+    "gt_quarters": 64,
+    "test_quarters": 29,
+    "kpis": {
+     "revenue_growth": {
+      "n": 28,
+      "mae_twin": 3.969045721314642,
+      "mae_naive": 4.147582553326272,
+      "mae_seasonal": 7.738114482983652,
+      "skill_naive": 0.21236384356871396,
+      "skill_seasonal": 0.5674594060433061,
+      "coverage80": 0.9285714285714286
+     },
+     "op_margin": {
+      "n": 29,
+      "mae_twin": 1.2613819989630068,
+      "mae_naive": 1.519299440097104,
+      "mae_seasonal": 1.2485549876747222,
+      "skill_naive": 0.08407617536724588,
+      "skill_seasonal": 0.027794394343863993,
+      "coverage80": 0.9310344827586207
+     }
+    }
+   }
+  },
+  {
+   "ticker": "UAL",
+   "industry": "airlines",
+   "built_by": "factory",
+   "seconds": null,
+   "signals": 6,
+   "score": {
+    "gt_quarters": 69,
+    "test_quarters": 26,
+    "kpis": {
+     "revenue_growth": {
+      "n": 26,
+      "mae_twin": 3.7839039195452737,
+      "mae_naive": 4.129807591241706,
+      "mae_seasonal": 17.21729066468264,
+      "skill_naive": 0.45092807255885914,
+      "skill_seasonal": 0.8144464775247485,
+      "coverage80": 0.8076923076923077
+     },
+     "op_margin": {
+      "n": 26,
+      "mae_twin": 2.203792130729058,
+      "mae_naive": 4.571539495689762,
+      "mae_seasonal": 2.993166908634609,
+      "skill_naive": 0.5246874049006622,
+      "skill_seasonal": 0.26939832154927545,
+      "coverage80": 1.0
+     }
+    }
+   }
+  },
+  {
+   "ticker": "WMT",
+   "industry": "general_retail",
+   "built_by": "factory",
+   "seconds": null,
+   "signals": 5,
+   "score": {
+    "gt_quarters": 73,
+    "test_quarters": 31,
+    "kpis": {
+     "revenue_growth": {
+      "n": 31,
+      "mae_twin": 1.2304274292696709,
+      "mae_naive": 1.2107575659705319,
+      "mae_seasonal": 2.616490350022237,
+      "skill_naive": -0.01916762172856168,
+      "skill_seasonal": 0.49477695584766934,
+      "coverage80": 0.8387096774193549
+     },
+     "op_margin": {
+      "n": 31,
+      "mae_twin": 0.4283301967747406,
+      "mae_naive": 0.5770669796712175,
+      "mae_seasonal": 0.5228619757929319,
+      "skill_naive": 0.15717416043468613,
+      "skill_seasonal": 0.1628987952970814,
+      "coverage80": 0.8709677419354839
+     }
+    }
+   }
+  }
+ ]
+}

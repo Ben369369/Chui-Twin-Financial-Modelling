@@ -1,6 +1,6 @@
 # Portfolio scorecard
 
-Generated 2026-10-02 00:03 UTC by `scripts/make_twin.py`. Walk-forward from 2017Q1, refit at every earnings release on data available at that moment. COVID quarters (2020Q1-2021Q4), plus any regime break a spec excludes from calibration (travel: through 2022Q4), are excluded from scoring. Factory twins use industry-pack defaults with no per-company tuning. Build time (s) is shown when the twin was built in this run; factory builds took 17-209 s on 2026-10-01, mostly waiting on rate limits. CRPS skill = 1 - CRPS(twin) / CRPS(baseline): positive means the twin is better.
+Generated 2026-10-02 20:54 UTC by `scripts/make_twin.py`. Walk-forward from 2017Q1, refit at every earnings release on data available at that moment. COVID quarters (2020Q1-2021Q4), plus any regime break a spec excludes from calibration (travel: through 2022Q4), are excluded from scoring. Factory twins use industry-pack defaults with no per-company tuning. Build time (s) is shown when the twin was built in this run; factory builds took 17-209 s on 2026-10-01, mostly waiting on rate limits. CRPS skill = 1 - CRPS(twin) / CRPS(baseline): positive means the twin is better.
 
 | Ticker | Industry | Built by | Build s | Signals | Quarters | KPI | MAE twin | MAE naive | MAE seasonal | Skill vs naive | Skill vs seasonal | 80% coverage |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -9,8 +9,8 @@ Generated 2026-10-02 00:03 UTC by `scripts/make_twin.py`. Walk-forward from 2017
 | CMG | restaurant | hand | - | 9 | 30 | comps | 3.82 | 3.69 | 9.21 | -0.04 | +0.57 | 0.93 |
 | CMG | restaurant | hand | - | 9 | 30 | rlom | 1.77 | 1.65 | 2.14 | -0.07 | +0.24 | 1.00 |
 | CMG | restaurant | hand | - | 9 | 30 | revenue_growth | 3.86 | 3.92 | 9.48 | -0.06 | +0.56 | 0.97 |
-| DAL | airline | hand | - | 6 | 26 | revenue_growth | 3.60 | 4.15 | 15.77 | +0.12 | +0.80 | 0.85 |
-| DAL | airline | hand | - | 6 | 26 | op_margin | 2.40 | 5.03 | 2.76 | +0.37 | +0.01 | 1.00 |
+| DAL | airline | hand | - | 6 | 26 | revenue_growth | 2.60 | 4.15 | 15.77 | +0.38 | +0.86 | 0.73 |
+| DAL | airline | hand | - | 6 | 26 | op_margin | 2.39 | 5.03 | 2.76 | +0.37 | +0.01 | 1.00 |
 | AAL | airlines | factory | - | 6 | 26 | revenue_growth | 3.79 | 3.80 | 14.60 | +0.11 | +0.75 | 0.96 |
 | AAL | airlines | factory | - | 6 | 26 | op_margin | 2.60 | 5.68 | 4.18 | +0.49 | +0.36 | 0.85 |
 | DHI | homebuilders | factory | - | 7 | 30 | revenue_growth | 4.88 | 5.07 | 9.35 | +0.13 | +0.52 | 0.90 |

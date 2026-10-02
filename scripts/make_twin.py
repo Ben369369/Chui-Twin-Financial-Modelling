@@ -10,6 +10,7 @@ Shared series (FRED, BLS, TSA) are fetched once and reused by every twin that ma
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 import time
 import traceback
@@ -103,6 +104,9 @@ def write_scorecard(results: list[dict], path: Path) -> None:
     total = sum(len(r["score"]["kpis"]) for r in results)
     lines += ["", f"Twin beats naive (CRPS) on {len(beats)} of {total} KPI series."]
     path.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    path.with_suffix(".json").write_text(json.dumps({
+        "generated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "test_from": TEST_FROM, "twins": results}, indent=1, default=str), encoding="utf-8")
 
 
 def main() -> None:

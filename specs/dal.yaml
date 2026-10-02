@@ -95,3 +95,6 @@ ground_truth:
           period: release_quarter
         - pattern: 'expect total revenue growth of (?P<lo>\d+(?:\.\d+)?) to (?P<hi>\d+(?:\.\d+)?) percent compared to the (?:March|June|September|December) quarter 20\d\d'
           period: release_quarter
+        # From 2026 Delta guides in words: "3Q26 Total Revenue YoY (%) Up Mid-Teens".
+        - pattern: '(?P<q>[1-4])Q(?P<yy>\d\d)\s+Total Revenue\s+YoY\s+\(%\)\s+(?P<lo_dir>Up|Down)\s+(?P<qual>low|mid|high)[- ](?P<band>single[- ]digits?|teens)'
+          period: explicit

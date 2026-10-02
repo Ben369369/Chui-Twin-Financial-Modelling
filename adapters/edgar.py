@@ -351,6 +351,11 @@ def xbrl_ground_truth(snap: RawSnapshot, entity_id: str, freq: str, rules: dict[
 # ---- guidance in earnings releases -> external forecasts ------------------------
 
 _FLAT = re.compile(r"^\s*(flat|unchanged)\s*$", re.I)
+# Conventional readings of worded guidance ("low-single digits", "mid-teens"), in percent.
+QUALITATIVE_RANGES = {
+    ("low", "single"): (1, 3), ("mid", "single"): (4, 6), ("high", "single"): (7, 9),
+    ("low", "teens"): (11, 13), ("mid", "teens"): (14, 16), ("high", "teens"): (17, 19),
+}
 
 
 def _signed(number: str | None, direction: str | None) -> float:
@@ -364,6 +369,7 @@ def extract_guidance(snapshots: list[RawSnapshot], entity_id: str, freq: str,
                      rules: dict[str, list[dict]]) -> list[ExternalForecast]:
     """rules: {kpi: [{pattern, period: explicit | release_quarter}]}.
     Patterns use groups lo, hi (numbers or "flat"), optional lo_dir / hi_dir (sign words),
+    or qual (low|mid|high) + band (single digit|teens) for worded ranges,
     and for period: explicit, q (1-4) and yy (two-digit year). The value is the range midpoint.
     release_quarter = the quarter in progress when the release was filed."""
     out: list[ExternalForecast] = []
@@ -378,8 +384,14 @@ def extract_guidance(snapshots: list[RawSnapshot], entity_id: str, freq: str,
                 if not m:
                     continue
                 g = m.groupdict()
-                lo = _signed(g.get("lo"), g.get("lo_dir"))
-                hi = _signed(g.get("hi"), g.get("hi_dir") or g.get("lo_dir"))
+                if g.get("qual"):
+                    # Worded ranges ("up mid-teens") map to a conventional numeric range.
+                    band = "teens" if "teen" in g["band"].lower() else "single"
+                    lo_n, hi_n = QUALITATIVE_RANGES[(g["qual"].lower(), band)]
+                    lo, hi = _signed(str(lo_n), g.get("lo_dir")), _signed(str(hi_n), g.get("lo_dir"))
+                else:
+                    lo = _signed(g.get("lo"), g.get("lo_dir"))
+                    hi = _signed(g.get("hi"), g.get("hi_dir") or g.get("lo_dir"))
                 if rule.get("period", "release_quarter") == "explicit":
                     period = f"20{g['yy']}Q{g['q']}"
                 else:
@@ -388,7 +400,8 @@ def extract_guidance(snapshots: list[RawSnapshot], entity_id: str, freq: str,
                     entity_id=entity_id, period=period, kpi=kpi, source="guidance", value=(lo + hi) / 2,
                     available_at=accepted,
                     source_ref=f"SEC {snap.params['accession']} {snap.params['document']} | {snapshot_ref(snap)} "
-                               f"| rule {i} | span: {m.group(0)!r}",
+                               f"| rule {i}{' (worded range read as %s to %s)' % (lo, hi) if g.get('qual') else ''} "
+                               f"| span: {m.group(0)!r}",
                 ))
                 break
     return out
