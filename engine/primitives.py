@@ -55,6 +55,10 @@ class KPIDef(BaseModel):
     # "change": model y[t] - y[t-1] from changes in parent states since the last period.
     # Suits year-over-year KPIs, where the news since the last report is in the signal changes.
     target: Literal["level", "change"] = "level"
+    # For target: change, what the change is measured from: the last reported value, or an
+    # external forecast source (e.g. "guidance"), falling back to the last reported value
+    # for periods without one. Anchoring on guidance models the surprise versus guidance.
+    anchor: str = "last_reported"
     description: str = ""
 
     @model_validator(mode="after")
@@ -63,6 +67,8 @@ class KPIDef(BaseModel):
             raise ValueError("formula KPIs are derived and cannot have lag terms")
         if self.target == "change" and (self.formula or self.lag is not None or self.seasonal_lag is not None):
             raise ValueError("target: change already conditions on y[t-1]; it excludes formula and lag terms")
+        if self.anchor != "last_reported" and self.target != "change":
+            raise ValueError("anchor applies only to target: change")
         return self
 
 

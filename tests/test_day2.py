@@ -151,3 +151,31 @@ def test_entity_resolution_requires_ticker_in_infobox():
     assert make_news_query("Target_Corporation", "TARGET CORP") == "target corporation"
     assert make_news_query("Hilton_Worldwide", "HILTON WORLDWIDE HOLDINGS INC.") == "hilton worldwide"
     assert make_news_query(None, "STARBUCKS CORP") == "starbucks"
+
+
+def test_anchor_on_external_forecast():
+    """A change KPI anchored on an informative external forecast should follow it,
+    and the waterfall should show the anchor as a sourced driver."""
+    import dataclasses
+    from datetime import timedelta
+
+    from engine.observation import ExternalForecast
+
+    rspec = _variant(zorp={"unit": "pct", "target": "change", "anchor": "guess"})
+    obs, gt, _, _ = generate(rspec, "2015Q1", "2024Q4")
+    rng = np.random.default_rng(3)
+    # The "guess" source knows each period's outcome to within 0.2, published 20 days before release.
+    ext = [ExternalForecast("ZZZ", g.period, "zorp", "guess", g.value + 0.2 * rng.standard_normal(),
+                            g.available_at - timedelta(days=20), f"test:{g.period}") for g in gt if g.kpi == "zorp"]
+    fitted = Twin(rspec, obs, gt, ext).fit(datetime(2024, 12, 15, tzinfo=timezone.utc))
+    m = fitted.models["zorp"]
+    assert m.anchor == "guess" and m.n_anchored >= 8 and m.sigma < 1.0
+    target = next(g for g in gt if g.kpi == "zorp" and g.period == "2024Q4")
+    # Publish the 2024Q4 guess before as_of so it is usable.
+    late = dataclasses.replace(next(e for e in ext if e.period == "2024Q4"),
+                               available_at=datetime(2024, 12, 1, tzinfo=timezone.utc))
+    fitted = Twin(rspec, obs, gt, [e for e in ext if e.period != "2024Q4"] + [late]).fit(
+        datetime(2024, 12, 15, tzinfo=timezone.utc))
+    fc = fitted.forecast(["2024Q4"], n_paths=5000)
+    assert abs(fc.summary["zorp"]["2024Q4"]["mean"] - target.value) < 1.0
+    assert any(c.driver == "zorp[guess]" and c.source_refs == ["test:2024Q4"] for c in fc.waterfall["2024Q4"]["zorp"])

@@ -15,7 +15,7 @@ from datetime import datetime
 import numpy as np
 
 from engine.attribution.waterfall import Contribution, driver_waterfall
-from engine.estimation.calibration import KPIModel, fit_kpi_models, latest_by_period
+from engine.estimation.calibration import KPIModel, anchor_forecast, fit_kpi_models, latest_by_period
 from engine.estimation.weighted import StateHistory, estimate_states
 from engine.observation import ExternalForecast, GroundTruth, Observation, as_utc, available_as_of
 from engine.periods import period_of, periods_per_year, shift
@@ -88,6 +88,18 @@ class FittedTwin:
             return shift(max(reported), 1)
         return period_of(self.as_of.date(), self.rspec.period)
 
+    def anchors(self, periods: list[str]) -> dict[str, dict[str, ExternalForecast]]:
+        """External forecasts that anchored change KPIs start from, as known at as_of."""
+        out: dict[str, dict[str, ExternalForecast]] = {}
+        for k, d in self.rspec.kpis.items():
+            if d.target != "change" or d.anchor == "last_reported":
+                continue
+            for p in periods:
+                f = anchor_forecast(self.external, self.rspec.ticker, d.anchor, k, p)
+                if f is not None:
+                    out.setdefault(k, {})[p] = f
+        return out
+
     def reported(self) -> dict[str, dict[str, GroundTruth]]:
         return {k: latest_by_period(self.ground_truth, self.rspec.ticker, k) for k in self.rspec.kpis}
 
@@ -103,9 +115,11 @@ class FittedTwin:
             periods = [first, shift(first, 1)]
         reported = self.reported()
         values = {k: {p: g.value for p, g in by_p.items()} for k, by_p in reported.items()}
+        anchors = self.anchors(periods)
         sim = simulate(self.rspec, self.history, self.models, periods, n_paths=n_paths, seed=seed, shocks=shocks,
-                       reported=values)
-        waterfall = {p: driver_waterfall(self.rspec, self.history, self.models, p, shocks, reported) for p in periods}
+                       reported=values, anchors={k: {p: f.value for p, f in by.items()} for k, by in anchors.items()})
+        waterfall = {p: driver_waterfall(self.rspec, self.history, self.models, p, shocks, reported, anchors)
+                     for p in periods}
         gaps = []
         for ext in self._latest_external(periods):
             col = sim.kpis[ext.kpi][:, periods.index(ext.period)]
@@ -153,12 +167,13 @@ class Twin:
                 -DEFAULT_LOOKBACK_YEARS * periods_per_year(self.rspec.period),
             )
         history = estimate_states(self.rspec, self.observations, as_of, start, min_history=min_history)
-        models = fit_kpi_models(self.rspec, history, gt)
+        external = available_as_of(self.external, as_of)
+        models = fit_kpi_models(self.rspec, history, gt, external)
         return FittedTwin(
             rspec=self.rspec,
             as_of=as_of,
             history=history,
             models=models,
             ground_truth=gt,
-            external=available_as_of(self.external, as_of),
+            external=external,
         )

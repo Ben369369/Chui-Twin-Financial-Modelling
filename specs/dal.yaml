@@ -9,7 +9,8 @@ history_start: 2014Q1
 exclude_from_calibration: ["2020Q1:2022Q4"]
 
 kpis:
-  revenue_growth: {unit: pct, lag: {prior_mean: 0.6, prior_sd: 0.2}, description: "total operating revenue, yoy %"}
+  # Anchored on management guidance: models the surprise vs guidance from signal moves since it was issued.
+  revenue_growth: {unit: pct, target: change, anchor: guidance, description: "total operating revenue, yoy %"}
   # Airline margins are seasonal (summer peak, Q1 trough): same quarter last year carries most of the signal.
   op_margin:
     unit: pct

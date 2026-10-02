@@ -15,11 +15,12 @@ See docs/model.md.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
 
 import numpy as np
 
 from engine.estimation.weighted import StateHistory
-from engine.observation import GroundTruth
+from engine.observation import ExternalForecast, GroundTruth, as_utc
 from engine.periods import periods_per_year, shift
 from engine.primitives import LagPrior
 from engine.spec import ResolvedSpec
@@ -27,6 +28,8 @@ from engine.spec import ResolvedSpec
 INTERCEPT_PRIOR_SDS = 2.0
 NOISE_PRIOR_DOF = 2.0
 CHANGE_DRIFT_PRIOR_SDS = 0.1
+MIN_ANCHORED_PERIODS = 8
+ANCHOR_BIAS_PRIOR_SDS = 1.0
 
 
 @dataclass
@@ -34,7 +37,7 @@ class KPIModel:
     kpi: str
     parents: list[str]
     lags: list[int]  # e.g. [1] for y[t-1], [1, 4] adds the same quarter last year
-    target: str  # "level", or "change": coefficients apply to y[t]-y[t-1] and state changes
+    target: str  # "level", or "change": coefficients apply to y[t]-anchor[t] and state changes
     coef_mean: np.ndarray  # [intercept, b_1, ..., b_m, phi_lag1, ...]
     coef_cov: np.ndarray
     sigma: float
@@ -42,6 +45,8 @@ class KPIModel:
     y_mean: float
     y_sd: float
     periods_used: list[str]
+    anchor: str = "last_reported"
+    n_anchored: int = 0  # training periods anchored on the external source
 
     @property
     def has_lag(self) -> bool:
@@ -92,15 +97,24 @@ def lag_priors(rspec: ResolvedSpec, kpi: str) -> list[tuple[int, LagPrior]]:
     return out
 
 
+def anchor_forecast(external: list[ExternalForecast], entity_id: str, source: str, kpi: str, period: str,
+                    before: datetime | None = None) -> ExternalForecast | None:
+    """Latest external forecast for (source, kpi, period), optionally published before a time."""
+    cands = [e for e in external if e.source == source and e.kpi == kpi and e.period == period
+             and e.entity_id == entity_id and (before is None or as_utc(e.available_at) < as_utc(before))]
+    return max(cands, key=lambda e: e.available_at) if cands else None
+
+
 def fit_kpi_models(
     rspec: ResolvedSpec,
     history: StateHistory,
     ground_truth: list[GroundTruth],
+    external: list[ExternalForecast] | tuple = (),
 ) -> dict[str, KPIModel]:
     models: dict[str, KPIModel] = {}
     for kpi in rspec.modeled_kpis:
         if rspec.kpis[kpi].target == "change":
-            models[kpi] = _fit_change(rspec, kpi, history, ground_truth)
+            models[kpi] = _fit_change(rspec, kpi, history, ground_truth, list(external))
             continue
         lags = lag_priors(rspec, kpi)
         edges = [e for e in rspec.kpi_edges if e.target == kpi]
@@ -149,11 +163,15 @@ def fit_kpi_models(
     return models
 
 
-def _fit_change(rspec: ResolvedSpec, kpi: str, history: StateHistory, ground_truth: list[GroundTruth]) -> KPIModel:
-    """dy_t = a + sum_j b_j * dx_{j,t} + e. Priors on b scale with sd(dy); a is centered at 0."""
+def _fit_change(rspec: ResolvedSpec, kpi: str, history: StateHistory, ground_truth: list[GroundTruth],
+                external: list[ExternalForecast]) -> KPIModel:
+    """y_t - anchor_t = a + sum_j b_j * dx_{j,t} + e, where anchor_t is y_{t-1} or, with an external
+    anchor, the latest forecast from that source published before y_t was reported.
+    Priors on b scale with sd of the target; a is centered at 0."""
     edges = [e for e in rspec.kpi_edges if e.target == kpi]
     parents = [e.source for e in edges]
     rows = latest_by_period(ground_truth, rspec.ticker, kpi)
+    source = rspec.kpis[kpi].anchor
 
     def usable(p: str) -> bool:
         q = shift(p, -1)
@@ -161,8 +179,20 @@ def _fit_change(rspec: ResolvedSpec, kpi: str, history: StateHistory, ground_tru
             return False
         return all(history.get(pr, p) and history.get(pr, q) for pr in parents)
 
+    def anchor(p: str) -> float | None:
+        if source == "last_reported":
+            return None
+        f = anchor_forecast(external, rspec.ticker, source, kpi, p, before=rows[p].available_at)
+        return f.value if f else None
+
     periods = [p for p in sorted(rows) if usable(p)]
-    dy = np.array([rows[p].value - rows[shift(p, -1)].value for p in periods], dtype=float)
+    anchored = [p for p in periods if anchor(p) is not None]
+    # With enough anchored history, fit the surprise model on anchored periods only:
+    # surprises versus guidance and changes versus last quarter have different spreads.
+    if len(anchored) >= MIN_ANCHORED_PERIODS:
+        periods = anchored
+    base = {p: (a if (a := anchor(p)) is not None else rows[shift(p, -1)].value) for p in periods}
+    dy = np.array([rows[p].value - base[p] for p in periods], dtype=float)
     X = np.ones((len(periods), 1 + len(parents)))
     for j, pr in enumerate(parents):
         X[:, 1 + j] = [history.mean(pr, p) - history.mean(pr, shift(p, -1)) for p in periods]
@@ -170,9 +200,12 @@ def _fit_change(rspec: ResolvedSpec, kpi: str, history: StateHistory, ground_tru
     levels = [r.value for r in rows.values()]
     sd = max(float(dy.std(ddof=1)) if n >= 3 else 1.0, 1e-6)
     m0 = np.array([0.0] + [e.prior_mean * sd for e in edges])
-    # A rate cannot drift forever: keep the intercept (mean change per period) close to 0.
-    pv = np.array([(CHANGE_DRIFT_PRIOR_SDS * sd) ** 2] + [(e.prior_sd * sd) ** 2 for e in edges])
+    # Versus last quarter, a rate cannot drift forever: keep the intercept near 0. Versus an
+    # external forecast, a systematic gap is real (companies tend to beat their own guidance),
+    # so the intercept is free to learn it.
+    drift_sds = CHANGE_DRIFT_PRIOR_SDS if source == "last_reported" else ANCHOR_BIAS_PRIOR_SDS
+    pv = np.array([(drift_sds * sd) ** 2] + [(e.prior_sd * sd) ** 2 for e in edges])
     mean, cov, sigma = _posterior(X, dy, m0, pv, sd)
     return KPIModel(kpi=kpi, parents=parents, lags=[], target="change", coef_mean=mean, coef_cov=cov,
                     sigma=sigma, n_obs=n, y_mean=float(np.mean(levels)) if levels else 0.0, y_sd=sd,
-                    periods_used=periods)
+                    periods_used=periods, anchor=source, n_anchored=len([p for p in periods if p in anchored]))

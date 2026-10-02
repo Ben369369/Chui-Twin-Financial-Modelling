@@ -110,8 +110,10 @@ def simulate(
     seed: int = 0,
     shocks: list[Shock] | tuple = (),
     reported: dict[str, dict[str, float]] | None = None,
+    anchors: dict[str, dict[str, float]] | None = None,
 ) -> SimulationResult:
-    """reported: kpi -> period -> value known at as_of; feeds lag terms."""
+    """reported: kpi -> period -> value known at as_of; feeds lag terms.
+    anchors: kpi -> period -> external forecast value known at as_of, for anchored change KPIs."""
     rng = np.random.default_rng(seed)
     shocks = list(shocks)
     prims = rspec.primitive_names
@@ -163,7 +165,7 @@ def simulate(
         last = max(periods, key=lambda p: diff(p, origin))
         extra = [p for p in span(first_open, last) if p not in periods]
         if extra:
-            full = simulate(rspec, history, models, list(periods) + extra, n_paths, seed, shocks, reported)
+            full = simulate(rspec, history, models, list(periods) + extra, n_paths, seed, shocks, reported, anchors)
             keep = [full.periods.index(p) for p in periods]
             return SimulationResult(list(periods), {k: v[:, keep] for k, v in full.kpis.items()},
                                     {k: v[:, keep] for k, v in full.states.items()}, n_paths, seed, shocks)
@@ -212,7 +214,8 @@ def simulate(
                 for j, pr in enumerate(m.parents):
                     y += c[:, 1 + j] * (change_input(pr, t, xs[pr], d[pr]) if m.target == "change" else xs[pr])
                 if m.target == "change":
-                    y += lagged(k, t, 1)
+                    anchored = (anchors or {}).get(k, {}).get(t)
+                    y += anchored if anchored is not None else lagged(k, t, 1)
                 for li, lag in enumerate(m.lags):
                     y += c[:, 1 + len(m.parents) + li] * lagged(k, t, lag)
                 values[k] = y + m.sigma * rng.standard_normal(n_paths)

@@ -16,7 +16,7 @@ from dataclasses import dataclass, field
 
 from engine.estimation.calibration import KPIModel
 from engine.estimation.weighted import StateHistory
-from engine.observation import GroundTruth
+from engine.observation import ExternalForecast, GroundTruth
 from engine.periods import diff, shift
 from engine.simulation.montecarlo import Shock, lag_is_gap, shock_deltas
 from engine.spec import ResolvedSpec
@@ -53,6 +53,7 @@ def driver_waterfall(
     period: str,
     shocks: list[Shock] | tuple = (),
     reported: dict[str, dict[str, GroundTruth]] | None = None,
+    anchors: dict[str, dict[str, ExternalForecast]] | None = None,
     _depth: int = 0,
 ) -> dict[str, list[Contribution]]:
     """reported: kpi -> period -> GroundTruth known at as_of (feeds lag terms)."""
@@ -94,7 +95,11 @@ def driver_waterfall(
                 dlt = float(deltas.get(prim, 0.0)) - (float(prev_deltas.get(prim, 0.0)) if change else 0.0)
                 if dlt:
                     rows.append(Contribution(kpi, period, prim, shock_name, b * dlt))
-            for k in ([1] if change else m.lags):
+            anchored = (anchors or {}).get(kpi, {}).get(period) if change else None
+            if anchored is not None:
+                rows.append(Contribution(kpi, period, f"{kpi}[{anchored.source}]", None, anchored.value,
+                                         [anchored.source_ref]))
+            for k in ([] if anchored is not None else [1] if change else m.lags):
                 phi, prev = (1.0 if change else m.lag_coef(k)), shift(period, -k)
                 label = f"{kpi}[t-{k}]"
                 known = reported.get(kpi, {}).get(prev)
@@ -106,7 +111,8 @@ def driver_waterfall(
                     if _depth >= MAX_LAG_DEPTH:
                         raise ValueError(f"{kpi}: no reported value within {MAX_LAG_DEPTH} periods before {period}")
                     if prev not in previous:
-                        previous[prev] = driver_waterfall(rspec, history, models, prev, shocks, reported, _depth + 1)
+                        previous[prev] = driver_waterfall(rspec, history, models, prev, shocks, reported, anchors,
+                                                          _depth + 1)
                     rows += [Contribution(kpi, period, c.driver, c.signal, phi * c.value, c.source_refs)
                              for c in previous[prev][kpi]]
         out[kpi] = rows
