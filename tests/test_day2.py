@@ -190,3 +190,21 @@ def test_bounds_clip_paths_and_report_share():
     assert 0 < fc.summary["zorp"]["2025Q1"]["clipped_share"] <= 1
     with pytest.raises(ValueError):
         KPIDef(unit="pct", bounds=[2.0, 1.0])
+
+
+def test_series_shock_scales_by_signal_weight():
+    from engine.scenarios import as_shocks, series_shock
+
+    rspec = load_spec(ROOT / "tests/fixtures/specs/dummy.yaml", ROOT / "templates")
+    obs, gt, _, _ = generate(rspec, "2015Q1", "2024Q4")
+    fitted = Twin(rspec, obs, gt).fit(datetime(2025, 2, 15, tzinfo=timezone.utc))
+    a = series_shock(rspec, fitted.history, "syn:a", 2.0)  # sign +1, confidence 0.8
+    b = series_shock(rspec, fitted.history, "syn:b", 2.0)  # sign -1, confidence 0.6, same state
+    assert a.primitive == b.primitive == "flux_q"
+    assert 0 < a.weight < 1 and a.weight > b.weight  # higher confidence carries more weight
+    assert a.size > 0 > b.size  # sign follows the signal mapping
+    assert series_shock(rspec, fitted.history, "not:used", 2.0) is None
+    shocks = as_shocks(a, "2025Q1", 2.0, "syn:a +2sd")
+    base = fitted.forecast(["2025Q1"], n_paths=8000, seed=4).summary["zorp"]["2025Q1"]["mean"]
+    hit = fitted.forecast(["2025Q1"], n_paths=8000, seed=4, shocks=shocks).summary["zorp"]["2025Q1"]["mean"]
+    assert hit > base  # flux_q -> zorp is positive

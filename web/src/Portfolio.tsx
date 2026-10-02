@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { CartesianGrid, Cell, ReferenceLine, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis, ZAxis } from 'recharts'
 import { fmt, label, signed, type KpiScore, type Scorecard } from './api'
 import { CountUp, Reveal } from './brand'
+import { EconomyShock } from './EconomyShock'
 
 const INDUSTRY_NAMES: Record<string, string> = {
   restaurant: 'Restaurants', restaurants: 'Restaurants', airline: 'Airlines', airlines: 'Airlines',
@@ -132,7 +133,9 @@ export function Portfolio({ data, onOpen }: { data: Scorecard; onOpen: (ticker: 
 
       <Reveal i={4}><SkillStrip rows={rows} onOpen={onOpen} /></Reveal>
 
-      <Reveal i={5}>
+      <Reveal i={5}><EconomyShock onOpen={onOpen} /></Reveal>
+
+      <Reveal i={6}>
         <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Filter by industry">
           <button className="chip" aria-pressed={filter === null} onClick={() => setFilter(null)}>All industries</button>
           {industries.map((i) => (
@@ -143,7 +146,7 @@ export function Portfolio({ data, onOpen }: { data: Scorecard; onOpen: (ticker: 
         </div>
       </Reveal>
 
-      <Reveal i={6}>
+      <Reveal i={7}>
         <div className="card overflow-x-auto p-2">
           <table className="data w-full">
             <thead>

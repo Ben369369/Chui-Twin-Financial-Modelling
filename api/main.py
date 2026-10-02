@@ -132,3 +132,91 @@ def scorecard() -> dict:
     if not path.exists():
         raise HTTPException(404, "run scripts/make_twin.py --specs ... --scorecard docs/portfolio_scorecard.md first")
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+# ---- portfolio-wide shocks -----------------------------------------------------
+
+def _fitted(ticker: str):
+    """Fit once per hour per twin (and again whenever the spec or database changes)."""
+    rspec, twin, _ = _twin(ticker)
+    hour = datetime.now(timezone.utc).replace(minute=0, second=0, microsecond=0)
+    return _fit_cached(ticker, id(twin), hour.isoformat(), twin)
+
+
+@lru_cache(maxsize=64)
+def _fit_cached(ticker: str, twin_id: int, hour: str, twin: Twin):
+    return twin.fit(datetime.fromisoformat(hour))
+
+
+@lru_cache(maxsize=1)
+def series_labels() -> dict[str, str]:
+    import yaml
+    path = ROOT / "adapters" / "series_catalog.yaml"
+    return yaml.safe_load(path.read_text(encoding="utf-8")) if path.exists() else {}
+
+
+def series_label(series: str) -> str:
+    if series in series_labels():
+        return series_labels()[series]
+    src, _, q = series.partition(":")
+    if src == "wiki":
+        return f"Wikipedia views: {q.replace('_', ' ')}"
+    if src == "gdelt":
+        kind, _, query = q.partition(":")
+        return f"News {'tone' if kind == 'tone' else 'volume'}: {query}"
+    return series
+
+
+@app.get("/series/labels")
+def all_series_labels() -> dict[str, str]:
+    return series_labels()
+
+
+@app.get("/portfolio/series")
+def shared_series() -> list[dict]:
+    """Series used by the twins, most widely shared first: the levers of a portfolio-wide shock."""
+    users: dict[str, list[dict]] = {}
+    for ticker in spec_paths():
+        rspec, _, _ = _twin(ticker)
+        for s in rspec.signals:
+            users.setdefault(s.series, []).append({"ticker": ticker, "primitive": s.primitive, "sign": s.sign})
+    return sorted(({"series": k, "label": series_label(k), "twins": v} for k, v in users.items()),
+                  key=lambda d: (-len(d["twins"]), d["series"]))
+
+
+@app.get("/portfolio/shock")
+def portfolio_shock(series: str, size: float | None = None, move: float | None = None, half_life: float = 2.0,
+                    paths: int = 2000) -> dict:
+    """Move one data series and run it through every twin that maps it.
+    Give `move` in natural units (percent year over year for yoy series), or `size` in sd."""
+    from engine.scenarios import as_shocks, series_shock
+
+    if (size is None) == (move is None):
+        raise HTTPException(400, "give exactly one of size (sd) or move (natural units)")
+    results = []
+    for ticker in spec_paths():
+        rspec, _, _ = _twin(ticker)
+        if not any(s.series == series for s in rspec.signals):
+            continue
+        fitted = _fitted(ticker)
+        first = fitted.next_unreported_period()
+        unit = series_shock(rspec, fitted.history, series, 1.0)  # weight and natural scale of 1 sd
+        if unit is None or unit.feature_sd == 0:
+            continue
+        scale = unit.feature_sd * (100.0 if unit.transform == "yoy_log" else 1.0)
+        sd = size if size is not None else move / scale
+        ss = series_shock(rspec, fitted.history, series, sd)
+        shocks = as_shocks(ss, first, half_life, f"{series} {sd:+.2f}sd")
+        base = fitted.forecast(n_paths=paths, seed=7).summary
+        hit = fitted.forecast(n_paths=paths, seed=7, shocks=shocks).summary
+        results.append({
+            "ticker": ticker, "name": rspec.name, "primitive": ss.primitive, "state_shock_sd": ss.size,
+            "weight": ss.weight, "period": first, "transform": ss.transform,
+            "series_sd": sd, "series_move": sd * scale, "one_sd": scale,
+            "impact": {k: {p: hit[k][p]["mean"] - base[k][p]["mean"] for p in base[k]} for k in base},
+            "base": {k: {p: base[k][p]["mean"] for p in base[k]} for k in base},
+        })
+    if not results:
+        raise HTTPException(404, f"no twin maps {series!r}")
+    return {"series": series, "label": series_label(series), "size": size, "move": move, "half_life": half_life,
+            "twins": results}

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { api, type Scorecard, type TwinSummary } from './api'
+import { api, loadSeriesLabels, type Scorecard, type TwinSummary } from './api'
 import { ChuiLogo } from './brand'
 import { Portfolio } from './Portfolio'
 import { TwinView } from './TwinView'
@@ -52,6 +52,7 @@ export default function App() {
   const setTicker = (t: string) => go('twin', t)
 
   useEffect(() => {
+    loadSeriesLabels()
     api.twins().then(setTwins).catch((e) => setErr(String(e)))
     api.scorecard().then(setScore).catch((e) => setErr(String(e)))
   }, [])

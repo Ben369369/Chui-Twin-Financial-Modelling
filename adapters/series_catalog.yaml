@@ -1,0 +1,23 @@
+# Human-readable names for data series, shared by the API, the dashboard and (later) LLM onboarding.
+# Display only: the engine never reads this file.
+fred:RSFSDP: Restaurant & bar sales (Census)
+fred:RSGMS: General merchandise store sales (Census)
+fred:CUSR0000SEFV: CPI, food away from home
+fred:CUSR0000SETG01: CPI, airline fares
+fred:CUSR0000SEHB: CPI, lodging away from home
+fred:CPILFESL: Core CPI
+fred:APU0000703112: Ground beef price, per lb
+fred:APU0000706111: Whole chicken price, per lb
+fred:DJFUELUSGULF: Jet fuel price, US Gulf Coast
+fred:HOUST: Housing starts
+fred:MORTGAGE30US: 30-year mortgage rate
+fred:CSUSHPISA: Case-Shiller home price index
+fred:WPU081: Lumber producer prices
+bls:CES7072200003: Restaurant wages, avg hourly
+bls:CES7072100003: Hotel wages, avg hourly
+bls:CES4348100003: Airline wages, avg hourly
+bls:CES2000000003: Construction wages, avg hourly
+bls:CES4200000003: Retail wages, avg hourly
+tsa:checkpoint_throughput: TSA checkpoint travelers
+sitemap:chipotle_stores: Chipotle US restaurant count
+sitemap:chipotle_jobs: Chipotle open job postings

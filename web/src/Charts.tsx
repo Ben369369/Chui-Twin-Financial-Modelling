@@ -3,7 +3,7 @@ import {
   Area, Bar, BarChart, CartesianGrid, Cell, ComposedChart, Legend, Line, ReferenceLine,
   ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from 'recharts'
-import { fmt, label, signed, type Contribution, type Quantiles } from './api'
+import { fmt, label, seriesLabel, signed, type Contribution, type Quantiles } from './api'
 
 const axis = { stroke: 'var(--axis)', tick: { fill: 'var(--text-muted)', fontSize: 11 }, tickLine: false }
 const grid = <CartesianGrid stroke="var(--grid)" vertical={false} />
@@ -35,6 +35,8 @@ function TipBox({ children }: { children: ReactNode }) {
 }
 
 export function prettySeries(s: string): string {
+  const known = seriesLabel(s)
+  if (known) return known
   const [src, ...rest] = s.split(':')
   const q = rest.join(':')
   const names: Record<string, string> = {

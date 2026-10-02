@@ -105,3 +105,38 @@ export const api = {
 export const fmt = (v: number | null | undefined, d = 1) => (v == null ? '–' : v.toFixed(d))
 export const signed = (v: number | null | undefined, d = 2) => (v == null ? '–' : `${v > 0 ? '+' : ''}${v.toFixed(d)}`)
 export const label = (k: string) => k.replace(/_/g, ' ')
+
+export type SharedSeries = { series: string; label: string; twins: { ticker: string; primitive: string; sign: number }[] }
+
+export type PortfolioShock = {
+  series: string
+  label: string
+  move: number | null
+  size: number | null
+  half_life: number
+  twins: {
+    ticker: string
+    name: string
+    primitive: string
+    state_shock_sd: number
+    series_sd: number
+    series_move: number
+    one_sd: number
+    transform: string
+    period: string
+    impact: Record<string, Record<string, number>>
+    base: Record<string, Record<string, number>>
+  }[]
+}
+
+export const portfolioApi = {
+  series: () => get<SharedSeries[]>('/portfolio/series'),
+  shock: (series: string, move: number, halfLife = 2) =>
+    get<PortfolioShock>(`/portfolio/shock?${new URLSearchParams({ series, move: String(move), half_life: String(halfLife) })}`),
+}
+
+// Display names from adapters/series_catalog.yaml, loaded once.
+let labels: Record<string, string> = {}
+export const loadSeriesLabels = () =>
+  get<Record<string, string>>('/series/labels').then((l) => { labels = l }).catch(() => { /* fall back to raw ids */ })
+export const seriesLabel = (s: string) => labels[s]
