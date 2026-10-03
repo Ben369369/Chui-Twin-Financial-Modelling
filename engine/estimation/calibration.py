@@ -105,6 +105,16 @@ def anchor_forecast(external: list[ExternalForecast], entity_id: str, source: st
     return max(cands, key=lambda e: e.available_at) if cands else None
 
 
+def first_anchor(external: list[ExternalForecast], entity_id: str, sources: list[str], kpi: str, period: str,
+                 before: datetime | None = None) -> ExternalForecast | None:
+    """Walk the anchor chain in order; the first source with a forecast for the period wins."""
+    for source in sources:
+        f = anchor_forecast(external, entity_id, source, kpi, period, before)
+        if f is not None:
+            return f
+    return None
+
+
 def fit_kpi_models(
     rspec: ResolvedSpec,
     history: StateHistory,
@@ -171,7 +181,7 @@ def _fit_change(rspec: ResolvedSpec, kpi: str, history: StateHistory, ground_tru
     edges = [e for e in rspec.kpi_edges if e.target == kpi]
     parents = [e.source for e in edges]
     rows = latest_by_period(ground_truth, rspec.ticker, kpi)
-    source = rspec.kpis[kpi].anchor
+    sources = rspec.kpis[kpi].anchor_sources
 
     def usable(p: str) -> bool:
         q = shift(p, -1)
@@ -180,9 +190,9 @@ def _fit_change(rspec: ResolvedSpec, kpi: str, history: StateHistory, ground_tru
         return all(history.get(pr, p) and history.get(pr, q) for pr in parents)
 
     def anchor(p: str) -> float | None:
-        if source == "last_reported":
+        if not sources:
             return None
-        f = anchor_forecast(external, rspec.ticker, source, kpi, p, before=rows[p].available_at)
+        f = first_anchor(external, rspec.ticker, sources, kpi, p, before=rows[p].available_at)
         return f.value if f else None
 
     periods = [p for p in sorted(rows) if usable(p)]
@@ -203,9 +213,10 @@ def _fit_change(rspec: ResolvedSpec, kpi: str, history: StateHistory, ground_tru
     # Versus last quarter, a rate cannot drift forever: keep the intercept near 0. Versus an
     # external forecast, a systematic gap is real (companies tend to beat their own guidance),
     # so the intercept is free to learn it.
-    drift_sds = CHANGE_DRIFT_PRIOR_SDS if source == "last_reported" else ANCHOR_BIAS_PRIOR_SDS
+    drift_sds = ANCHOR_BIAS_PRIOR_SDS if sources else CHANGE_DRIFT_PRIOR_SDS
     pv = np.array([(drift_sds * sd) ** 2] + [(e.prior_sd * sd) ** 2 for e in edges])
     mean, cov, sigma = _posterior(X, dy, m0, pv, sd)
     return KPIModel(kpi=kpi, parents=parents, lags=[], target="change", coef_mean=mean, coef_cov=cov,
                     sigma=sigma, n_obs=n, y_mean=float(np.mean(levels)) if levels else 0.0, y_sd=sd,
-                    periods_used=periods, anchor=source, n_anchored=len([p for p in periods if p in anchored]))
+                    periods_used=periods, anchor=">".join(sources) or "last_reported",
+                    n_anchored=len([p for p in periods if p in anchored]))

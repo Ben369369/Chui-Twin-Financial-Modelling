@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-02T21:38:30+00:00",
+ "generated": "2026-10-03T22:26:22+00:00",
  "test_from": "2017Q1",
  "twins": [
   {
@@ -14,30 +14,30 @@
     "kpis": {
      "transactions": {
       "n": 18,
-      "mae_twin": 4.052297535459072,
+      "mae_twin": 3.297219730714444,
       "mae_naive": 2.55,
       "mae_seasonal": 7.100000000000001,
-      "skill_naive": -0.1368454654744211,
-      "skill_seasonal": 0.6298425244017745,
-      "coverage80": 0.6111111111111112
+      "skill_naive": 0.18695594335525623,
+      "skill_seasonal": 0.745910343173607,
+      "coverage80": 0.6666666666666666
      },
      "check": {
       "n": 13,
-      "mae_twin": 1.202481157599148,
+      "mae_twin": 1.2343113702464321,
       "mae_naive": 0.7727272727272727,
       "mae_seasonal": 1.0666666666666667,
-      "skill_naive": -0.06534624425076352,
-      "skill_seasonal": 0.4828374104027108,
-      "coverage80": 0.6153846153846154
+      "skill_naive": -0.10136927142274188,
+      "skill_seasonal": 0.4614202923875328,
+      "coverage80": 0.6923076923076923
      },
      "comps": {
       "n": 30,
-      "mae_twin": 3.607228457773936,
+      "mae_twin": 3.1293551613100594,
       "mae_naive": 3.693333333333333,
       "mae_seasonal": 9.209999999999999,
-      "skill_naive": 0.030815107190390156,
-      "skill_seasonal": 0.5962125900147592,
-      "coverage80": 0.9333333333333333
+      "skill_naive": 0.21182033453435278,
+      "skill_seasonal": 0.6716240336776207,
+      "coverage80": 0.8
      },
      "rlom": {
       "n": 30,
@@ -151,26 +151,26 @@
    "seconds": null,
    "signals": 6,
    "score": {
-    "gt_quarters": 66,
-    "test_quarters": 30,
+    "gt_quarters": 67,
+    "test_quarters": 31,
     "kpis": {
      "revenue_growth": {
-      "n": 30,
-      "mae_twin": 5.31926955473126,
-      "mae_naive": 3.9620313959861995,
-      "mae_seasonal": 12.521221534642219,
-      "skill_naive": -0.029067940955363136,
-      "skill_seasonal": 0.6260462933029495,
-      "coverage80": 0.9
+      "n": 31,
+      "mae_twin": 5.510959861335543,
+      "mae_naive": 4.110196785587773,
+      "mae_seasonal": 12.289076833294745,
+      "skill_naive": -0.03774848092362637,
+      "skill_seasonal": 0.612925704888661,
+      "coverage80": 0.9032258064516129
      },
      "op_margin": {
-      "n": 30,
-      "mae_twin": 2.1350674993356207,
-      "mae_naive": 1.9595005191235884,
-      "mae_seasonal": 0.9068318755350989,
-      "skill_naive": 0.10998019887625932,
-      "skill_seasonal": 0.027000616453697224,
-      "coverage80": 0.9666666666666667
+      "n": 31,
+      "mae_twin": 2.1160001460811073,
+      "mae_naive": 2.022734901372595,
+      "mae_seasonal": 0.915110880684231,
+      "skill_naive": 0.11231588542661586,
+      "skill_seasonal": 0.030269320887201023,
+      "coverage80": 0.967741935483871
      }
     }
    }
@@ -213,17 +213,17 @@
    "seconds": null,
    "signals": 7,
    "score": {
-    "gt_quarters": 64,
-    "test_quarters": 30,
+    "gt_quarters": 65,
+    "test_quarters": 31,
     "kpis": {
      "revenue_growth": {
-      "n": 30,
-      "mae_twin": 9.34417546790596,
-      "mae_naive": 9.503402168423385,
-      "mae_seasonal": 20.09223086952084,
-      "skill_naive": -0.03865036004741462,
-      "skill_seasonal": 0.5047460143517928,
-      "coverage80": 0.8333333333333334
+      "n": 31,
+      "mae_twin": 9.145586436471293,
+      "mae_naive": 9.301609513772366,
+      "mae_seasonal": 19.43104365044685,
+      "skill_naive": -0.0378165153584924,
+      "skill_seasonal": 0.504129328664307,
+      "coverage80": 0.8387096774193549
      },
      "op_margin": {
       "n": 13,

@@ -13,10 +13,14 @@ kpis:
   check:        {unit: pct, bounds: [-100, null], target: change, description: "comparable average check, yoy %"}
   # Modeled directly, not as transactions + check: CMG disclosed transactions and
   # check consistently only from ~2023, so the formula would leave comps with ~14 quarters.
-  comps:        {unit: pct, bounds: [-100, null], target: change, anchor: consensus, description: "comparable restaurant sales, yoy %"}
+  comps:        {unit: pct, bounds: [-100, null], target: change, anchor: [consensus, guidance], description: "comparable restaurant sales, yoy %"}
   rlom:         {unit: pct, bounds: [null, 100], target: change, description: "restaurant level operating margin, % of revenue"}
   # Total revenue growth (XBRL): comps plus new restaurants, so store count matters here.
   revenue_growth: {unit: pct, bounds: [-100, null], target: change, description: "total revenue, yoy %"}
+
+# Accounting identity from the releases ("comps up 0.3% due to a 1.1% increase in average check,
+# partially offset by lower transactions of 0.8%"). Simulated paths are reconciled to satisfy it.
+identities: ["comps = transactions + check"]
 
 primitives: [demand, capacity, price, input_cost, labor, sentiment, expansion]
 
@@ -108,6 +112,20 @@ ground_truth:
     # Ordered regex rules per KPI; first match wins. (?P<value>) is the number,
     # (?P<dir>) flips the sign when it contains a negative word. Exact highlight
     # bullets come first because headlines round ("9% comparable sales growth").
+    # Management comps guidance. 2022-23 releases guided the quarter; from 2024 only the full year,
+    # which ingest turns into implied quarters: (4 x FY - reported quarters) / quarters left.
+    guidance:
+      comps:
+        - pattern: '(?P<qname>first|second|third|fourth) quarter (?:and full year )?comparable restaurant sales growth[^.]{0,70}? in the (?P<qual>low|mid|high)(?: to (?P<qual2>low|mid|high))?[- ](?P<band>single|double)'
+          period: named_quarter
+        - pattern: '(?P<qname>first|second|third|fourth) quarter comparable restaurant sales growth[^.]{0,70}? in the (?P<lo>\d+(?:\.\d+)?)% to (?P<hi>\d+(?:\.\d+)?)% range'
+          period: named_quarter
+        - pattern: 'full year comparable restaurant sales (?P<lo_dir>growth|declines) in the (?P<qual>low|mid|high)(?: to (?P<qual2>low|mid|high))?[- ](?P<band>single|double)'
+          period: annual
+        - pattern: 'about (?P<lo>flat) full year comparable restaurant sales'
+          period: annual
+        - pattern: 'full year comparable restaurant sales to be about (?P<lo>flat)'
+          period: annual
     rules:
       comps:
         # 2016Q4 bullet: "for the month of December increased 14.7% and declined 4.8% for the full quarter"

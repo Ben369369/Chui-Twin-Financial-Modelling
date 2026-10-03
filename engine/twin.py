@@ -15,7 +15,7 @@ from datetime import datetime
 import numpy as np
 
 from engine.attribution.waterfall import Contribution, driver_waterfall
-from engine.estimation.calibration import KPIModel, anchor_forecast, fit_kpi_models, latest_by_period
+from engine.estimation.calibration import KPIModel, fit_kpi_models, first_anchor, latest_by_period
 from engine.estimation.weighted import StateHistory, estimate_states
 from engine.observation import ExternalForecast, GroundTruth, Observation, as_utc, available_as_of
 from engine.periods import period_of, periods_per_year, shift
@@ -92,10 +92,10 @@ class FittedTwin:
         """External forecasts that anchored change KPIs start from, as known at as_of."""
         out: dict[str, dict[str, ExternalForecast]] = {}
         for k, d in self.rspec.kpis.items():
-            if d.target != "change" or d.anchor == "last_reported":
+            if d.target != "change" or not d.anchor_sources:
                 continue
             for p in periods:
-                f = anchor_forecast(self.external, self.rspec.ticker, d.anchor, k, p)
+                f = first_anchor(self.external, self.rspec.ticker, d.anchor_sources, k, p)
                 if f is not None:
                     out.setdefault(k, {})[p] = f
         return out

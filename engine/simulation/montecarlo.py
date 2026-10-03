@@ -183,6 +183,7 @@ def simulate(
     simulated: dict[str, dict[str, np.ndarray]] = {}
     clipped: dict[str, dict[str, float]] = {}
     reconciled: dict[str, dict[str, float]] = {}
+    imputed: set[tuple[str, str]] = set()
     sim_states: dict[str, dict[str, np.ndarray]] = {}
 
     def change_input(prim: str, t: str, x_t: np.ndarray, d_t) -> np.ndarray | float:
@@ -204,6 +205,7 @@ def simulate(
         if prev in simulated:
             return simulated[prev][kpi]
         if lag_is_gap(reported, kpi, prev):
+            imputed.add((kpi, t))  # undisclosed: running on the historical mean
             return models[kpi].y_mean
         raise ValueError(f"{kpi} needs a value for {prev}: not reported and not simulated in this run")
 
@@ -231,6 +233,10 @@ def simulate(
         if rspec.identities:
             # Minimum-variance reconciliation: x' = x - D a (a'x) / (a' D a), D = path variances.
             for ident in rspec.identities:
+                # Enforce only where every term rests on real reported inputs; an imputed placeholder
+                # would drag the well-informed KPIs toward noise.
+                if any((k, t) in imputed for k in ident.coefs):
+                    continue
                 r = np.asarray(ident.residual(values), dtype=float)
                 var = {k: float(np.var(values[k])) for k in ident.coefs}
                 denom = sum(c * c * var[k] for k, c in ident.coefs.items())
