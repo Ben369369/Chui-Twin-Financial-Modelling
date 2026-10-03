@@ -44,10 +44,10 @@ python scripts/make_twin.py --specs specs/*.yaml specs/auto/*.yaml --scorecard d
 Latest scorecard: `docs/portfolio_scorecard.md`.
 
 - 16 twins across 5 industries, 14 built by the factory with no tuning.
-- On CRPS, the twin beats a "same as last quarter" forecast on 21 of 33 KPI series and a "same quarter last year" forecast on 31 of 33.
+- On CRPS, the twin beats a "same as last quarter" forecast on 22 of 33 KPI series and a "same quarter last year" forecast on 31 of 33.
 - Against expert expectations:
   - DAL revenue growth anchored on management guidance beats guidance (CRPS skill +0.28, 13 guided quarters).
-  - CMG comps anchored on consensus still loses to consensus (MAE 2.5 vs 1.0, 6 quarters).
+  - CMG comps anchored on consensus, then guidance, beats guidance (CRPS skill +0.40) but still trails consensus (6 quarters).
   - Both are stated in the docs.
 
 Sealed out-of-sample forecasts and how to verify them: `docs/sealed_forecasts.md`.

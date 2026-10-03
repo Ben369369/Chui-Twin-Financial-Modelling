@@ -47,6 +47,14 @@ How each structure was chosen (2026-10-01): for CMG, level + lag lost to naive o
 - DAL revenue growth anchored on guidance: MAE 2.73 vs naive 4.15 over 26 quarters; CRPS skill +0.28 vs guidance on the 13 guided quarters.
 - CMG comps anchored on consensus: MAE 2.53 vs consensus 1.00 over 6 quarters. **Consensus still wins.** Analysts see information free public data does not.
 
+**Anchor chains.** `anchor` may be an ordered list, e.g. `[consensus, guidance]`: for each quarter, the first source with a forecast published before the release is the anchor. Full-year guidance becomes implied quarters, (4 × FY − quarters already reported) ÷ quarters left, using only quarters reported before the guidance (point in time). On CMG comps, consensus → guidance → last quarter lifted CRPS skill vs naive from +0.03 to +0.21 (2026-10-03).
+
+**Identities.** A spec may declare linear identities, e.g. `comps = transactions + check`. Each simulated quarter is reconciled by minimum-variance projection, x' = x − D a (aᵀx) / (aᵀ D a) with D the path variances, so the least certain KPI moves most. The mean adjustment appears as a `reconciliation` waterfall row. An identity is skipped in a quarter where any of its terms runs on an imputed (undisclosed) input; otherwise the placeholder drags the informed KPIs toward noise (on CMG, comps error doubled until this rule was added). On CMG: transactions skill vs naive −0.14 → +0.19, check −0.07 → −0.10.
+
+**Bounds.** `bounds: [low, high]` clips simulated paths to physical limits (growth ≥ −100%, margin ≤ 100%) and reports the share clipped. A binding bound is a data-quality signal: it exposed McDonald's margins computed on a partial revenue concept.
+
+**Measured shocks.** `scripts/shock_library.py` measures how real shocks decayed from reported revenue or comps (`shocks/library.yaml`). Scenario presets reuse the half-lives: CMG's 2015 food-safety crisis took like-for-like sales down 29.7%, and they were still about 15–18% below pre-crisis levels 2½ years later (half-life ~7.4 quarters). COVID hit airlines and hotels with ~3.9-quarter half-lives. Delta's 2024 outage and the COVID hit to Chipotle each recovered within a quarter.
+
 Formula KPIs (e.g. `a + b`) are derived and never calibrated.
 
 ## 4. Simulation (`engine/simulation/montecarlo.py`)
