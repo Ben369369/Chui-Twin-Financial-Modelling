@@ -11,7 +11,7 @@ via public calendar servers. Nobody has to trust us.
 
 | Sealed (UTC) | Twin | Forecast | Median | 80% range | Vs guidance | Resolves | SHA-256 |
 |---|---|---|---|---|---|---|---|
-| 2026-10-02 20:58 | DAL | 2026Q3 revenue growth, yoy % (GAAP) | 15.2 | 10.6 to 19.9 | guidance mid-teens (15.0); P(above) 52% | Delta Q3 release, ~Oct 9 | `f6892ab9366122fd81b64c1106b052c1962638c6ab8644587c5baee2d2058bd8` (OpenTimestamps submitted 2026-10-02 21:13 UTC) |
+| 2026-10-02 20:58 | DAL | 2026Q3 revenue growth, yoy % (GAAP) | 15.2 | 10.6 to 19.9 | guidance mid-teens (15.0); P(above) 52% | Delta Q3 release, ~Oct 9 | `f6892ab9366122fd81b64c1106b052c1962638c6ab8644587c5baee2d2058bd8` (OpenTimestamps: submitted 2026-10-02 21:13 UTC, anchored in Bitcoin block 969637) |
 | planned ~2026-10-27 | CMG | 2026Q3 comps, revenue growth, margin | | | | Oct 28 after close | |
 
 Outcomes are recorded here after the release, unchanged rows above, with the reported value and its SEC accession.
