@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, fmt, label, shockLibrary, signed, type MeasuredShock, type ForecastRecord, type History, type Shock, type TwinDetail, type TwinSummary } from './api'
 import { CountUp, Reveal } from './brand'
+import { listen, take } from './bus'
 import { DriversChart, ForecastChart, StatesChart } from './Charts'
 
 // One-click scenarios. Shown only when the twin has the state; sizes are in sd of that state.
@@ -118,6 +119,18 @@ export function TwinView({ ticker, twins, onTicker }: { ticker: string; twins: T
     setBusy(true)
     api.forecast(ticker, shocks).then(setScen).catch((e) => setErr(String(e))).finally(() => setBusy(false))
   }
+
+  // Scenarios handed over by the chat assistant ("Show CMG with this scenario").
+  useEffect(() => {
+    if (!fc) return
+    const apply = () => {
+      const a = take('open_twin', ticker)
+      if (a && a.shocks.length) run(a.shocks)
+    }
+    apply()
+    return listen(apply)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ticker, fc])
 
   const summary = twins.find((t) => t.ticker === ticker)
   const periods = fc ? Object.keys(fc.forecast[kpi] ?? {}).sort() : []

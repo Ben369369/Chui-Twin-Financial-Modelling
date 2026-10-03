@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Bar, BarChart, CartesianGrid, Cell, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
 import { fmt, label, portfolioApi, signed, type PortfolioShock, type SharedSeries } from './api'
+import { listen, take } from './bus'
 
 // Presets in natural units: what people actually say ("fuel up 30%").
 const PRESETS: { name: string; series: string; move: number }[] = [
@@ -31,12 +32,20 @@ export function EconomyShock({ onOpen }: { onOpen: (t: string) => void }) {
     portfolioApi.series().then((s) => {
       const shared = s.filter((x) => x.twins.length >= 2)
       setSeries(shared)
-      // Open with a live result: the first preset the portfolio can run.
-      const first = PRESETS.find((p) => shared.some((x) => x.series === p.series))
+      // Open with a live result: a shock handed over by the chat, else the first runnable preset.
+      const handed = take('economy_shock')
+      const first = handed ? { series: handed.series, move: handed.move }
+        : PRESETS.find((p) => shared.some((x) => x.series === p.series))
       if (first) { setPick(first.series); setMove(first.move); run(first.series, first.move) }
     }).catch((e) => setErr(String(e)))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  useEffect(() => listen(() => {
+    const a = take('economy_shock')
+    if (a) { setPick(a.series); setMove(a.move); run(a.series, a.move) }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [])
 
   const bars: Bar[] = (res?.twins ?? []).flatMap((t) =>
     Object.entries(t.impact).map(([kpi, byP]) => ({

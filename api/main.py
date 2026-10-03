@@ -230,3 +230,9 @@ def shock_library() -> dict:
     if not path.exists():
         raise HTTPException(404, "run scripts/shock_library.py first")
     return yaml.safe_load(path.read_text(encoding="utf-8"))
+
+
+# Chat assistant (Claude with tools over this API); see api/chat.py.
+from api.chat import router as chat_router  # noqa: E402
+
+app.include_router(chat_router)

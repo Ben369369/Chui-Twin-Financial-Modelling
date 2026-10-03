@@ -175,7 +175,7 @@ export function ForecastChart(props: {
           <Line dataKey="reported" name="Reported" stroke="var(--text-primary)" strokeWidth={2} dot={{ r: 4 }} connectNulls={false} isAnimationActive={false} />
           <Line dataKey="p50" name="Twin median" stroke="var(--series-1)" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 4 }} isAnimationActive={false} />
           {guidance && Object.keys(guidance).length > 0 && (
-            <Line dataKey="guide" name="Guidance" stroke="none" isAnimationActive={false} legendType="diamond"
+            <Line dataKey="guide" name="Guidance" stroke="var(--text-secondary)" strokeWidth={0} isAnimationActive={false} legendType="diamond"
                   dot={{ r: 6, fill: 'var(--text-secondary)', stroke: 'var(--surface-1)', strokeWidth: 2 }} />
           )}
           {scenario && <Line dataKey="sP50" name="Scenario median" stroke="var(--series-2)" strokeWidth={2} strokeDasharray="5 4" dot={{ r: 4 }} isAnimationActive={false} />}

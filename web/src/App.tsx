@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, loadSeriesLabels, type Scorecard, type TwinSummary } from './api'
 import { ChuiLogo } from './brand'
+import { ChatPanel } from './ChatPanel'
 import { Portfolio } from './Portfolio'
 import { TwinView } from './TwinView'
 
@@ -88,6 +89,8 @@ export default function App() {
           ? (score ? <Portfolio data={score} onOpen={setTicker} /> : <p className="muted">Loading scorecard…</p>)
           : <TwinView ticker={ticker} twins={twins} onTicker={setTicker} />}
       </main>
+
+      <ChatPanel onOpenTwin={(t) => go('twin', t)} onOpenPortfolio={() => go('portfolio', ticker)} />
 
       <footer className="mt-10 border-t pt-4 text-center text-xs muted" style={{ borderColor: 'var(--border)' }}>
         Chui Twin is built by Chui Trading, part of Chui Labs, for the Longaeva AI Hackathon.
