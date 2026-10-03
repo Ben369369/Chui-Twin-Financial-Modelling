@@ -120,6 +120,12 @@ class FittedTwin:
                        reported=values, anchors={k: {p: f.value for p, f in by.items()} for k, by in anchors.items()})
         waterfall = {p: driver_waterfall(self.rspec, self.history, self.models, p, shocks, reported, anchors)
                      for p in periods}
+        for k, by_p in sim.reconciled.items():  # identity reconciliation, as its own visible term
+            for p, adj in by_p.items():
+                if p in waterfall and abs(adj) > 1e-9:
+                    waterfall[p][k].append(Contribution(k, p, "reconciliation", None, adj,
+                                                        [f"identity: {i.text}" for i in self.rspec.identities
+                                                         if k in i.coefs]))
         gaps = []
         for ext in self._latest_external(periods):
             col = sim.kpis[ext.kpi][:, periods.index(ext.period)]

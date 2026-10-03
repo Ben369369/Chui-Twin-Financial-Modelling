@@ -42,6 +42,7 @@ class SimulationResult:
     seed: int
     shocks: list[Shock] = field(default_factory=list)
     clipped: dict[str, dict[str, float]] = field(default_factory=dict)  # kpi -> period -> share of paths
+    reconciled: dict[str, dict[str, float]] = field(default_factory=dict)  # kpi -> period -> mean adjustment
 
     def quantiles(self, kpi: str, period: str, qs=(0.1, 0.5, 0.9)) -> list[float]:
         col = self.kpis[kpi][:, self.periods.index(period)]
@@ -173,13 +174,15 @@ def simulate(
             keep = [full.periods.index(p) for p in periods]
             return SimulationResult(list(periods), {k: v[:, keep] for k, v in full.kpis.items()},
                                     {k: v[:, keep] for k, v in full.states.items()}, n_paths, seed, shocks,
-                                    {k: {p: c for p, c in by.items() if p in periods} for k, by in full.clipped.items()})
+                                    {k: {p: c for p, c in by.items() if p in periods} for k, by in full.clipped.items()},
+                                    {k: {p: c for p, c in by.items() if p in periods} for k, by in full.reconciled.items()})
     coefs = {k: _mvn(rng, m.coef_mean, m.coef_cov, n_paths) for k, m in models.items()}
     kpi_out = {k: np.empty((n_paths, len(periods))) for k in rspec.kpi_order()}
     state_out = {p: np.empty((n_paths, len(periods))) for p in prims}
     formulas = rspec.formulas
     simulated: dict[str, dict[str, np.ndarray]] = {}
     clipped: dict[str, dict[str, float]] = {}
+    reconciled: dict[str, dict[str, float]] = {}
     sim_states: dict[str, dict[str, np.ndarray]] = {}
 
     def change_input(prim: str, t: str, x_t: np.ndarray, d_t) -> np.ndarray | float:
@@ -225,6 +228,22 @@ def simulate(
                 for li, lag in enumerate(m.lags):
                     y += c[:, 1 + len(m.parents) + li] * lagged(k, t, lag)
                 values[k] = y + m.sigma * rng.standard_normal(n_paths)
+        if rspec.identities:
+            # Minimum-variance reconciliation: x' = x - D a (a'x) / (a' D a), D = path variances.
+            for ident in rspec.identities:
+                r = np.asarray(ident.residual(values), dtype=float)
+                var = {k: float(np.var(values[k])) for k in ident.coefs}
+                denom = sum(c * c * var[k] for k, c in ident.coefs.items())
+                if denom <= 0:
+                    continue
+                for k, c in ident.coefs.items():
+                    adj = var[k] * c * r / denom
+                    values[k] = values[k] - adj
+                    reconciled.setdefault(k, {})[t] = reconciled.get(k, {}).get(t, 0.0) - float(adj.mean())
+            for k in rspec.kpi_order():  # formula KPIs follow their reconciled components
+                if k in formulas:
+                    values[k] = np.broadcast_to(formulas[k].evaluate(values), (n_paths,))
+        for k in rspec.kpi_order():
             bounds = rspec.kpis[k].bounds
             if bounds is not None:
                 lo = -np.inf if bounds[0] is None else bounds[0]
@@ -239,4 +258,4 @@ def simulate(
         sim_states[t] = xs
 
     return SimulationResult(periods=list(periods), kpis=kpi_out, states=state_out, n_paths=n_paths, seed=seed, shocks=shocks,
-                            clipped=clipped)
+                            clipped=clipped, reconciled=reconciled)

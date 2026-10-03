@@ -2,3 +2,4 @@
 # Byte-exact files: hashes and fixtures must not be rewritten
 forecasts/sealed/** -text
 tests/fixtures/raw/** -text
+*.cmd text eol=crlf

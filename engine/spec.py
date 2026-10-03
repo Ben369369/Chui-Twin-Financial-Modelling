@@ -53,6 +53,9 @@ class Spec(BaseModel):
     # Periods (or "first:last" ranges) left out of KPI calibration, e.g. a regime break.
     # Stated in the spec so the choice is visible; they are still forecast and scored.
     exclude_from_calibration: list[str] = []
+    # Linear accounting identities between KPIs, e.g. "total = units + unit_value". Simulated
+    # paths are reconciled to satisfy them (each KPI absorbs the gap in proportion to its variance).
+    identities: list[str] = []
     kpis: dict[str, KPIDef] = {}
     primitives: list[str] | None = None
     persistence: dict[str, float] = {}
@@ -80,6 +83,7 @@ class ResolvedSpec:
     ground_truth: dict
     history_start: str | None = None
     excluded_periods: set[str] = field(default_factory=set)
+    identities: list["Identity"] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
 
     @property
@@ -127,12 +131,44 @@ class ResolvedSpec:
             "period": self.period,
             "history_start": self.history_start,
             "excluded_periods": sorted(self.excluded_periods),
+            "identities": [i.text for i in self.identities],
             "primitives": [p.model_dump() for p in self.primitives],
             "kpis": {k: v.model_dump() for k, v in sorted(self.kpis.items())},
             "signals": [s.model_dump() for s in self.signals],
             "edges": [e.model_dump() for e in self.primitive_edges + self.kpi_edges],
         }
         return hashlib.sha256(json.dumps(payload, sort_keys=True).encode()).hexdigest()
+
+
+@dataclass(frozen=True)
+class Identity:
+    """lhs - rhs = 0, linear in KPIs; coefs maps each KPI to its coefficient in (lhs - rhs)."""
+
+    text: str
+    coefs: dict[str, float]
+
+    def residual(self, values: dict) -> object:
+        return sum(c * values[k] for k, c in self.coefs.items())
+
+
+def parse_identity(text: str, kpis: dict[str, KPIDef]) -> Identity:
+    lhs, sep, rhs = text.partition("=")
+    if not sep:
+        raise ValueError(f"identity {text!r} must look like 'a = b + c'")
+    f = Formula(f"({lhs}) - ({rhs})")
+    unknown = [n for n in f.names if n not in kpis]
+    if unknown:
+        raise ValueError(f"identity {text!r} references unknown KPIs {unknown}")
+    derived = [n for n in f.names if kpis[n].formula]
+    if derived:
+        raise ValueError(f"identity {text!r} uses formula KPIs {derived}; identities apply to modeled KPIs")
+    zero = {n: 0.0 for n in f.names}
+    coefs = f.gradient(zero, eps=1.0)
+    # Linearity test: the gradient must not change away from zero, and there must be no constant term.
+    other = f.gradient({n: 3.7 for n in f.names}, eps=1.0)
+    if any(abs(coefs[n] - other[n]) > 1e-9 for n in f.names) or abs(float(f.evaluate(zero))) > 1e-9:
+        raise ValueError(f"identity {text!r} must be linear with no constant term")
+    return Identity(text, {n: round(c, 12) for n, c in coefs.items() if abs(c) > 1e-12})
 
 
 def _expand_periods(items: list[str]) -> set[str]:
@@ -230,6 +266,7 @@ def resolve(spec: Spec, template: Template) -> ResolvedSpec:
         ground_truth=dict(spec.ground_truth),
         history_start=spec.history_start,
         excluded_periods=_expand_periods(spec.exclude_from_calibration),
+        identities=[parse_identity(t, kpis) for t in spec.identities],
         notes=notes,
     )
     resolved.primitive_order()  # raises on cycles

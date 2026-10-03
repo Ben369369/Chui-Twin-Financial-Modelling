@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { api, fmt, label, signed, type ForecastRecord, type History, type Shock, type TwinDetail, type TwinSummary } from './api'
+import { api, fmt, label, shockLibrary, signed, type MeasuredShock, type ForecastRecord, type History, type Shock, type TwinDetail, type TwinSummary } from './api'
 import { CountUp, Reveal } from './brand'
 import { DriversChart, ForecastChart, StatesChart } from './Charts'
 
@@ -25,7 +25,15 @@ function Scenario({ primitives, periods, busy, onRun, onClear }: {
   useEffect(() => { setPeriod(periods[0] ?? '') }, [periods])
   const shocks = Object.entries(sizes).filter(([, v]) => v !== 0)
     .map(([primitive, size]) => ({ primitive, period, size, halfLife }))
-  const presets = PRESETS.filter((p) => Object.keys(p.shocks).every((k) => primitives.includes(k)))
+  const [measured, setMeasured] = useState<MeasuredShock[]>([])
+  useEffect(() => { shockLibrary().then(setMeasured) }, [])
+  // Presets take their decay speed from the measured shock library when one matches.
+  const presets = PRESETS.filter((p) => Object.keys(p.shocks).every((k) => primitives.includes(k))).map((p) => {
+    const m = measured.find((x) => x.preset === p.name)
+    return m ? { ...p, halfLife: Math.round(m.half_life_quarters * 2) / 2,
+                 note: `${p.note.split(',')[0]}; fades like ${m.ticker} ${m.event} (half-life ${m.half_life_quarters} quarters, measured)` } : p
+  })
+  const measuredUsed = measured.filter((m) => presets.some((p) => p.name === m.preset))
   const [active, setActive] = useState<string | null>(null)
   const applyPreset = (p: (typeof PRESETS)[number]) => {
     setSizes(p.shocks); setHalfLife(p.halfLife); setActive(p.name)
@@ -45,6 +53,12 @@ function Scenario({ primitives, periods, busy, onRun, onClear }: {
                   onClick={() => applyPreset(p)}>{p.name}</button>
         ))}
       </div>
+      {measuredUsed.length > 0 && (
+        <p className="-mt-2 mb-3 text-xs muted">
+          Measured decay: {measuredUsed.map((m) => `${m.name} (${m.ticker} ${m.event}): trough ${signed(m.trough_deviation_pct, 1)}%, `
+            + `half-life ${m.half_life_quarters} quarters`).join(' · ')}. From reported revenue and comps; see shocks/library.yaml.
+        </p>
+      )}
       <div className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
         {primitives.map((p) => (
           <label key={p} className="flex items-center gap-3 text-sm">
@@ -66,7 +80,7 @@ function Scenario({ primitives, periods, busy, onRun, onClear }: {
         <label className="secondary">Half-life
           <select className="ml-2 rounded border px-2 py-1" style={{ borderColor: 'var(--border)', background: 'var(--surface-1)' }}
                   value={halfLife} onChange={(e) => setHalfLife(Number(e.target.value))}>
-            {[0.5, 1, 2, 4].map((h) => <option key={h} value={h}>{h} quarter{h === 1 ? '' : 's'}</option>)}
+            {[...new Set([0.5, 1, 2, 4, 8, halfLife])].sort((a, b) => a - b).map((h) => <option key={h} value={h}>{h} quarter{h === 1 ? '' : 's'}</option>)}
           </select>
         </label>
         <button className="primary" disabled={busy || shocks.length === 0} onClick={() => onRun(shocks)}>

@@ -126,6 +126,19 @@ def ingest_edgar(rspec, conn, start: date, reparse: bool, cfg: dict) -> None:
 
     if cfg.get("guidance"):
         ext = extract_guidance(docs, rspec.ticker, rspec.period, cfg["guidance"])
+        annual = [e for e in ext if e.period.endswith("FY")]
+        if annual:
+            from adapters.edgar import implied_quarterly
+            from engine.estimation.calibration import latest_by_period
+            quarterly = [e for e in ext if not e.period.endswith("FY")]
+            explicit = {(e.period, e.available_at) for e in quarterly}
+            gt = db.load_ground_truth(conn, rspec.ticker)
+            implied = []
+            for kpi in {e.kpi for e in annual}:
+                implied += implied_quarterly([a for a in annual if a.kpi == kpi], latest_by_period(gt, rspec.ticker, kpi),
+                                             explicit)
+            ext = quarterly + implied
+            print(f"  guidance: {len(annual)} full-year statements -> {len(implied)} implied quarters")
         conn.execute("DELETE FROM external_forecasts WHERE entity_id = ? AND source = 'guidance'", (rspec.ticker,))
         db.save_external(conn, ext)
         print(f"  guidance: {len(ext)} rows, periods {sorted({e.period for e in ext})}")

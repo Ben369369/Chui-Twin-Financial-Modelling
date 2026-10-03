@@ -220,3 +220,13 @@ def portfolio_shock(series: str, size: float | None = None, move: float | None =
         raise HTTPException(404, f"no twin maps {series!r}")
     return {"series": series, "label": series_label(series), "size": size, "move": move, "half_life": half_life,
             "twins": results}
+
+
+@app.get("/shocks")
+def shock_library() -> dict:
+    """Measured shock profiles (scripts/shock_library.py); scenario presets reuse their half-lives."""
+    import yaml
+    path = ROOT / "shocks" / "library.yaml"
+    if not path.exists():
+        raise HTTPException(404, "run scripts/shock_library.py first")
+    return yaml.safe_load(path.read_text(encoding="utf-8"))

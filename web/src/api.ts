@@ -140,3 +140,16 @@ let labels: Record<string, string> = {}
 export const loadSeriesLabels = () =>
   get<Record<string, string>>('/series/labels').then((l) => { labels = l }).catch(() => { /* fall back to raw ids */ })
 export const seriesLabel = (s: string) => labels[s]
+
+export type MeasuredShock = {
+  name: string
+  ticker: string
+  event: string
+  note: string
+  preset: string | null
+  trough_deviation_pct: number
+  half_life_quarters: number
+  half_recovered_by: string
+  sources: string[]
+}
+export const shockLibrary = () => get<{ shocks: MeasuredShock[] }>('/shocks').then((d) => d.shocks).catch(() => [] as MeasuredShock[])

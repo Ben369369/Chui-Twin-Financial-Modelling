@@ -208,3 +208,52 @@ def test_series_shock_scales_by_signal_weight():
     base = fitted.forecast(["2025Q1"], n_paths=8000, seed=4).summary["zorp"]["2025Q1"]["mean"]
     hit = fitted.forecast(["2025Q1"], n_paths=8000, seed=4, shocks=shocks).summary["zorp"]["2025Q1"]["mean"]
     assert hit > base  # flux_q -> zorp is positive
+
+
+def _with_identities(identities):
+    base = yaml.safe_load((ROOT / "tests/fixtures/specs/dummy.yaml").read_text(encoding="utf-8"))
+    base["identities"] = identities
+    return resolve(Spec.model_validate(base), load_template("_dummy", ROOT / "templates"))
+
+
+def test_identity_reconciles_every_path_and_waterfall_still_adds_up():
+    rspec = _with_identities(["zorp = 2 * blix"])
+    obs, gt, _, _ = generate(rspec, "2015Q1", "2024Q4")
+    fc = Twin(rspec, obs, gt).fit(datetime(2025, 2, 15, tzinfo=timezone.utc)).forecast(["2025Q1", "2025Q2"], n_paths=6000)
+    z, b = fc.sim.kpis["zorp"], fc.sim.kpis["blix"]
+    assert np.allclose(z, 2 * b, atol=1e-9)  # holds on every path, every period
+    for p in ("2025Q1", "2025Q2"):
+        for k in ("zorp", "blix"):
+            rows = fc.waterfall[p][k]
+            assert any(c.driver == "reconciliation" for c in rows)
+            assert abs(sum(c.value for c in rows) - fc.summary[k][p]["mean"]) < 0.15, (k, p)
+
+
+def test_identity_validation():
+    assert _with_identities(["zorp = blix"]).identities[0].coefs == {"zorp": 1.0, "blix": -1.0}
+    for bad in (["zorp = blix * blix"], ["zorp = nope"], ["zorp = zblx"], ["zorp + blix"], ["zorp = blix + 1"]):
+        with pytest.raises(ValueError):
+            _with_identities(bad)
+
+
+def test_implied_quarterly_from_annual_guidance_is_point_in_time():
+    from adapters.edgar import implied_quarterly, worded_range
+    from engine.observation import ExternalForecast, GroundTruth
+
+    t = lambda m, d: datetime(2026, m, d, 20, tzinfo=timezone.utc)  # noqa: E731
+    reported = {
+        "2026Q1": GroundTruth("X", "2026Q1", "comps", 0.5, t(4, 29), "q1"),
+        "2026Q2": GroundTruth("X", "2026Q2", "comps", 2.2, t(7, 29), "q2"),
+    }
+    # FY "low single digit" (1 to 3, midpoint 2) issued with the Q2 release, just after Q2 was reported.
+    fy = ExternalForecast("X", "2026FY", "comps", "guidance", 2.0, t(7, 29), "release")
+    rows = implied_quarterly([fy], reported, explicit=set())
+    assert {r.period for r in rows} == {"2026Q3", "2026Q4"}
+    assert abs(rows[0].value - (4 * 2.0 - 0.5 - 2.2) / 2) < 1e-12  # = 2.65
+    assert "implied from FY guidance" in rows[0].source_ref
+    # Issued before Q2 was reported: Q2 is not known yet, so three quarters remain.
+    early = ExternalForecast("X", "2026FY", "comps", "guidance", 2.0, t(4, 29), "release")
+    assert len(implied_quarterly([early], reported, explicit=set())) == 3
+    # A quarter guided explicitly in the same release is not overwritten.
+    assert {r.period for r in implied_quarterly([fy], reported, explicit={("2026Q3", t(7, 29))})} == {"2026Q4"}
+    assert worded_range("low", "single", "mid") == (1, 6)

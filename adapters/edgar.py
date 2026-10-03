@@ -366,7 +366,17 @@ _FLAT = re.compile(r"^\s*(flat|unchanged)\s*$", re.I)
 QUALITATIVE_RANGES = {
     ("low", "single"): (1, 3), ("mid", "single"): (4, 6), ("high", "single"): (7, 9),
     ("low", "teens"): (11, 13), ("mid", "teens"): (14, 16), ("high", "teens"): (17, 19),
+    ("low", "double"): (10, 13), ("mid", "double"): (14, 16), ("high", "double"): (17, 19),
 }
+_ORDINAL_Q = {"first": 1, "second": 2, "third": 3, "fourth": 4}
+
+
+def worded_range(qual: str, band: str, qual2: str | None = None) -> tuple[float, float]:
+    """'low' + 'single' -> (1, 3); 'low' to 'mid' + 'single' -> (1, 6)."""
+    b = "teens" if "teen" in band.lower() else "double" if "double" in band.lower() else "single"
+    lo = QUALITATIVE_RANGES[(qual.lower(), b)][0]
+    hi = QUALITATIVE_RANGES[((qual2 or qual).lower(), b)][1]
+    return lo, hi
 
 
 def _signed(number: str | None, direction: str | None) -> float:
@@ -390,21 +400,32 @@ def extract_guidance(snapshots: list[RawSnapshot], entity_id: str, freq: str,
         text = html_to_text(read_raw(snap))
         accepted = datetime.fromisoformat(snap.params["acceptance"])
         for kpi, candidates in rules.items():
+            matched: set[bool] = set()  # a release may give both quarterly and full-year guidance
             for i, rule in enumerate(candidates):
+                is_annual = rule.get("period") == "annual"
+                if is_annual in matched:
+                    continue
                 m = re.search(rule["pattern"], text, re.I)
                 if not m:
                     continue
+                matched.add(is_annual)
                 g = m.groupdict()
                 if g.get("qual"):
-                    # Worded ranges ("up mid-teens") map to a conventional numeric range.
-                    band = "teens" if "teen" in g["band"].lower() else "single"
-                    lo_n, hi_n = QUALITATIVE_RANGES[(g["qual"].lower(), band)]
+                    # Worded ranges ("up mid-teens", "low to mid-single digit") map to conventional ranges.
+                    lo_n, hi_n = worded_range(g["qual"], g["band"], g.get("qual2"))
                     lo, hi = _signed(str(lo_n), g.get("lo_dir")), _signed(str(hi_n), g.get("lo_dir"))
+                    if lo > hi:
+                        lo, hi = hi, lo
                 else:
                     lo = _signed(g.get("lo"), g.get("lo_dir"))
                     hi = _signed(g.get("hi"), g.get("hi_dir") or g.get("lo_dir"))
-                if rule.get("period", "release_quarter") == "explicit":
+                kind = rule.get("period", "release_quarter")
+                if kind == "explicit":
                     period = f"20{g['yy']}Q{g['q']}"
+                elif kind == "named_quarter":  # "Third quarter comparable sales ..." in that year's release
+                    period = f"{accepted.year}Q{_ORDINAL_Q[g['qname'].lower()]}"
+                elif kind == "annual":  # full-year guidance; turned into implied quarters by implied_quarterly()
+                    period = f"{accepted.year}FY"
                 else:
                     period = period_of(accepted.date(), freq)
                 out.append(ExternalForecast(
@@ -414,5 +435,30 @@ def extract_guidance(snapshots: list[RawSnapshot], entity_id: str, freq: str,
                                f"| rule {i}{' (worded range read as %s to %s)' % (lo, hi) if g.get('qual') else ''} "
                                f"| span: {m.group(0)!r}",
                 ))
-                break
+    return out
+
+
+def implied_quarterly(annual: list[ExternalForecast], reported: dict[str, GroundTruth],
+                      explicit: set[tuple[str, datetime]]) -> list[ExternalForecast]:
+    """Full-year guidance A for year Y, issued after some of Y's quarters were reported, implies the
+    remaining quarters average (4A - sum of reported) / remaining. Uses only quarters reported before
+    the guidance was published (point in time). Skips quarters that the same release guided explicitly.
+    Assumes the annual figure is the simple average of the quarters (fine for year-over-year rates)."""
+    out = []
+    for a in annual:
+        year = int(a.period[:4])
+        quarters = [f"{year}Q{q}" for q in range(1, 5)]
+        known = {p: reported[p] for p in quarters if p in reported and reported[p].available_at <= a.available_at}
+        remaining = [p for p in quarters if p not in known]
+        if not remaining:
+            continue
+        implied = (4 * a.value - sum(g.value for g in known.values())) / len(remaining)
+        for p in remaining:
+            if (p, a.available_at) in explicit:
+                continue
+            parts = " + ".join(f"{k} {g.value:+.1f}" for k, g in sorted(known.items())) or "none reported"
+            out.append(ExternalForecast(
+                entity_id=a.entity_id, period=p, kpi=a.kpi, source=a.source, value=implied, available_at=a.available_at,
+                source_ref=f"implied from FY guidance {a.value:+.2f}: (4 x {a.value:+.2f} - [{parts}]) / {len(remaining)} "
+                           f"| {a.source_ref}"))
     return out

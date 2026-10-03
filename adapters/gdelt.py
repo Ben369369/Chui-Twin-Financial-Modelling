@@ -27,9 +27,17 @@ class GdeltAdapter(Adapter):
     source = "gdelt"
     prefix = "gdelt"
 
+    _shared: PoliteClient | None = None
+
     def __init__(self, client: PoliteClient | None = None):
-        # Fail fast on rate limits: run_daily.py fetches any missing series again tomorrow.
-        self.client = client or PoliteClient(min_interval_s=6.0, max_retries=1, backoff_s=30.0)
+        # One client per process: the registry builds a new adapter per series, and GDELT's
+        # "one request per 5 seconds" applies to all of them together. Fail fast on rate limits;
+        # run_daily.py and fill_missing.py fetch any missing series again later.
+        if client is None:
+            if GdeltAdapter._shared is None:
+                GdeltAdapter._shared = PoliteClient(min_interval_s=10.0, max_retries=1, backoff_s=60.0)
+            client = GdeltAdapter._shared
+        self.client = client
 
     def params_for_series(self, series: str) -> dict:
         kind, _, query = super().params_for_series(series)["query"].partition(":")

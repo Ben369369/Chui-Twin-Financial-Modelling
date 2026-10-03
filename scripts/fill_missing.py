@@ -22,6 +22,7 @@ from engine.spec import load_spec  # noqa: E402
 from storage import db  # noqa: E402
 
 SLOW_SOURCES = {"gdelt"}
+MIN_HISTORY_DAYS = 365
 
 
 def main() -> None:
@@ -32,9 +33,12 @@ def main() -> None:
     paths = sorted((ROOT / "specs").glob("*.yaml")) + sorted((ROOT / "specs" / "auto").glob("*.yaml"))
     wanted = sorted({s.series for p in paths for s in load_spec(p, ROOT / "templates").signals})
     conn = db.connect()
-    have = {r[0] for r in conn.execute("SELECT DISTINCT series FROM observations")}
-    missing = [s for s in wanted if s not in have]
-    print(f"{len(missing)} of {len(wanted)} series missing: {missing}")
+    # A series counts as present only with at least MIN_HISTORY_DAYS of history: a daily run's short
+    # window can create a first, partial slice that would otherwise hide the gap.
+    spans = {r[0]: (date.fromisoformat(r[1]), date.fromisoformat(r[2]))
+             for r in conn.execute("SELECT series, MIN(observed_at), MAX(observed_at) FROM observations GROUP BY series")}
+    missing = [s for s in wanted if s not in spans or (spans[s][1] - spans[s][0]).days < MIN_HISTORY_DAYS]
+    print(f"{len(missing)} of {len(wanted)} series missing or short: {missing}")
     for i, series in enumerate(missing):
         adapter = adapter_for(series)
         if i and adapter.source in SLOW_SOURCES:
