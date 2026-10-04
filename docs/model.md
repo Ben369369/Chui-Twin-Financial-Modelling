@@ -85,7 +85,7 @@ Outputs are p10, p50 and p90, the mean and sd, and the expectation gap: E[X] −
 
 ## Known weaknesses (v0)
 
-- There are no seasonal terms. Seasonal KPIs (airline margins) lose to `seasonal_naive`.
+- Seasonal KPIs are only partly handled. `seasonal_lag` exists, and DAL operating margin uses it, but that margin still only ties `seasonal_naive` (CRPS skill +0.01).
 - Errors in state estimates are ignored in calibration (errors-in-variables). Simulation adds state uncertainty on top of σ, so intervals are slightly wide.
 - Standardization uses all history available at `as_of`, so z-scores of old periods shift a little as history grows.
 - Primitive-to-primitive edges come only from priors. They shape scenarios and propagation, not the fitted point forecast.

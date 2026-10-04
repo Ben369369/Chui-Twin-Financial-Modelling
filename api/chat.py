@@ -153,8 +153,14 @@ def tool_economy_shock(series: str, move_pct: float) -> tuple[dict, list[dict]]:
         res = main.portfolio_shock(series=series, size=None, move=move_pct, half_life=2.0, paths=2000)
     except HTTPException as e:
         return {"error": e.detail}, []
-    out = {"series": series, "label": res["label"], "move_pct": move_pct, "twins": [
+    out = {"series": series, "label": res["label"], "move_pct": move_pct,
+           "note": "Each change is net of knock-on effects through state-to-state edges (for example price "
+                   "lowering demand). For the breakdown, call get_forecast with that twin's state shock. "
+                   "series_move_sd says how extreme the move is against the series' own history; beyond "
+                   "about 2 sd the linear model is extrapolating.",
+           "twins": [
         {"ticker": t["ticker"], "state": t["primitive"], "state_shock_sd": round(t["state_shock_sd"], 2),
+         "series_move_sd": round(t["series_sd"], 2),
          "period": t["period"], "change_next_quarter": {k: round(v[t["period"]], 2) for k, v in t["impact"].items()}}
         for t in res["twins"]]}
     return out, [{"type": "economy_shock", "series": series, "move": move_pct}]
