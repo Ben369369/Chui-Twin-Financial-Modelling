@@ -15,3 +15,6 @@ via public calendar servers. Nobody has to trust us.
 | planned ~2026-10-27 | CMG | 2026Q3 comps, revenue growth, margin | | | | Oct 28 after close | |
 
 Outcomes are recorded here after the release, unchanged rows above, with the reported value and its SEC accession.
+`python scripts/resolve_sealed.py` checks every hash, accepts an outcome only if it became public after the
+seal, and scores the twin against guidance, last quarter and last year in `docs/sealed_results.md`. DAL
+revenue growth comes from XBRL, so it resolves once the 10-Q is filed, usually within days of the release.
