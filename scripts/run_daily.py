@@ -65,10 +65,11 @@ def main() -> None:
 
     # Embed Bitcoin proofs into sealed-forecast timestamps once the calendars have them.
     for ots in sorted((ROOT / "forecasts" / "sealed").glob("*.ots")):
-        r = subprocess.run([sys.executable, str(ROOT / "scripts" / "ots.py"), "upgrade", str(ots)],
-                           capture_output=True, text=True)
-        out = r.stdout + r.stderr
-        print(f"  ots  {ots.name}: {'complete' if 'Success' in out or 'already complete' in out else 'pending'}")
+        subprocess.run([sys.executable, str(ROOT / "scripts" / "ots.py"), "upgrade", str(ots)], capture_output=True)
+        info = subprocess.run([sys.executable, str(ROOT / "scripts" / "ots.py"), "info", str(ots)],
+                              capture_output=True, text=True)
+        anchored = "BitcoinBlockHeaderAttestation" in info.stdout + info.stderr
+        print(f"  ots  {ots.name}: {'anchored in Bitcoin' if anchored else 'pending'}")
 
     if failures:
         print(f"{len(failures)} failures: {failures}")
