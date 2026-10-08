@@ -52,6 +52,9 @@ Latest scorecard: `docs/portfolio_scorecard.md`.
 
 Sealed out-of-sample forecasts and how to verify them: `docs/sealed_forecasts.md`.
 
+**Start here for review:** `docs/technical_appendix.md` (method, evaluation, validation, limitations).
+Data checks are in `docs/validation_report.md`, and tested-and-rejected signals in `docs/experiments.md`.
+
 ## Rules the code keeps
 
 Every number carries a `source_ref` (filing accession and exhibit, URL plus quote, or raw snapshot

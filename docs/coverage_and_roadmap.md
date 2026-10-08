@@ -20,28 +20,31 @@ The engine itself is industry-agnostic. Industry structure lives in templates, a
 | Needs a new template | Banks, insurers | FFIEC call reports, Fed H.8, HMDA, CFPB complaints, NAIC filings | `bank` (roadmap) |
 | Needs a new engine module | Clinical-stage biotech, event-driven names | ClinicalTrials.gov, Drugs@FDA, FDA advisory calendars | `event` (roadmap) |
 
-## Current state (updated October 1)
+## Current state (updated October 7)
 
-- **Engine:** state estimation, Monte Carlo simulation with scenario shocks, driver waterfall, leave-one-signal-out attribution, and walk-forward evaluation. Shared by every twin. KPIs can be modeled as levels, with optional last-quarter and same-quarter-last-year terms, or as changes since the last report.
-- **Template:** `operating`, with seven primitives (demand, capacity, price, input cost, labor, sentiment, expansion).
+- **16 twins in 5 industries** (restaurants, airlines, hotels, homebuilders, general retail) on one engine. 14 were built by the twin factory from the ticker alone, with no per-company tuning.
+- **Engine:** state estimation, Monte Carlo simulation with scenario shocks, driver waterfall, leave-one-signal-out attribution, walk-forward evaluation, and sealed forecasts. Shared by every twin. Each KPI can be modeled as a level (with last-quarter and same-quarter-last-year terms), as a change since the last report, or as a surprise relative to guidance or consensus. Accounting identities and physical bounds are enforced on every simulated path.
 - **Hand-built twins:**
-  - Chipotle: 59 quarters of comps and margin extracted from earnings releases; store count and job postings from public sitemaps, with history from the Internet Archive; news tone; macro signals.
+  - Chipotle: 59 quarters of comps, transactions, check and margin extracted from earnings releases; store count and job postings from public sitemaps, with history from the Internet Archive; news tone; macro signals; consensus from public news quotes.
   - Delta: GAAP KPIs from XBRL; TSA throughput, jet fuel and airfare CPI; management guidance extracted from releases.
-- **Twin factory (onboarding v0):** `scripts/make_twin.py <TICKER>` resolves the company at SEC, picks an industry pack by SIC code, attaches shared industry signals plus the company's Wikipedia article and news query, pulls KPIs from XBRL, and backtests. No hand-written config. Packs exist for restaurants, airlines, hotels, homebuilders and general retail.
-- **Evaluation:** every twin is scored the same way against naive (last quarter), seasonal naive and, where available, management guidance, using MAE, CRPS and 80% interval coverage. Results are in `docs/portfolio_scorecard.md`.
+- **Twin factory (onboarding v0):** `scripts/make_twin.py <TICKER>` resolves the company at SEC, picks an industry pack by SIC code, attaches shared industry signals plus the company's verified Wikipedia article and news query, pulls KPIs from XBRL, and backtests.
+- **Evaluation:** beats "last quarter" on 22 of 33 KPI series and "same quarter last year" on 31 of 33; beats management guidance on Delta revenue and Chipotle comps; trails analyst consensus on Chipotle comps. See `docs/portfolio_scorecard.md`.
+- **Shock library:** half-lives measured from real events (Chipotle 2015 food safety, COVID, the Delta 2024 outage) feed the scenario presets.
+- **Validation:** automatic checks on all 1,970 reported values, plus a manual sample (`docs/validation_report.md`). Experiments, including the ones that failed, are in `docs/experiments.md`.
+- **Live test:** the Delta Q3 forecast was sealed and timestamped in Bitcoin before the release. Chipotle's is sealed before Oct 28.
 
 ## Expansion order
 
-1. **LLM-assisted onboarding (by finals).** The rule-based factory already turns a ticker into a scored twin in minutes. v1 adds an LLM that reads the latest 10-K, picks company-specific KPIs (comps, RevPAR, deliveries) and drivers beyond the pack defaults, and drafts the extraction rules for its earnings releases. Every extracted value keeps its source span.
-2. **Third twin in a third industry (by finals).** A homebuilder, built mainly through onboarding, with the time taken recorded.
-3. **Shock library (by finals).** Food-safety scares, fuel spikes, strikes and rate shocks, each with a measured decay profile reused as priors across companies.
-4. **Remaining strong-fit industries.** Hotels, retail, cruise lines and freight reuse existing adapters, so each new company is mostly a spec file.
+1. **LLM-assisted onboarding (by finals).** The rule-based factory already turns a ticker into a scored twin in minutes. v1 adds an LLM that reads the latest 10-K, picks company-specific KPIs (comps, RevPAR, deliveries) and drivers beyond the pack defaults, and drafts the extraction rules for its earnings releases. Every extracted value keeps its source span, and the validator checks it.
+2. **Filing tone and themes (by finals).** Keyword scoring with a finance word list plus LLM theme extraction on earnings releases, run several times so agreement across runs gives a confidence score. Adopted only if it improves the backtest.
+3. **Company-level labor signals.** Industry hiring data (JOLTS) did not help; company postings data is the next candidate.
+4. **Remaining strong-fit industries.** Cruise lines and freight reuse existing adapters, so each new company is mostly a spec file.
 5. **`bank` template.** New primitives and adapters for balance-sheet businesses, with the same engine.
 6. **`event` module.** Probability and move-size outputs for binary catalysts, sharing the attribution and evaluation code.
 
 ## Why it scales
 
-The number of data adapters grows slowly while the number of companies they serve grows quickly. TSA data serves every airline. Google Trends, GDELT and BLS serve every company. Each new twin mostly reuses adapters that already exist, adds one spec file, and is scored by the same evaluation harness, so twins stay comparable across a portfolio.
+The number of data adapters grows slowly while the number of companies they serve grows quickly. TSA data serves every airline. SEC XBRL, FRED, BLS, GDELT and Wikimedia serve every company. Each new twin mostly reuses adapters that already exist, adds one spec file, and is scored by the same evaluation harness, so twins stay comparable across a portfolio.
 
 ## Known limits
 
