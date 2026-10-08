@@ -8,6 +8,7 @@ report date; regenerate after re-checking them.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 from reportlab.graphics.shapes import Drawing, Line, Polygon, Rect, String
@@ -21,7 +22,8 @@ from reportlab.platypus import KeepTogether, Paragraph, SimpleDocTemplate, Space
 ROOT = Path(__file__).resolve().parents[2]
 DATE = "October 2, 2026"
 OUT = ROOT / "docs" / "Chui_Twin_status_report_2026-10-02.pdf"
-EMAIL, PHONE = "you@example.com", "+1-000-000-0000"
+# Letterhead contact details come from the environment so they never land in the repo.
+EMAIL, PHONE = os.environ.get("CHUI_CONTACT_EMAIL", ""), os.environ.get("CHUI_CONTACT_PHONE", "")
 
 NAVY = colors.HexColor("#1B2A5A")
 GREY = colors.HexColor("#5A6270")
