@@ -16,8 +16,9 @@ via public calendar servers. Nobody has to trust us.
 
 Outcomes are recorded here after the release, unchanged rows above, with the reported value and its SEC accession.
 `python scripts/resolve_sealed.py` checks every hash, accepts an outcome only if it became public after the
-seal, and scores the twin against guidance, last quarter and last year in `docs/sealed_results.md`. DAL
-revenue growth comes from XBRL, so it resolves once the 10-Q is filed, usually within days of the release.
+seal, and scores the twin against guidance, last quarter and last year in `docs/sealed_results.md`. An outcome is
+taken from the earnings release (8-K EX-99.1) on the day it is filed; the 10-Q's XBRL facts replace it later
+with the same GAAP figures.
 
 ## Outcome: DAL 2026Q3 (resolved 2026-10-09)
 

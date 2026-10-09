@@ -30,7 +30,7 @@ The engine itself is industry-agnostic. Industry structure lives in templates, a
 - **Twin factory (onboarding v0):** `scripts/make_twin.py <TICKER>` resolves the company at SEC, picks an industry pack by SIC code, attaches shared industry signals plus the company's verified Wikipedia article and news query, pulls KPIs from XBRL, and backtests.
 - **Evaluation:** beats "last quarter" on 22 of 33 KPI series and "same quarter last year" on 31 of 33; beats management guidance on Delta revenue and Chipotle comps; trails analyst consensus on Chipotle comps. See `docs/portfolio_scorecard.md`.
 - **Shock library:** half-lives measured from real events (Chipotle 2015 food safety, COVID, the Delta 2024 outage) feed the scenario presets.
-- **Validation:** automatic checks on all 1,970 reported values, plus a manual sample (`docs/validation_report.md`). Experiments, including the ones that failed, are in `docs/experiments.md`.
+- **Validation:** automatic checks on all 1,972 reported values, plus a manual sample (`docs/validation_report.md`). Experiments, including the ones that failed, are in `docs/experiments.md`.
 - **Live test:** the Delta Q3 forecast was sealed and timestamped in Bitcoin before the release. Chipotle's is sealed before Oct 28.
 
 ## Expansion order

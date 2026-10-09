@@ -47,7 +47,7 @@ to end on a dummy template with made-up state names.
 ## 3. Data and point-in-time correctness
 
 - **Coverage:** 155,913 observations of 64 signal series from 6 public sources (FRED, BLS, TSA, GDELT,
-  Wikimedia, public sitemaps). From SEC filings there are 1,970
+  Wikimedia, public sitemaps). From SEC filings there are 1,972
   reported KPI values for 16 companies, plus 56 management-guidance values and 6 consensus values.
 - **Raw first:** every fetch is saved untouched to `data/raw/<source>/<date>/` (270 snapshots) before
   parsing, so a parser can be fixed and rerun.
@@ -151,13 +151,29 @@ existed before the outcome, without trusting us.
 2. accepts an outcome only if it became public after the seal,
 3. scores the twin against guidance, last quarter and last year (`docs/sealed_results.md`).
 
+**Outcome (Delta reported Oct 9, 2026, 8-K accession 0000027904-26-000035).** The hash verified.
+
+| KPI (GAAP) | Sealed median (80% range) | Actual | Inside 80% | Twin CRPS | Guidance | Last quarter | Last year |
+|---|---|---|---|---|---|---|---|
+| Operating margin | 6.9 (−1.8 to 15.6) | **7.2** | yes | **1.60** | – | 2.23 | 2.90 |
+| Revenue growth | 15.2 (10.6 to 19.9) | **21.1** | no | 3.93 | 6.07 | **2.40** | 14.72 |
+
+- **Margin:** a hit. The twin was 0.3 points off and beat both naive baselines.
+- **Revenue growth:** a miss. The actual was above the 80% range. The twin beat guidance but lost to
+  "same as last quarter".
+- **Cause:** GAAP revenue includes Delta's third-party refinery sales, which rose 76% with high fuel prices
+  and added about 6.7 points of growth. The guidance the twin anchors on excludes the refinery; on that
+  basis revenue grew 15.7%, 0.5 points from the twin's median. The twin anchored a GAAP KPI on non-GAAP
+  guidance. The scored result stays as sealed. Future forecasts will match each anchor's definition to
+  its KPI.
+
 Chipotle's Q3 forecast will be sealed on Oct 27, before its Oct 28 report.
 
 ## 8. Validating extracted data: automation and manual review
 
 `scripts/validate_ground_truth.py` runs automatic checks on **every** row (`docs/validation_report.md`):
 
-| Check | What it tests | Result (1,970 rows) |
+| Check | What it tests | Result (1,972 rows) |
 |---|---|---|
 | Text span | The source sentence appears verbatim in the saved filing, and its number (signed by its wording) equals the stored value | 154 of 154 pass |
 | Identity | comps = transactions + check on reported values, within the company's own rounding | 14 of 14 pass |
