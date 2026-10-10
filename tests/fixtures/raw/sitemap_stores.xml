@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?><!-- Synthetic test fixture: same structure as the public sitemap, made-up addresses. --><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url>
+  <loc>https://locations.chipotle.com/404.html</loc>
+  <lastmod>2026-07-22</lastmod>
+  <xhtml:link hreflang="en" href="https://locations.chipotle.com/404.html" rel="alternate"/>
+</url><url>
+  <loc>https://locations.chipotle.com/id/town-1/100-example-st/order-delivery</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/id/town-1/100-example-st/order-delivery"/>
+</url><url>
+  <loc>https://locations.chipotle.com/id/town-1/100-example-st</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/id/town-1/100-example-st"/>
+</url><url>
+  <loc>https://locations.chipotle.com/ca/town-2/101-example-st/order-delivery</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/ca/town-2/101-example-st/order-delivery"/>
+</url><url>
+  <loc>https://locations.chipotle.com/ca/town-2/101-example-st</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/ca/town-2/101-example-st"/>
+</url><url>
+  <loc>https://locations.chipotle.com/ks/town-3/102-example-st/order-delivery</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/ks/town-3/102-example-st/order-delivery"/>
+</url><url>
+  <loc>https://locations.chipotle.com/ks/town-3/102-example-st</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/ks/town-3/102-example-st"/>
+</url><url>
+  <loc>https://locations.chipotle.com/ny/town-4/103-example-st/order-delivery</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/ny/town-4/103-example-st/order-delivery"/>
+</url><url>
+  <loc>https://locations.chipotle.com/ny/town-4/103-example-st</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/ny/town-4/103-example-st"/>
+</url><url>
+  <loc>https://locations.chipotle.com/fl/town-5/104-example-st/order-delivery</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/fl/town-5/104-example-st/order-delivery"/>
+</url><url>
+  <loc>https://locations.chipotle.com/fl/town-5/104-example-st</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/fl/town-5/104-example-st"/>
+</url><url>
+  <loc>https://locations.chipotle.com/ga/town-6/105-example-st/order-delivery</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/ga/town-6/105-example-st/order-delivery"/>
+</url><url>
+  <loc>https://locations.chipotle.com/ga/town-6/105-example-st</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link href="https://locations.chipotle.com/ga/town-6/105-example-st" rel="alternate" hreflang="en"/>
+</url><url>
+  <loc>https://locations.chipotle.com/mi/town-7/106-example-st/order-delivery</loc>
+  <lastmod>2026-09-27</lastmod>
+  <xhtml:link hreflang="en" href="https://locations.chipotle.com/mi/town-7/106-example-st/order-delivery" rel="alternate"/>
+</url><url>
+  <loc>https://locations.chipotle.com/mi/town-7/106-example-st</loc>
+  <lastmod>2026-09-27</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/mi/town-7/106-example-st"/>
+</url><url>
+  <loc>https://locations.chipotle.com/pa/town-8/107-example-st/order-delivery</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link href="https://locations.chipotle.com/pa/town-8/107-example-st/order-delivery" rel="alternate" hreflang="en"/>
+</url><url>
+  <loc>https://locations.chipotle.com/pa/town-8/107-example-st</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/pa/town-8/107-example-st"/>
+</url><url>
+  <loc>https://locations.chipotle.com/ga/town-9/108-example-st/order-delivery</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/ga/town-9/108-example-st/order-delivery"/>
+</url><url>
+  <loc>https://locations.chipotle.com/ga/town-9/108-example-st</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/ga/town-9/108-example-st"/>
+</url><url>
+  <loc>https://locations.chipotle.com/nj/town-10/109-example-st/order-delivery</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link href="https://locations.chipotle.com/nj/town-10/109-example-st/order-delivery" rel="alternate" hreflang="en"/>
+</url><url>
+  <loc>https://locations.chipotle.com/nj/town-10/109-example-st</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/nj/town-10/109-example-st"/>
+</url><url>
+  <loc>https://locations.chipotle.com/ut/town-11/110-example-st/order-delivery</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/ut/town-11/110-example-st/order-delivery"/>
+</url><url>
+  <loc>https://locations.chipotle.com/ut/town-11/110-example-st</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link href="https://locations.chipotle.com/ut/town-11/110-example-st" rel="alternate" hreflang="en"/>
+</url><url>
+  <loc>https://locations.chipotle.com/az/town-12/111-example-st/order-delivery</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/az/town-12/111-example-st/order-delivery"/>
+</url><url>
+  <loc>https://locations.chipotle.com/az/town-12/111-example-st</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/az/town-12/111-example-st"/>
+</url><url>
+  <loc>https://locations.chipotle.com/fl/town-13/112-example-st/order-delivery</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/fl/town-13/112-example-st/order-delivery"/>
+</url><url>
+  <loc>https://locations.chipotle.com/fl/town-13/112-example-st</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/fl/town-13/112-example-st"/>
+</url><url>
+  <loc>https://locations.chipotle.com/fl/town-14/113-example-st/order-delivery</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link href="https://locations.chipotle.com/fl/town-14/113-example-st/order-delivery" rel="alternate" hreflang="en"/>
+</url><url>
+  <loc>https://locations.chipotle.com/fl/town-14/113-example-st</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/fl/town-14/113-example-st"/>
+</url><url>
+  <loc>https://locations.chipotle.com/in/town-15/114-example-st/order-delivery</loc>
+  <lastmod>2026-09-28</lastmod>
+  <xhtml:link hreflang="en" href="https://locations.chipotle.com/in/town-15/114-example-st/order-delivery" rel="alternate"/>
+</url><url>
+  <loc>https://locations.chipotle.com/in/town-15/114-example-st</loc>
+  <lastmod>2026-09-28</lastmod>
+  <xhtml:link hreflang="en" href="https://locations.chipotle.com/in/town-15/114-example-st" rel="alternate"/>
+</url><url>
+  <loc>https://locations.chipotle.com/ri/town-16/115-example-st/order-delivery</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/ri/town-16/115-example-st/order-delivery"/>
+</url><url>
+  <loc>https://locations.chipotle.com/ri/town-16/115-example-st</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/ri/town-16/115-example-st"/>
+</url><url>
+  <loc>https://locations.chipotle.com/id/town-17/116-example-st/order-delivery</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/id/town-17/116-example-st/order-delivery"/>
+</url><url>
+  <loc>https://locations.chipotle.com/id/town-17/116-example-st</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link hreflang="en" href="https://locations.chipotle.com/id/town-17/116-example-st" rel="alternate"/>
+</url><url>
+  <loc>https://locations.chipotle.com/ny/town-18/117-example-st/order-delivery</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/ny/town-18/117-example-st/order-delivery"/>
+</url><url>
+  <loc>https://locations.chipotle.com/ny/town-18/117-example-st</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/ny/town-18/117-example-st"/>
+</url><url>
+  <loc>https://locations.chipotle.com/in/town-19/118-example-st/order-delivery</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/in/town-19/118-example-st/order-delivery"/>
+</url><url>
+  <loc>https://locations.chipotle.com/in/town-19/118-example-st</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/in/town-19/118-example-st"/>
+</url><url>
+  <loc>https://locations.chipotle.com/ca/town-20/119-example-st/order-delivery</loc>
+  <lastmod>2026-09-21</lastmod>
+  <xhtml:link rel="alternate" hreflang="en" href="https://locations.chipotle.com/ca/town-20/119-example-st/order-delivery"/>
+</url></urlset>

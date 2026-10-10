@@ -10,3 +10,5 @@ __pycache__/
 node_modules/
 web/dist/
 *.ots.bak
+
+docs/Chui_Twin_status_report_2026-10-02.pdf
