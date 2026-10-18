@@ -1,0 +1,184 @@
+{
+ "generated": "2026-10-18T06:06:59+00:00",
+ "test_from": "2017Q1",
+ "twins": [
+  {
+   "ticker": "UAL",
+   "industry": "airlines",
+   "built_by": "factory+llm",
+   "seconds": 21.164567947387695,
+   "signals": 7,
+   "score": {
+    "gt_quarters": 69,
+    "test_quarters": 26,
+    "kpis": {
+     "revenue_growth": {
+      "n": 26,
+      "mae_twin": 3.791807035572671,
+      "mae_naive": 4.129807591241706,
+      "mae_seasonal": 17.21729066468264,
+      "skill_naive": 0.4483550634304747,
+      "skill_seasonal": 0.8135769540920761,
+      "coverage80": 0.8076923076923077
+     },
+     "op_margin": {
+      "n": 26,
+      "mae_twin": 2.1864709574877597,
+      "mae_naive": 4.571539495689762,
+      "mae_seasonal": 2.993166908634609,
+      "skill_naive": 0.5343494186526141,
+      "skill_seasonal": 0.2842497762280952,
+      "coverage80": 1.0
+     },
+     "fuel_pct_revenue": {
+      "n": 26,
+      "mae_twin": 1.2130904434904974,
+      "mae_naive": 1.9067149325846162,
+      "mae_seasonal": 3.3776892446084554,
+      "skill_naive": 0.3714940597773334,
+      "skill_seasonal": 0.5752899868324879,
+      "coverage80": 0.9230769230769231
+     },
+     "labor_pct_revenue": {
+      "n": 26,
+      "mae_twin": 1.2489787365634935,
+      "mae_naive": 1.968667673683583,
+      "mae_seasonal": 1.6575278714590238,
+      "skill_naive": 0.3203874796834143,
+      "skill_seasonal": 0.24613839679577165,
+      "coverage80": 0.7307692307692307
+     }
+    }
+   }
+  },
+  {
+   "ticker": "MAR",
+   "industry": "hotels",
+   "built_by": "factory+llm",
+   "seconds": 12.246298789978027,
+   "signals": 6,
+   "score": {
+    "gt_quarters": 68,
+    "test_quarters": 26,
+    "kpis": {
+     "revenue_growth": {
+      "n": 26,
+      "mae_twin": 4.910252147508396,
+      "mae_naive": 4.105234144876205,
+      "mae_seasonal": 19.95781065053526,
+      "skill_naive": -0.1257832677927524,
+      "skill_seasonal": 0.7075807191624501,
+      "coverage80": 0.9230769230769231
+     },
+     "op_margin": {
+      "n": 26,
+      "mae_twin": 2.336439961319587,
+      "mae_naive": 2.715300617889899,
+      "mae_seasonal": 1.7468716940086613,
+      "skill_naive": 0.1962153186097012,
+      "skill_seasonal": 0.2188372399022257,
+      "coverage80": 0.7307692307692307
+     }
+    }
+   }
+  },
+  {
+   "ticker": "SBUX",
+   "industry": "restaurants",
+   "built_by": "factory+llm",
+   "seconds": 16.929332494735718,
+   "signals": 7,
+   "score": {
+    "gt_quarters": 69,
+    "test_quarters": 29,
+    "kpis": {
+     "revenue_growth": {
+      "n": 26,
+      "mae_twin": 6.330631786940837,
+      "mae_naive": 5.038732900843335,
+      "mae_seasonal": 10.716483071494686,
+      "skill_naive": 0.055698738802654524,
+      "skill_seasonal": 0.4263101668863386,
+      "coverage80": 0.8076923076923077
+     },
+     "op_margin": {
+      "n": 29,
+      "mae_twin": 1.8123768111502845,
+      "mae_naive": 2.4304769463046205,
+      "mae_seasonal": 3.2686785079709653,
+      "skill_naive": 0.5787635216837841,
+      "skill_seasonal": 0.6020272902753397,
+      "coverage80": 0.896551724137931
+     },
+     "store_operating_expense_pct_revenue": {
+      "n": 29,
+      "mae_twin": 0.16085171349924748,
+      "mae_naive": 0.12983247352452512,
+      "mae_seasonal": 0.22397579900631695,
+      "skill_naive": -0.2307433253737179,
+      "skill_seasonal": 0.24516161535986114,
+      "coverage80": 0.8620689655172413
+     },
+     "product_distribution_cost_pct_revenue": {
+      "n": 21,
+      "mae_twin": 5.229913258497926,
+      "mae_naive": 0.6481920278475872,
+      "mae_seasonal": 1.2419696165023788,
+      "skill_naive": -0.1377148929910419,
+      "skill_seasonal": 0.3070894737012678,
+      "coverage80": 0.8095238095238095
+     }
+    }
+   }
+  },
+  {
+   "ticker": "TGT",
+   "industry": "general_retail",
+   "built_by": "factory+llm",
+   "seconds": 12.795843124389648,
+   "signals": 5,
+   "score": {
+    "gt_quarters": 73,
+    "test_quarters": 31,
+    "kpis": {
+     "revenue_growth": {
+      "n": 31,
+      "mae_twin": 2.8985705960950807,
+      "mae_naive": 3.0787340307318116,
+      "mae_seasonal": 6.114863345383136,
+      "skill_naive": 0.010277416723557198,
+      "skill_seasonal": 0.4705257106227153,
+      "coverage80": 0.8064516129032258
+     },
+     "op_margin": {
+      "n": 31,
+      "mae_twin": 1.1432601369204165,
+      "mae_naive": 1.2701777516075492,
+      "mae_seasonal": 1.6811218384349078,
+      "skill_naive": -0.04664577616535426,
+      "skill_seasonal": 0.2583316961508657,
+      "coverage80": 0.9032258064516129
+     },
+     "sga_expense_ratio": {
+      "n": 31,
+      "mae_twin": 0.8542997194693178,
+      "mae_naive": 1.2892494573155986,
+      "mae_seasonal": 0.8092276848542863,
+      "skill_naive": 0.35553168554933345,
+      "skill_seasonal": -0.01659067848163609,
+      "coverage80": 0.7419354838709677
+     },
+     "cogs_ratio": {
+      "n": 31,
+      "mae_twin": 1.5171583621889502,
+      "mae_naive": 1.9759705585542766,
+      "mae_seasonal": 1.0702047738867886,
+      "skill_naive": 0.38213807293878566,
+      "skill_seasonal": 0.0526855398802194,
+      "coverage80": 0.7741935483870968
+     }
+    }
+   }
+  }
+ ]
+}

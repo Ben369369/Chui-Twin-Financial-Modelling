@@ -1,0 +1,81 @@
+{
+ "model": "claude-sonnet-5-5",
+ "prompt_version": "onboard_spec_v1",
+ "prompt_ref": "anthropic:messages | raw:raw/llm/2026-10-18/onboard_TGT_prompt_e62ccc99b15b.md",
+ "response_ref": "anthropic:messages | raw:raw/llm/2026-10-18/onboard_TGT_response_e02a09ad1589.json",
+ "stop_reason": "end_turn",
+ "input_tokens": 94757,
+ "output_tokens": 984,
+ "accession": "0000027419-26-000016",
+ "filing_url": "https://www.sec.gov/Archives/edgar/data/27419/000002741926000016/tgt-20260131.htm",
+ "filing_ref": "https://www.sec.gov/Archives/edgar/data/27419/000002741926000016/tgt-20260131.htm | raw:raw/edgar/2026-10-18/0000027419_26_000016_tgt_20260131_htm_d485af495ca4.htm",
+ "text_note": "",
+ "xbrl_concepts_offered": 40,
+ "business_summary": "Target is a US general merchandise retailer with about 1,995 stores and a large digital business, with stores fulfilling over 97% of sales. Net sales were $104.8B in fiscal 2025, down 1.7%, with comparable sales down 2.6% on lower traffic. Results depend on US consumer spending, tariffs and import costs, and workforce costs, its largest operating expense.",
+ "pack_proposed": {
+  "pack": "general_retail",
+  "reason": "Target is a general merchandise retailer (SIC 5331) whose demand, pricing and labor map to the general retail series.",
+  "quote": "We are a general merchandise retailer selling products to our guests through our stores and digital channels."
+ },
+ "accepted": {
+  "drivers": [],
+  "kpis": [
+   {
+    "name": "sga_expense_ratio",
+    "kind": "ratio",
+    "concepts": [
+     "SellingGeneralAndAdministrativeExpense"
+    ],
+    "description": "SG&A expense as a percent of revenue",
+    "reason": "SG&A includes store compensation and is a key margin lever.",
+    "quote": "Our SG&A expense rate was 20.6 percent in 2025, consistent with 2024."
+   },
+   {
+    "name": "cogs_ratio",
+    "kind": "ratio",
+    "concepts": [
+     "CostOfGoodsAndServicesSold"
+    ],
+    "description": "Cost of sales as a percent of revenue",
+    "reason": "Gross margin is affected by tariffs, markdowns and shrink.",
+    "quote": "Our gross margin rate was 27.9 percent in 2025 and 28.2 percent in 2024."
+   }
+  ],
+  "edges": [
+   {
+    "state": "demand",
+    "kpi": "revenue_growth",
+    "prior_mean": 0.6,
+    "reason": "Comparable sales driven by traffic and transaction amount.",
+    "quote": "Comparable sales decreased 2.6 percent, driven by a 2.2 percent decrease in traffic and a 0.4 percent decrease in average transaction amount."
+   },
+   {
+    "state": "input_cost",
+    "kpi": "cogs_ratio",
+    "prior_mean": 0.4,
+    "reason": "Tariffs and merchandise costs raise cost of sales.",
+    "quote": "have resulted, and could continue to result, in us incurring substantial additional costs to procure a large portion of the merchandise we offer"
+   },
+   {
+    "state": "labor",
+    "kpi": "sga_expense_ratio",
+    "prior_mean": 0.4,
+    "reason": "Workforce costs are the largest operating expense.",
+    "quote": "With over 400,000 team members, our workforce costs represent our largest operating expense"
+   }
+  ]
+ },
+ "operating_kpis_suggested": [
+  {
+   "name": "comparable_sales_change",
+   "definition": "Change in merchandise sales for stores open 13+ months and digital versus prior year",
+   "quote": "We use comparable sales to evaluate the performance of our stores and digital channels by measuring the change in sales for a period over the comparable, prior-year period of equivalent length."
+  },
+  {
+   "name": "traffic",
+   "definition": "Change in number of transactions in comparable sales",
+   "quote": "Number of transactions (traffic) (2.2) 1.4 (2.4)"
+  }
+ ],
+ "rejected": []
+}

@@ -1,0 +1,126 @@
+{
+ "model": "claude-sonnet-5-5",
+ "prompt_version": "onboard_spec_v1",
+ "prompt_ref": "anthropic:messages | raw:raw/llm/2026-10-18/onboard_CCL_prompt_d1b9ef61eb26.md",
+ "response_ref": "anthropic:messages | raw:raw/llm/2026-10-18/onboard_CCL_response_4b34e438c3c1.json",
+ "stop_reason": "end_turn",
+ "input_tokens": 119623,
+ "output_tokens": 1509,
+ "accession": "0000815097-26-000007",
+ "filing_url": "https://www.sec.gov/Archives/edgar/data/815097/000081509726000007/ccl-20251130.htm",
+ "filing_ref": "https://www.sec.gov/Archives/edgar/data/815097/000081509726000007/ccl-20251130.htm | raw:raw/edgar/2026-10-18/0000815097_26_000007_ccl_20251130_htm_8842454fad29.htm",
+ "text_note": "",
+ "xbrl_concepts_offered": 40,
+ "business_summary": "Carnival is the world's largest cruise company, operating eight brands and 94 ships. Revenue comes from passenger tickets (65%) and onboard spending (35%). Results are driven by occupancy and ticket pricing, fuel and payroll costs, and a seasonal peak in the third quarter, with customer deposits collected in advance.",
+ "pack_proposed": {
+  "pack": "hotels",
+  "reason": "Cruise vacations are leisure travel that competes with hotels and resorts, so travel demand (TSA throughput), lodging prices and hospitality wages are the closest shared proxies.",
+  "quote": "We compete with land-based vacation alternatives throughout the world, such as hotels, resorts (including all-inclusive resorts), theme parks, organized tours, casinos, vacation ownership properties, and other internet-based alternative lodging sites."
+ },
+ "accepted": {
+  "drivers": [
+   {
+    "series": "fred:DJFUELUSGULF",
+    "state": "input_cost",
+    "sign": 1,
+    "lag_days": 0,
+    "transform": "yoy_log",
+    "strength": "moderate",
+    "reason": "Fuel is a major expense ($1.8B) and the filing says fuel prices affect costs; jet fuel is a proxy for marine fuel and for airfares.",
+    "quote": "Future increases in the global price of fuel would increase the cost of our cruise ship operations as well as some of our other expenses, such as crew travel, freight and commodity prices."
+   },
+   {
+    "series": "fred:CUSR0000SETG01",
+    "state": "demand",
+    "sign": -1,
+    "lag_days": 0,
+    "transform": "yoy_log",
+    "strength": "weak",
+    "reason": "Higher airfares raise guests' total vacation cost and reduce cruise demand because many guests fly to ports.",
+    "quote": "Increases in airfares, such as those resulting from increases in the cost of fuel, have in the past and may in the future increase our guests' overall vacation costs and reduce demand for cruises"
+   }
+  ],
+  "kpis": [],
+  "edges": [
+   {
+    "state": "demand",
+    "kpi": "revenue_growth",
+    "prior_mean": 0.5,
+    "reason": "Ticket price and onboard spending growth are attributed to strong demand.",
+    "quote": "higher ticket prices driven by continued strength in demand"
+   },
+   {
+    "state": "price",
+    "kpi": "revenue_growth",
+    "prior_mean": 0.5,
+    "reason": "Higher ticket prices were the largest driver of passenger ticket revenue growth.",
+    "quote": "higher ticket prices driven by continued strength in demand"
+   },
+   {
+    "state": "input_cost",
+    "kpi": "op_margin",
+    "prior_mean": -0.3,
+    "reason": "Fuel cost changes materially move operating expenses.",
+    "quote": "lower fuel prices including the impact of the cost of emission allowances"
+   }
+  ]
+ },
+ "operating_kpis_suggested": [
+  {
+   "name": "Occupancy percentage",
+   "definition": "Passenger cruise days divided by available lower berth days; above 100% means more than two passengers per cabin on average",
+   "quote": "Occupancy, in accordance with cruise industry practice, is calculated using a numerator of PCDs and a denominator of ALBDs"
+  },
+  {
+   "name": "Available Lower Berth Days (ALBDs)",
+   "definition": "Passenger capacity multiplied by revenue-producing ship operating days, in millions",
+   "quote": "ALBD is a standard measure of passenger capacity for the period that we use to approximate rate and capacity variances"
+  },
+  {
+   "name": "Fuel cost per metric ton consumed",
+   "definition": "Fuel cost per metric ton excluding emission allowances",
+   "quote": "Fuel cost per metric ton consumed (excluding emission allowances)"
+  }
+ ],
+ "rejected": [
+  {
+   "kind": "edge",
+   "item": {
+    "state": "capacity",
+    "kpi": "revenue_growth",
+    "prior_mean": 0.2,
+    "reason": "Capacity increases in ALBDs added revenue.",
+    "quote": "1.0% capacity increase in ALBDs"
+   },
+   "why": "quote not found in the 10-K"
+  },
+  {
+   "kind": "kpi",
+   "item": {
+    "name": "fuel_expense_pct_revenue",
+    "kind": "ratio",
+    "concepts": [
+     "CostOfRevenue"
+    ],
+    "description": "Cruise cost of revenue as a percent of revenue (proxy for operating cost intensity including fuel)",
+    "reason": "Fuel and operating costs are key margin drivers.",
+    "quote": "Fuel, which include fuel delivery costs and emission allowance costs"
+   },
+   "why": "no accepted edge into it"
+  },
+  {
+   "kind": "kpi",
+   "item": {
+    "name": "sga_pct_revenue",
+    "kind": "ratio",
+    "concepts": [
+     "SellingGeneralAndAdministrativeExpense"
+    ],
+    "description": "Selling and administrative expense as a percent of revenue",
+    "reason": "Marketing and administrative spend is a controllable cost lever.",
+    "quote": "Selling expenses include a broad range of advertising, marketing and promotional expenses."
+   },
+   "why": "no accepted edge into it"
+  }
+ ]
+}

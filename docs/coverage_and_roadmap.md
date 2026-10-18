@@ -35,7 +35,7 @@ The engine itself is industry-agnostic. Industry structure lives in templates, a
 
 ## Expansion order
 
-1. **LLM-assisted onboarding (by finals).** The rule-based factory already turns a ticker into a scored twin in minutes. v1 adds an LLM that reads the latest 10-K, picks company-specific KPIs (comps, RevPAR, deliveries) and drivers beyond the pack defaults, and drafts the extraction rules for its earnings releases. Every extracted value keeps its source span, and the validator checks it.
+1. **LLM-assisted onboarding (done, Oct 18).** `make_twin.py <TICKER> --llm`: an LLM reads the latest 10-K and proposes the pack, extra drivers, XBRL KPIs and edge priors, each with a quote; code drops anything it cannot verify. It onboarded Carnival, whose SIC code no pack covers. On four existing twins it left the shared KPIs about unchanged and added new KPIs that beat naive for UAL and TGT (`docs/experiments.md` §2). Next: turn its suggested operating metrics (comps, RevPAR, occupancy) into release-extraction rules checked by the validator.
 2. **Filing tone and themes (by finals).** Keyword scoring with a finance word list plus LLM theme extraction on earnings releases, run several times so agreement across runs gives a confidence score. Adopted only if it improves the backtest.
 3. **Company-level labor signals.** Industry hiring data (JOLTS) did not help; company postings data is the next candidate.
 4. **Remaining strong-fit industries.** Cruise lines and freight reuse existing adapters, so each new company is mostly a spec file.

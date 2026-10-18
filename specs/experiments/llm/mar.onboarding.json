@@ -1,0 +1,98 @@
+{
+ "model": "claude-sonnet-5-5",
+ "prompt_version": "onboard_spec_v1",
+ "prompt_ref": "anthropic:messages | raw:raw/llm/2026-10-18/onboard_MAR_prompt_3dd5f7e704c4.md",
+ "response_ref": "anthropic:messages | raw:raw/llm/2026-10-18/onboard_MAR_response_db02635c78c4.json",
+ "stop_reason": "end_turn",
+ "input_tokens": 106854,
+ "output_tokens": 1179,
+ "accession": "0001048286-26-000007",
+ "filing_url": "https://www.sec.gov/Archives/edgar/data/1048286/000104828626000007/mar-20251231.htm",
+ "filing_ref": "https://www.sec.gov/Archives/edgar/data/1048286/000104828626000007/mar-20251231.htm | raw:raw/edgar/2026-10-18/0001048286_26_000007_mar_20251231_htm_303c78d5b00d.htm",
+ "text_note": "",
+ "xbrl_concepts_offered": 33,
+ "business_summary": "Marriott is an asset-light worldwide franchisor, operator and licensor of hotels and lodging brands. Revenue is mostly franchise, management and incentive fees tied to hotel revenues and profits, plus owned/leased revenue and large pass-through cost reimbursements.",
+ "pack_proposed": {
+  "pack": "hotels",
+  "reason": "SIC 7011 and the business is lodging franchising and management, with fees driven by RevPAR, occupancy and ADR.",
+  "quote": "We are a worldwide franchisor, operator, and licensor of hotel, residential, timeshare, and other lodging properties under a portfolio of compelling brands at different price and service points."
+ },
+ "accepted": {
+  "drivers": [
+   {
+    "series": "fred:MORTGAGE30US",
+    "state": "expansion",
+    "sign": -1,
+    "lag_days": 0,
+    "transform": "yoy_diff",
+    "strength": "weak",
+    "reason": "Higher interest rates make financing harder for hotel owners and slow new development and pipeline conversion.",
+    "quote": "making it more difficult for hotel owners to obtain financing on commercially acceptable terms, or at all"
+   }
+  ],
+  "kpis": [],
+  "edges": [
+   {
+    "state": "demand",
+    "kpi": "revenue_growth",
+    "prior_mean": 0.6,
+    "reason": "Fees are percentages of hotel revenues, which rise with RevPAR and demand.",
+    "quote": "The increase in base management fees primarily reflected higher RevPAR as well as rooms growth ($25 million)."
+   },
+   {
+    "state": "price",
+    "kpi": "revenue_growth",
+    "prior_mean": 0.4,
+    "reason": "ADR growth drove RevPAR growth, lifting fee revenues.",
+    "quote": "In 2025, worldwide RevPAR increased 2.0 percent compared to 2024, driven by ADR growth of 2.1 percent."
+   },
+   {
+    "state": "expansion",
+    "kpi": "revenue_growth",
+    "prior_mean": 0.3,
+    "reason": "Rooms growth adds franchise and management fees.",
+    "quote": "In 2026, we expect net rooms growth of 4.5 to 5.0 percent."
+   },
+   {
+    "state": "demand",
+    "kpi": "op_margin",
+    "prior_mean": 0.3,
+    "reason": "Incentive fees are based on hotel profits, so demand lifts margins.",
+    "quote": "The increase in incentive management fees primarily reflected higher profits at managed hotels."
+   }
+  ]
+ },
+ "operating_kpis_suggested": [
+  {
+   "name": "Worldwide systemwide RevPAR growth",
+   "definition": "Revenue per available room for comparable systemwide properties, year over year, constant dollar",
+   "quote": "In 2025, worldwide RevPAR increased 2.0 percent compared to 2024, driven by ADR growth of 2.1 percent."
+  },
+  {
+   "name": "Net rooms growth",
+   "definition": "Year-over-year growth in total rooms in system",
+   "quote": "In 2026, we expect net rooms growth of 4.5 to 5.0 percent."
+  },
+  {
+   "name": "Development pipeline rooms",
+   "definition": "Rooms in the development pipeline, including under construction",
+   "quote": "At year-end 2025, we had approximately 4,100 properties and nearly 610,000 rooms in our development pipeline"
+  }
+ ],
+ "rejected": [
+  {
+   "kind": "kpi",
+   "item": {
+    "name": "gross_margin_owned_leased_proxy_g_and_a_pct",
+    "kind": "ratio",
+    "concepts": [
+     "GeneralAndAdministrativeExpense"
+    ],
+    "description": "General and administrative expense as a percent of revenue",
+    "reason": "Overhead leverage on an asset-light fee model affects operating margin.",
+    "quote": "General and administrative expenses decreased primarily due to lower compensation costs ($39 million)."
+   },
+   "why": "name must be snake_case"
+  }
+ ]
+}

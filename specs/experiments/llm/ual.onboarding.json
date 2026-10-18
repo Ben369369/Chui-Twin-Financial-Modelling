@@ -1,0 +1,109 @@
+{
+ "model": "claude-sonnet-5-5",
+ "prompt_version": "onboard_spec_v1",
+ "prompt_ref": "anthropic:messages | raw:raw/llm/2026-10-18/onboard_UAL_prompt_2069517abbd1.md",
+ "response_ref": "anthropic:messages | raw:raw/llm/2026-10-18/onboard_UAL_response_be83bff0dbe6.json",
+ "stop_reason": "end_turn",
+ "input_tokens": 172041,
+ "output_tokens": 1441,
+ "accession": "0000100517-26-000023",
+ "filing_url": "https://www.sec.gov/Archives/edgar/data/100517/000010051726000023/ual-20251231.htm",
+ "filing_ref": "https://www.sec.gov/Archives/edgar/data/100517/000010051726000023/ual-20251231.htm | raw:raw/edgar/2026-10-18/0000100517_26_000023_ual_20251231_htm_5312693cd58f.htm",
+ "text_note": "",
+ "xbrl_concepts_offered": 43,
+ "business_summary": "United Airlines is a global network carrier that earns most revenue from passenger tickets, plus cargo and loyalty and other revenue. Its largest costs are salaries (about 32% of operating expense) and aircraft fuel (about 21%), and it does not hedge fuel.",
+ "pack_proposed": {
+  "pack": "airlines",
+  "reason": "SIC 4512 scheduled air transportation; passenger airline with TSA demand, airfares, jet fuel and airline wages as the natural sensors.",
+  "quote": "The Company's current strategy is to not enter into transactions to hedge fuel price volatility, although the Company regularly reviews its policy based on market conditions and other factors."
+ },
+ "accepted": {
+  "drivers": [
+   {
+    "series": "fred:DCOILWTICO",
+    "state": "input_cost",
+    "sign": 1,
+    "lag_days": 0,
+    "transform": "yoy_log",
+    "strength": "moderate",
+    "reason": "Crude oil drives jet fuel cost, and the 10-K quantifies the per-barrel fuel sensitivity with no hedging.",
+    "quote": "A one-dollar change in the price of a barrel of aircraft fuel would change the Company's 2026 projected fuel expense by approximately $116 million."
+   }
+  ],
+  "kpis": [
+   {
+    "name": "fuel_pct_revenue",
+    "kind": "ratio",
+    "concepts": [
+     "FuelCosts"
+    ],
+    "description": "Aircraft fuel expense as a percent of total revenue",
+    "reason": "Fuel is one of the largest and most volatile expenses.",
+    "quote": "Aircraft fuel has historically been the Company's most volatile operating expense due to the highly unpredictable nature of market prices for fuel."
+   },
+   {
+    "name": "labor_pct_revenue",
+    "kind": "ratio",
+    "concepts": [
+     "LaborAndRelatedExpense"
+    ],
+    "description": "Salaries and related costs as a percent of total revenue",
+    "reason": "Labor is the largest expense and contract increases are expected.",
+    "quote": "We remain in negotiations regarding certain of these collective bargaining agreements and anticipate that any new contracts involving the relevant labor groups may include material increases in salaries and other benefits"
+   }
+  ],
+  "edges": [
+   {
+    "state": "input_cost",
+    "kpi": "fuel_pct_revenue",
+    "prior_mean": 0.7,
+    "reason": "Fuel is bought at prevailing market prices with no hedging.",
+    "quote": "The Company generally sources fuel at prevailing market prices, which have historically fluctuated substantially in short periods of time and continue to be volatile"
+   },
+   {
+    "state": "input_cost",
+    "kpi": "op_margin",
+    "prior_mean": -0.4,
+    "reason": "Limited ability to pass fuel increases through fares.",
+    "quote": "Given the highly competitive nature of the airline industry, the Company historically has had limited ability to, and may not be able to in the future, increase its fares and fees sufficiently to offset the full impact of increases in fuel prices"
+   },
+   {
+    "state": "labor",
+    "kpi": "labor_pct_revenue",
+    "prior_mean": 0.5,
+    "reason": "Union contracts have raised labor costs through wage inflation.",
+    "quote": "collective bargaining agreements with the Company's represented employee groups have materially increased the Company's labor costs due to wage inflation."
+   },
+   {
+    "state": "demand",
+    "kpi": "revenue_growth",
+    "prior_mean": 0.5,
+    "reason": "Air travel demand is cyclical and tied to the economy.",
+    "quote": "The airline industry is highly cyclical and the level of demand for air travel is correlated to the strength of the U.S. and global economies"
+   }
+  ]
+ },
+ "operating_kpis_suggested": [
+  {
+   "name": "Passenger load factor",
+   "definition": "RPMs divided by ASMs",
+   "quote": "Passenger load factor (e) 82.2 % 83.1 % 83.9 %"
+  },
+  {
+   "name": "TRASM",
+   "definition": "Total revenue per available seat mile, in cents",
+   "quote": "Total revenue per available seat mile (\"TRASM\") (cents) 17.88 18.34 18.44"
+  },
+  {
+   "name": "CASM",
+   "definition": "Cost per available seat mile, in cents",
+   "quote": "Cost per available seat mile (\"CASM\") (cents) 16.46 16.70 16.99"
+  },
+  {
+   "name": "Available seat miles",
+   "definition": "Seats available multiplied by scheduled miles flown (capacity)",
+   "quote": "Available seat miles (\"ASMs\"or \"capacity\") (millions) (c) 330,284 311,185 291,333"
+  }
+ ],
+ "rejected": []
+}

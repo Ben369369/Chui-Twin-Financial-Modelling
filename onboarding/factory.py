@@ -1,13 +1,15 @@
-"""Twin factory v0: ticker -> spec, from SEC metadata and an industry pack. No LLM.
+"""Twin factory: ticker -> spec, from SEC metadata and an industry pack, optionally refined by an LLM.
 
-    spec = build_spec("SBUX")   # dict, ready to write as specs/auto/sbux.yaml
+    spec, notes = build_spec("SBUX")             # v0, rules only
+    spec, notes = build_spec("CCL", llm=True)    # v1, plus an LLM reading the 10-K
 
 Steps: ticker -> CIK (SEC company_tickers.json) -> name, SIC code (submissions)
 -> industry pack by SIC -> shared industry signals + company signals (Wikipedia
 article found by search, GDELT news query from the cleaned name) -> XBRL ground
 truth rules (revenue growth, operating margin) that work for any SEC filer.
 
-v1 (finals) replaces the pack choice and KPI selection with an LLM reading the 10-K.
+With llm=True (v1, onboarding/llm.py) an LLM reads the latest 10-K and adds checked drivers, XBRL KPIs and
+edge priors on top of the pack, and picks the pack when no pack covers the SIC code. Without it, nothing changes.
 """
 
 from __future__ import annotations
@@ -104,11 +106,38 @@ def pick_pack(sic: int, packs: dict) -> tuple[str, dict]:
     raise ValueError(f"no industry pack covers SIC {sic}; add one to {PACKS.name}")
 
 
-def build_spec(ticker: str, news_query: str | None = None, wiki_article: str | None = None) -> tuple[dict, dict]:
-    """Returns (spec dict, provenance notes)."""
+def pack_template(pack_name: str | None, packs: dict) -> str:
+    if pack_name:
+        return packs["packs"][pack_name]["template"]
+    names = {p["template"] for p in packs["packs"].values()}
+    if len(names) != 1:
+        raise ValueError(f"packs use several templates {sorted(names)}; cannot choose one without a pack")
+    return names.pop()
+
+
+def build_spec(ticker: str, news_query: str | None = None, wiki_article: str | None = None,
+               llm: bool = False) -> tuple[dict, dict]:
+    """Returns (spec dict, provenance notes). With llm=True, notes["onboarding"] holds the LLM report."""
     packs = load_packs()
     company = lookup(ticker)
-    pack_name, pack = pick_pack(company.sic, packs)
+    try:
+        pack_name, pack = pick_pack(company.sic, packs)
+        pack_from = "SIC"
+    except ValueError:
+        if not llm:
+            raise
+        pack_name, pack, pack_from = None, None, "LLM"
+    result = None
+    if llm:
+        from engine.primitives import load_template
+        from onboarding.llm import onboard
+
+        template = load_template(pack_template(pack_name, packs), Path(__file__).resolve().parents[1] / "templates")
+        result = onboard(company, packs, template, sic_pack=pack_name)
+        if pack_name is None:
+            if result.checked.pack is None:
+                raise ValueError(f"no pack covers SIC {company.sic} and the LLM's pack choice did not pass the checks")
+            pack_name, pack = result.checked.pack, packs["packs"][result.checked.pack]
     d = packs["defaults"]
     article = wiki_article or wikipedia_article(company.name, company.ticker)
     query = news_query or make_news_query(article, company.name)
@@ -144,13 +173,23 @@ def build_spec(ticker: str, news_query: str | None = None, wiki_article: str | N
     notes = {"cik": company.cik, "sic": company.sic, "sic_description": company.sic_description,
              "pack": pack_name, "news_query": query, "wiki_article": article,
              "wiki_verified": bool(article and not wiki_article)}
+    if result is not None:
+        from onboarding.llm import apply, report
+
+        spec["notes"] += f" Pack '{pack_name}' chosen by {pack_from}."
+        spec = apply(spec, result.checked, result.meta)
+        notes["onboarding"] = report(result.checked, result.meta)
     return spec, notes
 
 
-def write_spec(spec: dict, out_dir: str | Path) -> Path:
+def write_spec(spec: dict, out_dir: str | Path, onboarding: dict | None = None) -> Path:
     out = Path(out_dir)
     out.mkdir(parents=True, exist_ok=True)
     path = out / f"{spec['ticker'].lower()}.yaml"
     path.write_text("# Auto-generated twin spec. Edit freely; regenerate with scripts/make_twin.py.\n"
                     + yaml.safe_dump(spec, sort_keys=False, width=120), encoding="utf-8")
+    if onboarding is not None:
+        # Every LLM proposal: accepted ones with their 10-K quotes, rejected ones with the reason.
+        path.with_name(f"{spec['ticker'].lower()}.onboarding.json").write_text(
+            json.dumps(onboarding, indent=1), encoding="utf-8")
     return path

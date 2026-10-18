@@ -3,6 +3,8 @@
     python scripts/make_twin.py SBUX
     python scripts/make_twin.py SBUX MCD UAL MAR DHI --scorecard docs/portfolio_scorecard.md
     python scripts/make_twin.py --specs specs/cmg.yaml specs/dal.yaml --scorecard docs/portfolio_scorecard.md
+    python scripts/make_twin.py CCL --llm                      # an LLM reads the 10-K and refines the spec
+    python scripts/make_twin.py MAR --llm --out specs/experiments/llm   # compare with the rules-only twin
 
 Shared series (FRED, BLS, TSA) are fetched once and reused by every twin that maps them.
 """
@@ -62,9 +64,9 @@ def score(rspec, conn) -> dict:
     return out
 
 
-def make(ticker: str, conn) -> tuple[Path, dict]:
-    spec, notes = build_spec(ticker)
-    path = write_spec(spec, ROOT / "specs" / "auto")
+def make(ticker: str, conn, llm: bool = False, out: Path = ROOT / "specs" / "auto") -> tuple[Path, dict]:
+    spec, notes = build_spec(ticker, llm=llm)
+    path = write_spec(spec, out, notes.get("onboarding"))
     rspec = load_spec(path, ROOT / "templates")
     have = known_series(conn)
     fresh = [s for s in rspec.signals if s.series not in have]
@@ -114,6 +116,8 @@ def main() -> None:
     ap.add_argument("tickers", nargs="*")
     ap.add_argument("--specs", nargs="*", default=[], help="hand-built specs to score alongside")
     ap.add_argument("--scorecard", default=None)
+    ap.add_argument("--llm", action="store_true", help="LLM reads each ticker's 10-K (onboarding/llm.py)")
+    ap.add_argument("--out", default="specs/auto", help="where to write specs built from tickers")
     args = ap.parse_args()
 
     conn = db.connect()
@@ -123,12 +127,19 @@ def main() -> None:
         t0 = time.time()
         try:
             if kind == "ticker":
-                path, notes = make(item, conn)
-                built_by = "factory"
+                path, notes = make(item, conn, llm=args.llm, out=ROOT / args.out)
+                built_by = "factory+llm" if args.llm else "factory"
                 print(f"[{item}] {notes['pack']} (SIC {notes['sic']}), news '{notes['news_query']}', wiki {notes['wiki_article']}")
+                if args.llm:
+                    o = notes["onboarding"]
+                    acc = o["accepted"]
+                    print(f"  LLM {o['model']} on 10-K {o['accession']}: +{len(acc['drivers'])} drivers, "
+                          f"+{len(acc['kpis'])} KPIs, {len(acc['edges'])} edges, {len(o['rejected'])} rejected "
+                          f"({o['input_tokens']:,} in / {o['output_tokens']:,} out tokens)")
             else:
                 path = Path(item)
-                built_by = "factory" if path.parent.name == "auto" else "hand"
+                built_by = ("factory+llm" if path.with_name(f"{path.stem}.onboarding.json").exists()
+                            else "factory" if path.parent.name == "auto" else "hand")
             rspec = load_spec(path, ROOT / "templates")
             build_s = time.time() - t0 if kind == "ticker" else None
             sc = score(rspec, conn)

@@ -42,3 +42,43 @@ Script: `scripts/experiments/jolts_labor.py`.
 - Chipotle's own careers sitemap is already a low-confidence labor signal.
 - Indeed Hiring Lab's public postings index by occupation is too short for a quarterly backtest: it starts
   in 2020, and COVID quarters are excluded.
+
+## 2. LLM onboarding v1 (2026-10-18): adopted for coverage, not for accuracy
+
+**Question.** Does an LLM reading the 10-K build a better twin than the rules-only factory?
+
+**Setup.** `onboarding/llm.py` with prompt `prompts/onboard_spec_v1.md`, model `claude-sonnet-5-5`. The model
+reads the latest 10-K and proposes a pack, extra driver series, extra XBRL KPIs, edge priors and operating
+metrics, each with a quote from the filing. Code drops anything whose quote is not in the 10-K, whose series
+cannot be fetched, whose XBRL concept lacks 16 quarters of history or is no longer reported, or whose state or KPI
+is unknown. We ran it on four tickers that already have rules-only twins, one per industry, and rescored the
+rules-only specs on the same day's data. Walk-forward from 2017Q1 with the scorecard's exclusions. Rerun with
+`python scripts/make_twin.py UAL MAR SBUX TGT --llm --out specs/experiments/llm --scorecard docs/llm_onboarding_scorecard.md`.
+
+**Result on the KPIs both versions share** (CRPS skill vs last quarter; positive is better):
+
+| Twin | Revenue growth, rules | Revenue growth, + LLM | Op margin, rules | Op margin, + LLM |
+|---|---|---|---|---|
+| UAL (26 q) | +0.45 | +0.45 | +0.52 | +0.53 |
+| MAR (26 q) | −0.07 | **−0.13** | +0.20 | +0.20 |
+| SBUX (26/29 q) | +0.05 | +0.06 | +0.55 | **+0.58** (MAE 2.01 → 1.81) |
+| TGT (31 q) | +0.01 | +0.01 | −0.05 | −0.05 |
+
+**New KPIs the LLM added** (skill vs last quarter): UAL fuel share of revenue +0.37 and labor share +0.32;
+TGT SG&A ratio +0.36 and cost-of-sales ratio +0.38; SBUX store operating expense −0.23 and product and
+distribution cost −0.14 (MAE 5.23 against 0.65 for "last quarter").
+
+**Reading.**
+1. On the default KPIs the LLM changes almost nothing: its edge priors mostly confirm the pack defaults, and
+   its extra drivers are weak signals. MAR revenue got slightly worse. We do not claim an accuracy gain.
+2. Its value is coverage. It onboards companies no pack covers (Carnival, SIC 4400, has no pack; the model chose
+   `hotels` and added airfares and jet fuel, with quotes), and it finds company-relevant KPIs that the
+   twin forecasts better than naive (UAL, TGT).
+3. It still needs review. On SBUX it listed two fallback concepts of different scope for one KPI, and one new
+   KPI forecasts far worse than naive. New KPIs are therefore kept out of the portfolio scorecard until a person
+   has checked them; `<ticker>.onboarding.json` lists every proposal, its quote and why rejected ones were dropped.
+4. Hindsight: the model reads today's 10-K, and the backtest scores the resulting structure on earlier quarters,
+   the same caveat as the pack choice. Its instructions forbid using known outcomes, but that cannot be verified.
+
+**Decision.** Adopted as `make_twin.py --llm` for new tickers. Specs in `specs/experiments/llm/` stay out of the
+portfolio. Carnival (`specs/auto/ccl.yaml`) is the first LLM-onboarded twin.
