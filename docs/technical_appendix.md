@@ -46,10 +46,10 @@ to end on a dummy template with made-up state names.
 
 ## 3. Data and point-in-time correctness
 
-- **Coverage:** 155,913 observations of 64 signal series from 6 public sources (FRED, BLS, TSA, GDELT,
-  Wikimedia, public sitemaps). From SEC filings there are 1,972
-  reported KPI values for 16 companies, plus 56 management-guidance values and 6 consensus values.
-- **Raw first:** every fetch is saved untouched to `data/raw/<source>/<date>/` (270 snapshots) before
+- **Coverage:** 164,221 observations of 68 signal series from 6 public sources (FRED, BLS, TSA, GDELT,
+  Wikimedia, public sitemaps). From SEC filings there are 2,564
+  reported KPI values for 17 companies (including extra KPIs from the LLM onboarding experiment), plus 56 management-guidance values and 6 consensus values.
+- **Raw first:** every fetch is saved untouched to `data/raw/<source>/<date>/` (362 snapshots) before
   parsing, so a parser can be fixed and rerun.
 - **Point in time:** every observation stores `observed_at` (the period it describes) and `available_at`
   (when it could first be known). Release lags are set conservatively: 45 days after month end for
@@ -106,24 +106,25 @@ to airlines and hotels with about 3.9.
 
 ## 6. Results
 
-Full table: `docs/portfolio_scorecard.md` (16 twins, 33 KPI series).
+Full table: `docs/portfolio_scorecard.md` (17 twins, 37 KPI series; rescored 2026-10-18).
 
 | Result | Value |
 |---|---|
-| KPI series beating "last quarter" on CRPS | **22 of 33** |
-| KPI series beating "same quarter last year" on CRPS | **31 of 33** |
-| DAL revenue growth vs Delta's own guidance (13 guided quarters) | skill **+0.28** (twin better) |
-| CMG comps vs Chipotle's guidance (18 quarters) | skill **+0.41** (twin better) |
+| KPI series beating "last quarter" on CRPS | **25 of 37** |
+| KPI series beating "same quarter last year" on CRPS | **35 of 37** |
+| DAL revenue growth vs Delta's own guidance (14 guided quarters) | skill **+0.29** (twin better) |
+| CMG comps vs Chipotle's guidance (20 quarters) | skill **+0.31** (twin better) |
 | CMG comps vs analyst consensus (6 quarters) | skill **−0.37** (consensus better) |
 
 Selected KPIs:
 
 | Twin | KPI | Quarters | MAE twin | MAE last quarter | Skill vs last quarter | 80% coverage |
 |---|---|---|---|---|---|---|
-| DAL | revenue growth | 26 | 2.72 | 4.15 | +0.34 | 0.69 |
-| DAL | operating margin | 26 | 2.39 | 5.03 | +0.37 | 1.00 |
+| DAL | revenue growth | 27 | 2.83 | 4.08 | +0.31 | 0.67 |
+| DAL | operating margin | 27 | 2.32 | 4.93 | +0.37 | 1.00 |
 | AAL (factory) | operating margin | 26 | 2.60 | 5.68 | +0.49 | 0.85 |
 | PHM (factory) | revenue growth | 27 | 4.74 | 4.45 | +0.33 | 0.96 |
+| PHM (factory) | pre-tax margin | 27 | 2.32 | 2.46 | +0.68 | 0.96 |
 | CMG | comps | 30 | 3.13 | 3.69 | +0.21 | 0.80 |
 | CMG | revenue growth | 30 | 3.86 | 3.92 | −0.06 | 0.97 |
 
@@ -136,7 +137,7 @@ Selected KPIs:
 - Interval coverage is uneven: some twins are too wide (coverage 1.00), and DAL revenue is a little narrow
   (0.69).
 - **Selection bias:** the KPI structures for the two hand-built twins were chosen on the same backtest
-  that is reported. The clean tests are (a) the 14 factory twins, which use industry defaults with no
+  that is reported. The clean tests are (a) the 15 factory twins (14 rules-only, 1 LLM), which use industry defaults with no
   tuning, and (b) the sealed live forecasts below.
 
 ## 7. Live out-of-sample test: sealed forecasts
@@ -167,18 +168,19 @@ existed before the outcome, without trusting us.
   guidance. The scored result stays as sealed. Future forecasts will match each anchor's definition to
   its KPI.
 
-Chipotle's Q3 forecast will be sealed on Oct 27, before its Oct 28 report.
+Chipotle's Q3 forecast was sealed on Oct 18, 2026 (comps median 2.94%, 80% range 0.64 to 5.15, P(above
+guidance of 2.65%) 57%; SHA-256 `fabe5e811fcf…`, OpenTimestamps), ten days before its Oct 28 report.
 
 ## 8. Validating extracted data: automation and manual review
 
 `scripts/validate_ground_truth.py` runs automatic checks on **every** row (`docs/validation_report.md`):
 
-| Check | What it tests | Result (1,972 rows) |
+| Check | What it tests | Result (2,564 rows) |
 |---|---|---|
 | Text span | The source sentence appears verbatim in the saved filing, and its number (signed by its wording) equals the stored value | 154 of 154 pass |
 | Identity | comps = transactions + check on reported values, within the company's own rounding | 14 of 14 pass |
 | Bounds | Values inside physical limits | all pass |
-| Outliers | Values more than 4 sd from the KPI's history, flagged for review | 20 flagged: all real events (COVID, Starbucks' 2013 Kraft arbitration charge, Marriott's 2009 timeshare write-down, Pulte's 2009 Centex merger) |
+| Outliers | Values more than 4 sd from the KPI's history, flagged for review | 24 flagged: all real events (COVID, including Carnival's near-zero 2020 revenue; Starbucks' 2013 Kraft arbitration charge, Marriott's 2009 timeshare write-down, Pulte's 2010 post-Centex goodwill impairment and merger-inflated growth) |
 
 Building this caught three bugs **in the checker**, not in the data. Examples: "1.8% fewer transactions"
 was read as positive, and "December increased 14.7% and declined 4.8% for the full quarter" holds two

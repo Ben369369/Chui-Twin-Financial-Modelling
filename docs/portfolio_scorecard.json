@@ -1,5 +1,5 @@
 {
- "generated": "2026-10-03T22:26:22+00:00",
+ "generated": "2026-10-18T19:01:58+00:00",
  "test_from": "2017Q1",
  "twins": [
   {
@@ -14,47 +14,47 @@
     "kpis": {
      "transactions": {
       "n": 18,
-      "mae_twin": 3.297219730714444,
+      "mae_twin": 3.29737524691623,
       "mae_naive": 2.55,
       "mae_seasonal": 7.100000000000001,
-      "skill_naive": 0.18695594335525623,
-      "skill_seasonal": 0.745910343173607,
+      "skill_naive": 0.18695199961630493,
+      "skill_seasonal": 0.7459082187769361,
       "coverage80": 0.6666666666666666
      },
      "check": {
       "n": 13,
-      "mae_twin": 1.2343113702464321,
+      "mae_twin": 1.234275764976369,
       "mae_naive": 0.7727272727272727,
       "mae_seasonal": 1.0666666666666667,
-      "skill_naive": -0.10136927142274188,
-      "skill_seasonal": 0.4614202923875328,
+      "skill_naive": -0.10133530587146033,
+      "skill_seasonal": 0.4614586627173003,
       "coverage80": 0.6923076923076923
      },
      "comps": {
       "n": 30,
-      "mae_twin": 3.1293551613100594,
+      "mae_twin": 3.1294560796746875,
       "mae_naive": 3.693333333333333,
       "mae_seasonal": 9.209999999999999,
-      "skill_naive": 0.21182033453435278,
-      "skill_seasonal": 0.6716240336776207,
+      "skill_naive": 0.21180736702589475,
+      "skill_seasonal": 0.6716186310793207,
       "coverage80": 0.8
      },
      "rlom": {
       "n": 30,
-      "mae_twin": 1.7664407915466924,
+      "mae_twin": 1.7664668011132452,
       "mae_naive": 1.65,
       "mae_seasonal": 2.136666666666667,
-      "skill_naive": -0.07324951227268284,
-      "skill_seasonal": 0.23984561730952259,
+      "skill_naive": -0.07325801572647905,
+      "skill_seasonal": 0.23983959453700132,
       "coverage80": 1.0
      },
      "revenue_growth": {
       "n": 30,
-      "mae_twin": 3.856017132624019,
+      "mae_twin": 3.862113525705448,
       "mae_naive": 3.9230386659007284,
       "mae_seasonal": 9.482172864204735,
-      "skill_naive": -0.05820548470746134,
-      "skill_seasonal": 0.5564334307570704,
+      "skill_naive": -0.058286738252611325,
+      "skill_seasonal": 0.5563993718178739,
       "coverage80": 0.9666666666666667
      }
     }
@@ -67,25 +67,25 @@
    "seconds": null,
    "signals": 6,
    "score": {
-    "gt_quarters": 62,
-    "test_quarters": 26,
+    "gt_quarters": 63,
+    "test_quarters": 27,
     "kpis": {
      "revenue_growth": {
-      "n": 26,
-      "mae_twin": 2.719363574671779,
-      "mae_naive": 4.1493439895157715,
-      "mae_seasonal": 15.774129705284622,
-      "skill_naive": 0.34192354611677456,
-      "skill_seasonal": 0.8485718153332045,
-      "coverage80": 0.6923076923076923
+      "n": 27,
+      "mae_twin": 2.8321163550618365,
+      "mae_naive": 4.084371156448244,
+      "mae_seasonal": 15.734967013966026,
+      "skill_naive": 0.30724401343156016,
+      "skill_seasonal": 0.8421025084069758,
+      "coverage80": 0.6666666666666666
      },
      "op_margin": {
-      "n": 26,
-      "mae_twin": 2.386656839627789,
-      "mae_naive": 5.0301340756954795,
-      "mae_seasonal": 2.76330898838471,
-      "skill_naive": 0.36898594579979493,
-      "skill_seasonal": 0.009612999479125417,
+      "n": 27,
+      "mae_twin": 2.319063566712495,
+      "mae_naive": 4.926485360865018,
+      "mae_seasonal": 2.7682660610355168,
+      "skill_naive": 0.3656558673675242,
+      "skill_seasonal": 0.017014662674324943,
       "coverage80": 1.0
      }
     }
@@ -123,6 +123,37 @@
    }
   },
   {
+   "ticker": "CCL",
+   "industry": "hotels",
+   "built_by": "factory+llm",
+   "seconds": null,
+   "signals": 7,
+   "score": {
+    "gt_quarters": 49,
+    "test_quarters": 27,
+    "kpis": {
+     "revenue_growth": {
+      "n": 27,
+      "mae_twin": 8.52987892314303,
+      "mae_naive": 8.683510421022229,
+      "mae_seasonal": 469.7757482096529,
+      "skill_naive": 0.01649021435870135,
+      "skill_seasonal": 0.9822439784370499,
+      "coverage80": 0.6666666666666666
+     },
+     "op_margin": {
+      "n": 27,
+      "mae_twin": 9.549189009367149,
+      "mae_naive": 10.544619935667006,
+      "mae_seasonal": 11.149636763702349,
+      "skill_naive": -0.049828644071003625,
+      "skill_seasonal": 0.21591987314375016,
+      "coverage80": 0.7037037037037037
+     }
+    }
+   }
+  },
+  {
    "ticker": "DHI",
    "industry": "homebuilders",
    "built_by": "factory",
@@ -140,6 +171,15 @@
       "skill_naive": 0.12683180890902468,
       "skill_seasonal": 0.5174623447310205,
       "coverage80": 0.9
+     },
+     "pretax_margin": {
+      "n": 30,
+      "mae_twin": 1.1987416360220464,
+      "mae_naive": 1.3557754880763477,
+      "mae_seasonal": 2.217716239512709,
+      "skill_naive": 0.10822387664556277,
+      "skill_seasonal": 0.4661994079553984,
+      "coverage80": 0.9333333333333333
      }
     }
    }
@@ -156,20 +196,20 @@
     "kpis": {
      "revenue_growth": {
       "n": 31,
-      "mae_twin": 5.510959861335543,
+      "mae_twin": 5.517130537585358,
       "mae_naive": 4.110196785587773,
       "mae_seasonal": 12.289076833294745,
-      "skill_naive": -0.03774848092362637,
-      "skill_seasonal": 0.612925704888661,
+      "skill_naive": -0.03847414176252806,
+      "skill_seasonal": 0.612655037513212,
       "coverage80": 0.9032258064516129
      },
      "op_margin": {
       "n": 31,
-      "mae_twin": 2.1160001460811073,
+      "mae_twin": 2.115083851830253,
       "mae_naive": 2.022734901372595,
       "mae_seasonal": 0.915110880684231,
-      "skill_naive": 0.11231588542661586,
-      "skill_seasonal": 0.030269320887201023,
+      "skill_naive": 0.11235749666862849,
+      "skill_seasonal": 0.03031477815889627,
       "coverage80": 0.967741935483871
      }
     }
@@ -311,20 +351,20 @@
     "kpis": {
      "revenue_growth": {
       "n": 30,
-      "mae_twin": 4.040138334620384,
+      "mae_twin": 4.038124767408797,
       "mae_naive": 3.796343320353306,
       "mae_seasonal": 9.802012953804143,
-      "skill_naive": -0.01548260862816786,
-      "skill_seasonal": 0.5873894435220002,
+      "skill_naive": -0.01508208203961714,
+      "skill_seasonal": 0.587552185352517,
       "coverage80": 0.9
      },
      "op_margin": {
       "n": 30,
-      "mae_twin": 3.4484003190558847,
+      "mae_twin": 3.448401258034474,
       "mae_naive": 3.5582032410639584,
       "mae_seasonal": 4.139626838797271,
-      "skill_naive": -0.007851707092636717,
-      "skill_seasonal": 0.1521933863020285,
+      "skill_naive": -0.007842754470453794,
+      "skill_seasonal": 0.152200917263422,
       "coverage80": 0.9333333333333333
      }
     }
@@ -337,7 +377,7 @@
    "seconds": null,
    "signals": 7,
    "score": {
-    "gt_quarters": 61,
+    "gt_quarters": 62,
     "test_quarters": 27,
     "kpis": {
      "revenue_growth": {
@@ -347,6 +387,15 @@
       "mae_seasonal": 11.939981134654847,
       "skill_naive": 0.3311133963522038,
       "skill_seasonal": 0.6078984517842168,
+      "coverage80": 0.9629629629629629
+     },
+     "pretax_margin": {
+      "n": 27,
+      "mae_twin": 2.322041178560882,
+      "mae_naive": 2.4642002011133775,
+      "mae_seasonal": 2.5865564728444963,
+      "skill_naive": 0.6806822658728839,
+      "skill_seasonal": 0.5494527100011102,
       "coverage80": 0.9629629629629629
      }
     }
@@ -364,20 +413,20 @@
     "kpis": {
      "revenue_growth": {
       "n": 26,
-      "mae_twin": 6.346816180379643,
+      "mae_twin": 6.34662240397606,
       "mae_naive": 5.038732900843335,
       "mae_seasonal": 10.716483071494686,
-      "skill_naive": 0.05377308378190537,
-      "skill_seasonal": 0.42401424237330154,
+      "skill_naive": 0.05392966621603523,
+      "skill_seasonal": 0.42409056069628015,
       "coverage80": 0.8076923076923077
      },
      "op_margin": {
       "n": 29,
-      "mae_twin": 2.0118266049118327,
+      "mae_twin": 2.0112541211669988,
       "mae_naive": 2.4304769463046205,
       "mae_seasonal": 3.2686785079709653,
-      "skill_naive": 0.5505054095713853,
-      "skill_seasonal": 0.5751416982289086,
+      "skill_naive": 0.5506543645543672,
+      "skill_seasonal": 0.5752865331631802,
       "coverage80": 0.896551724137931
      }
     }
@@ -390,25 +439,25 @@
    "seconds": null,
    "signals": 5,
    "score": {
-    "gt_quarters": 69,
+    "gt_quarters": 73,
     "test_quarters": 31,
     "kpis": {
      "revenue_growth": {
       "n": 31,
-      "mae_twin": 2.904558508063615,
+      "mae_twin": 2.9044835670696445,
       "mae_naive": 3.0787340307318116,
       "mae_seasonal": 6.114863345383136,
-      "skill_naive": 0.011514676592878748,
-      "skill_seasonal": 0.47118761053401714,
+      "skill_naive": 0.011518383799685727,
+      "skill_seasonal": 0.47118959378742853,
       "coverage80": 0.7741935483870968
      },
      "op_margin": {
       "n": 31,
-      "mae_twin": 1.1169900829866322,
+      "mae_twin": 1.1170136310030157,
       "mae_naive": 1.2701777516075492,
       "mae_seasonal": 1.6811218384349078,
-      "skill_naive": -0.0489714429426209,
-      "skill_seasonal": 0.2572534294146477,
+      "skill_naive": -0.04897527742119667,
+      "skill_seasonal": 0.25725080042771187,
       "coverage80": 0.9032258064516129
      }
     }
@@ -426,20 +475,20 @@
     "kpis": {
      "revenue_growth": {
       "n": 28,
-      "mae_twin": 4.829377050763062,
+      "mae_twin": 4.83204198697526,
       "mae_naive": 4.147582553326272,
       "mae_seasonal": 7.738114482983652,
-      "skill_naive": 0.12541337655945528,
-      "skill_seasonal": 0.5236927174995099,
+      "skill_naive": 0.12488516862129395,
+      "skill_seasonal": 0.5234399234287517,
       "coverage80": 0.9285714285714286
      },
      "op_margin": {
       "n": 29,
-      "mae_twin": 1.2613819989630068,
+      "mae_twin": 1.2612472083503259,
       "mae_naive": 1.519299440097104,
       "mae_seasonal": 1.2485549876747222,
-      "skill_naive": 0.08407617536724588,
-      "skill_seasonal": 0.027794394343863993,
+      "skill_naive": 0.08411762150425983,
+      "skill_seasonal": 0.027825360115021458,
       "coverage80": 0.9310344827586207
      }
     }
@@ -488,20 +537,20 @@
     "kpis": {
      "revenue_growth": {
       "n": 31,
-      "mae_twin": 1.2304274292696709,
+      "mae_twin": 1.230485471061552,
       "mae_naive": 1.2107575659705319,
       "mae_seasonal": 2.616490350022237,
-      "skill_naive": -0.01943439024108229,
-      "skill_seasonal": 0.49476031896058803,
+      "skill_naive": -0.01944582134503725,
+      "skill_seasonal": 0.4947546536157936,
       "coverage80": 0.8387096774193549
      },
      "op_margin": {
       "n": 31,
-      "mae_twin": 0.43285081367301337,
+      "mae_twin": 0.43284440469163826,
       "mae_naive": 0.5762042710271229,
       "mae_seasonal": 0.5245108712618923,
-      "skill_naive": 0.1532253026592303,
-      "skill_seasonal": 0.16405326544344234,
+      "skill_naive": 0.15322716556168492,
+      "skill_seasonal": 0.16405510452440297,
       "coverage80": 0.8709677419354839
      }
     }

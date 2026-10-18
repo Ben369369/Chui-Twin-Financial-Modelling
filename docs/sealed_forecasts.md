@@ -12,7 +12,14 @@ via public calendar servers. Nobody has to trust us.
 | Sealed (UTC) | Twin | Forecast | Median | 80% range | Vs guidance | Resolves | SHA-256 |
 |---|---|---|---|---|---|---|---|
 | 2026-10-02 20:58 | DAL | 2026Q3 revenue growth, yoy % (GAAP) | 15.2 | 10.6 to 19.9 | guidance mid-teens (15.0); P(above) 52% | Delta Q3 release, ~Oct 9 | `f6892ab9366122fd81b64c1106b052c1962638c6ab8644587c5baee2d2058bd8` (OpenTimestamps: submitted 2026-10-02 21:13 UTC, anchored in Bitcoin block 969637) |
-| planned ~2026-10-27 | CMG | 2026Q3 comps, revenue growth, margin | | | | Oct 28 after close | |
+| 2026-10-18 19:00 | CMG | 2026Q3 comps, yoy % | 2.94 | 0.64 to 5.15 | guidance 2.65 (implied from full year); P(above) 57% | Chipotle Q3 release, Oct 28 after close | `fabe5e811fcf5fe2e0b909a5d7c7e6ff5e69a8ee691645214ec7e816c0016282` (OpenTimestamps: submitted 2026-10-18, Bitcoin proof pending) |
+| (same file) | CMG | 2026Q3 transactions / check / restaurant-level margin / revenue growth | 1.71 / 1.24 / 25.43 / 9.53 | −0.75 to 4.12 / 0.05 to 2.41 / 20.97 to 29.97 / −0.01 to 19.15 | – | Oct 28 | same hash |
+
+**CMG data note (2026-10-18).** The largest driver of the sealed comps and transactions forecasts is a drop in
+Chipotle news tone (GDELT) in July and August 2026; the sentiment state for Q3 is −1.16 sd. GDELT's own response
+has no Chipotle tone for 2026-07-01..07-04, 09-14..09-19 and 09-26 (raw file
+`data/raw/gdelt/2026-10-18/tone_chipotle_1b9fc10a4739.json`; refetched, still absent), so Q3 sentiment rests on
+81 of 92 days. Sealed as is, two days before the submission deadline.
 
 Outcomes are recorded here after the release, unchanged rows above, with the reported value and its SEC accession.
 `python scripts/resolve_sealed.py` checks every hash, accepts an outcome only if it became public after the

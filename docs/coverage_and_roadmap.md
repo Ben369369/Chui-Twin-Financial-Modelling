@@ -20,17 +20,17 @@ The engine itself is industry-agnostic. Industry structure lives in templates, a
 | Needs a new template | Banks, insurers | FFIEC call reports, Fed H.8, HMDA, CFPB complaints, NAIC filings | `bank` (roadmap) |
 | Needs a new engine module | Clinical-stage biotech, event-driven names | ClinicalTrials.gov, Drugs@FDA, FDA advisory calendars | `event` (roadmap) |
 
-## Current state (updated October 7)
+## Current state (updated October 18)
 
-- **16 twins in 5 industries** (restaurants, airlines, hotels, homebuilders, general retail) on one engine. 14 were built by the twin factory from the ticker alone, with no per-company tuning.
+- **17 twins** (restaurants, airlines, hotels, homebuilders, general retail, and a cruise line) on one engine. 14 were built by the rules-only twin factory from the ticker alone, with no per-company tuning; Carnival was onboarded by the LLM because no industry pack covers its SIC code.
 - **Engine:** state estimation, Monte Carlo simulation with scenario shocks, driver waterfall, leave-one-signal-out attribution, walk-forward evaluation, and sealed forecasts. Shared by every twin. Each KPI can be modeled as a level (with last-quarter and same-quarter-last-year terms), as a change since the last report, or as a surprise relative to guidance or consensus. Accounting identities and physical bounds are enforced on every simulated path.
 - **Hand-built twins:**
   - Chipotle: 59 quarters of comps, transactions, check and margin extracted from earnings releases; store count and job postings from public sitemaps, with history from the Internet Archive; news tone; macro signals; consensus from public news quotes.
   - Delta: GAAP KPIs from XBRL; TSA throughput, jet fuel and airfare CPI; management guidance extracted from releases.
 - **Twin factory (onboarding v0):** `scripts/make_twin.py <TICKER>` resolves the company at SEC, picks an industry pack by SIC code, attaches shared industry signals plus the company's verified Wikipedia article and news query, pulls KPIs from XBRL, and backtests.
-- **Evaluation:** beats "last quarter" on 22 of 33 KPI series and "same quarter last year" on 31 of 33; beats management guidance on Delta revenue and Chipotle comps; trails analyst consensus on Chipotle comps. See `docs/portfolio_scorecard.md`.
+- **Evaluation:** beats "last quarter" on 25 of 37 KPI series and "same quarter last year" on 35 of 37; beats management guidance on Delta revenue and Chipotle comps; trails analyst consensus on Chipotle comps. See `docs/portfolio_scorecard.md`.
 - **Shock library:** half-lives measured from real events (Chipotle 2015 food safety, COVID, the Delta 2024 outage) feed the scenario presets.
-- **Validation:** automatic checks on all 1,972 reported values, plus a manual sample (`docs/validation_report.md`). Experiments, including the ones that failed, are in `docs/experiments.md`.
+- **Validation:** automatic checks on all 2,564 reported values (0 failures), plus a manual sample (`docs/validation_report.md`). Experiments, including the ones that failed, are in `docs/experiments.md`.
 - **Live test:** the Delta Q3 forecast was sealed and timestamped in Bitcoin before the release. Chipotle's is sealed before Oct 28.
 
 ## Expansion order

@@ -1,65 +1,94 @@
-# Demo script (5 minutes)
+# Demo script (finals, 12 minutes inside the 30-minute talk)
 
-**Before the call:** run `uvicorn api.serve:app --port 8000` and open http://localhost:8000. Click once through
-Portfolio and CMG so everything is warm. Keep `docs/sealed_forecasts.md` open in a second tab.
+The demo sits between deck slide 11 ("Let's run it") and slide 12 (shocks). The 5-minute midpoint version is in git
+history (`git show a8cc3e1:docs/demo_script.md`).
 
-## 0:00 Open on the system, not on Chipotle (45 s)
+## Setup (30 minutes before)
+
+1. `uvicorn api.serve:app --port 8000`, open http://localhost:8000, click once through Portfolio, DAL, CMG, CCL so
+   everything is warm.
+2. A terminal in the repo root with `CHUI_SEC_USER_AGENT` and `ANTHROPIC_API_KEY` set. Type, but do not run:
+   `python scripts/make_twin.py <LIVE_TICKER> --llm`
+   `<LIVE_TICKER>` = **RCL** (Royal Caribbean). Rehearsed 2026-10-18: 103 s end to end; the model chose the hotels
+   pack (no pack covers SIC 4400), added jet fuel ("6.4% of revenue", quantified 10% sensitivity) and airfares, and
+   an edge from capacity (new ships) to revenue growth. The live run's choices can differ: read them off the screen.
+   Its spec was deleted after the rehearsal so the live run builds it fresh; delete `specs/auto/rcl.*` again if a
+   later rehearsal recreates it. Fallback if the run fails: show `specs/auto/ccl.onboarding.json`.
+3. Second browser tab: `docs/sealed_forecasts.md` on GitHub or in the editor.
+4. Check `GET /chat/status` says the chat is configured.
+5. Backup video of this whole demo, recorded Monday, ready to play.
+
+## 0:00 The portfolio (90 s)
 
 **Portfolio view.**
-> "This is Chui Twin. It turns any public company into a runnable operating model from public data. There are 16
-> twins across 5 industries, and 14 of them were built from nothing but the ticker."
+> "Seventeen twins, one engine. Every row was scored the same way: walk-forward from 2017, refit at each earnings
+> release using only data public at that moment. Dots right of zero beat 'same as last quarter'."
 
-Point at the four tiles, then the dot chart.
-> "Every twin is scored the same way: walk-forward from 2017, refit at each earnings release using only data that
-> was public at that moment. Dots right of zero beat a 'same as last quarter' forecast. Airlines are strong.
-> Restaurants straddle zero, and I'll show you why."
+Point at the airlines, then the restaurants.
+> "Airlines are strongest: TSA counts and jet fuel are direct, timely sensors. Restaurant revenue roughly ties naive,
+> because free public data says little about one chain. Every twin shows its own reliability."
 
-## 0:45 How a new company gets in (45 s)
+## 1:30 Start a new company (30 s)
 
-Explain while scrolling the table:
-> "The factory looks the ticker up at the SEC, reads its industry code, attaches that industry's shared public
-> signals, verifies the company's Wikipedia page by finding the ticker in its infobox, and pulls the KPIs from XBRL,
-> which every filer publishes the same way. A new industry is one config file. The engine has no company code, and
-> a test enforces that."
+Switch to the terminal, run the prepared `make_twin.py <LIVE_TICKER> --llm`.
+> "While we look at other things, the system is reading this company's 10-K for the first time. We'll come back to
+> it in a few minutes."
 
-## 1:30 One shock, many companies (60 s)
+## 2:00 One shock, every airline (2 min)
 
 **Economy shock card.** Click **Jet fuel +30%**.
 > "Move one shared series and every exposed twin responds through its own calibrated model. Jet fuel up 30% cuts
-> next-quarter operating margin by 1.5 to 1.9 points across Delta, United, American and Southwest, while revenue
-> edges up through fare pass-through."
+> next-quarter operating margin across Delta, United, American and Southwest, while revenue edges up through fare
+> pass-through. Carnival responds too: the LLM found fuel in its 10-K."
 
-Click **Restaurant sales −5%**.
-> "Same mechanism, a different part of the economy."
+Read the actual numbers off the screen; do not quote them from memory. Then **Restaurant sales −5%**.
 
-## 2:30 Inside one twin (75 s)
+## 4:00 Inside Delta (3 min)
 
-Click a Delta bar to open **DAL**.
-> "Here's revenue growth, with an 80% band. The grey diamond is Delta's own guidance, mid-teens, which the system
-> read out of the press release. The twin starts from guidance and forecasts the surprise. It adds about a point
-> for Delta's habit of beating guidance and takes some off for softening airfares. Each bar here is one data
-> series, and clicking it shows the exact source."
+Open **DAL**.
+> "Revenue growth with an 80% band. The grey diamond is Delta's own guidance, read out of the press release. The
+> twin starts from guidance and forecasts the surprise."
 
-Click a driver bar, show the sources, then the **Fuel / commodity spike** preset.
+Click a driver bar to show its sources (series, raw file, URL).
+> "Every bar is one data series, and every number traces to a file we saved before parsing it."
 
-## 3:45 Honesty and the live test (60 s)
+Apply the **Fuel / commodity spike** preset.
+> "Scenarios fade at speeds measured from real events. The Delta outage was gone in a quarter; Chipotle's
+> food-safety crisis lasted years."
 
-Open **CMG**:
-> "On Chipotle, analyst consensus still beats the twin: a mean error of 1 point against 2.5. Free public data
-> carries little Chipotle-specific information, and I'd rather show that than hide it. Against Delta's own
-> guidance, the twin wins."
+## 7:00 The new company (2 min)
 
-Switch to the sealed-forecasts tab:
-> "This is a live test. The Delta Q3 forecast, median 15.2% and 80% range 10.6 to 19.9, was sealed and timestamped
-> in the Bitcoin blockchain before Delta reports around October 9. Chipotle's gets sealed the day before October 28."
+Back to the terminal. Read the summary line: pack, drivers, KPIs, rejected proposals, tokens.
+> "It picked an industry pack, added drivers, and every one came with a quote from the filing. Anything whose quote
+> isn't in the 10-K, or whose data can't be fetched, was dropped by code, not by the model."
 
-## 4:45 Ask (15 s)
+Open `specs/auto/<live_ticker>.onboarding.json`, show one accepted quote and one rejection reason. Refresh the
+dashboard and open the new twin.
+> "Two minutes from ticker to a scored twin. Honest result: on existing twins the LLM didn't improve accuracy on
+> the shared KPIs. What it adds is coverage."
 
-> "Two questions for you: is a cross-industry scorecard plus live sealed forecasts the right proof of
-> scalability? And should I prioritize beating consensus on one company, or matching it across many?"
+## 9:00 Ask the twin (2 min)
+
+Open the chat panel. Ask:
+> "What happens to Chipotle's comps next quarter if a food-safety scare hits?"
+
+Point out that the assistant translates the event into a shock, says which size it chose and why, and every
+number in its reply comes from a tool call on the twin, not from the model's memory.
+
+## 11:00 The open bet (60 s)
+
+Open **CMG**, then the sealed-forecasts tab.
+> "Chipotle's Q3 forecast was sealed on Monday and anchored in Bitcoin. It resolves on October 28, a week after
+> today. Delta's resolved on October 9: the margin was a hit, revenue missed, and the miss is published with the
+> reason."
+
+Back to the deck, slide 12.
 
 ## If something breaks
 
-- **Blank page:** the API isn't running. Restart `uvicorn api.serve:app`.
+- **Blank page:** the API isn't running. Restart `uvicorn api.serve:app --port 8000`.
+- **Live onboarding fails** (SEC slow, Anthropic error): say so plainly, show `specs/auto/ccl.onboarding.json`
+  instead. A GDELT 429 in the output is expected and harmless; the run carries on.
 - **A twin errors:** switch to DAL or UAL, the most robust.
-- **Questions about the model:** the math is in `docs/model.md`, the data sources in `provenance.md`.
+- **Chat unavailable:** skip to 11:00 and use the time for questions.
+- **Everything fails:** play the backup video.

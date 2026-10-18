@@ -1,6 +1,7 @@
-"""Render docs/technical_appendix.md to a branded PDF with headless Chrome or Edge.
+"""Render a markdown document to a branded PDF with headless Chrome or Edge.
 
-    python scripts/reports/appendix_pdf.py      # writes docs/Chui_Twin_Technical_Appendix.pdf
+    python scripts/reports/appendix_pdf.py      # docs/technical_appendix.md -> docs/Chui_Twin_Technical_Appendix.pdf
+    python scripts/reports/appendix_pdf.py docs/project_structure.md docs/Chui_Twin_Project_Structure.pdf
 """
 
 from __future__ import annotations
@@ -8,6 +9,7 @@ from __future__ import annotations
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -69,17 +71,22 @@ def to_python_markdown(text: str) -> str:
 
 
 def main() -> None:
-    body = markdown.markdown(to_python_markdown(SRC.read_text(encoding="utf-8")), extensions=["tables", "fenced_code"])
-    html = (f"<!doctype html><html><head><meta charset='utf-8'><title>Chui Twin: Technical Appendix</title>"
-            f"<style>{CSS}</style></head><body><div class='mast'><div class='logo'>Chui<small>Trading</small></div>"
+    src, out = (ROOT / sys.argv[1], ROOT / sys.argv[2]) if len(sys.argv) == 3 else (SRC, OUT)
+    text = src.read_text(encoding="utf-8")
+    title = next((line[2:].strip() for line in text.splitlines() if line.startswith("# ")), "Chui Twin")
+    body = markdown.markdown(to_python_markdown(text), extensions=["tables", "fenced_code"])
+    # Other documents may carry wide code blocks (file trees): a smaller code face keeps ~120 columns on the page.
+    css = CSS if src == SRC else CSS + "pre, pre code { font-size: 6.9pt; } table, pre { break-inside: auto; }"
+    html = (f"<!doctype html><html><head><meta charset='utf-8'><title>{title}</title>"
+            f"<style>{css}</style></head><body><div class='mast'><div class='logo'>Chui<small>Trading</small></div>"
             f"<div class='who'>Chui Trading · A Chui Labs company · Princeton, NJ</div></div>{body}</body></html>")
     with tempfile.TemporaryDirectory() as tmp:
         page = Path(tmp) / "appendix.html"
         page.write_text(html, encoding="utf-8")
         subprocess.run([browser(), "--headless=new", "--disable-gpu", "--no-pdf-header-footer",
-                        f"--user-data-dir={Path(tmp) / 'profile'}", f"--print-to-pdf={OUT}", page.as_uri()],
+                        f"--user-data-dir={Path(tmp) / 'profile'}", f"--print-to-pdf={out}", page.as_uri()],
                        check=True, capture_output=True, timeout=120)
-    print(f"wrote {OUT.relative_to(ROOT)} ({OUT.stat().st_size // 1024} KB)")
+    print(f"wrote {out.relative_to(ROOT)} ({out.stat().st_size // 1024} KB)")
 
 
 if __name__ == "__main__":
