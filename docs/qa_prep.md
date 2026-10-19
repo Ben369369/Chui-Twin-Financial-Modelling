@@ -15,7 +15,7 @@ honestly. *Evidence:* technical appendix §2, `docs/surprise_direction.md`.
 **Does it call beat or miss?**
 Delta revenue vs guidance: 9 of 14 right against a 50% base rate (p = 0.21), suggestive. Chipotle comps vs
 guidance: 13 of 18, but Chipotle beat its own guide 13 of 18 times, so "always predict a beat" scores the same:
-no edge. Against consensus: 3 of 6. *Say it before they do:* the Chipotle 72% is the base rate, not skill.
+no edge. Against consensus: 3 of 6. *If they point at the 72%:* agree it is the base rate, not skill.
 *Then the stronger test:* beat/miss throws away the size of each miss. On error size, the twin was closer than
 Delta's own guidance in 11 of 14 quarters (exact permutation p = 0.005), and Delta beat its guide only 7 of 14
 times, so it is not a guide-low artifact. Chipotle: closer in 15 of 18 (p = 0.02), partly correcting a guide that
@@ -43,7 +43,7 @@ shock that worries you (fuel +30%, a food-safety scare) and see the distribution
 Every observation stores `observed_at` (the period it describes) and `available_at` (when it could first be known),
 and the backtest only uses rows with `available_at` before the forecast time. Each quarter is forecast 1 hour
 before the earnings press release (SEC 8-K item 2.02). Monthly macro data counts as known 45 days after month end;
-daily signals the next day. *Say this before they ask:* an outside review on Oct 19 found that results taken from
+daily signals the next day. *If asked whether it was ever wrong:* an outside review on Oct 19 found that results taken from
 XBRL were dated at the 10-Q, which comes after the press release (a day for most quarters, a month for Q4), so some
 forecasts could see news reacting to the results. We fixed it, rescored all 17 twins the same night, and the
 results barely moved: 25 → 26 of 37 series beat last quarter. The sealed forecasts were never affected.

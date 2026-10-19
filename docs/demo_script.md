@@ -30,9 +30,11 @@ history (`git show a8cc3e1:docs/demo_script.md`).
 > "Seventeen twins, one engine. Every row was scored the same way: walk-forward from 2017, refit at each earnings
 > release using only data public at that moment. Dots right of zero beat 'same as last quarter'."
 
-Point at the airlines, then the restaurants.
-> "Airlines are strongest: TSA counts and jet fuel are direct, timely sensors. Restaurant revenue roughly ties naive,
-> because free public data says little about one chain. Every twin shows its own reliability."
+Point at the airlines.
+> "Airlines are strongest: TSA counts and jet fuel are direct, timely sensors. Every twin shows its own reliability,
+> so you always know how far to trust it."
+*If asked where it is weak:* "Restaurant and hotel revenue roughly tie last quarter: free public data says little
+about one chain's sales."
 
 ## 1:30 Start a new company (30 s)
 
@@ -70,8 +72,9 @@ Back to the terminal. Read the summary line: pack, drivers, KPIs, rejected propo
 
 Open `specs/auto/<live_ticker>.onboarding.json`, show one accepted quote and one rejection reason. Refresh the
 dashboard and open the new twin.
-> "Two minutes from ticker to a scored twin. Honest result: on existing twins the LLM didn't improve accuracy on
-> the shared KPIs. What it adds is coverage."
+> "Two minutes from ticker to a scored twin, for a company the system had never seen."
+*If asked whether the LLM improves accuracy:* "Not on the KPIs the twins already had. What it adds is coverage and
+new KPIs, like United's fuel share of revenue."
 
 ## 9:00 Ask the twin (2 min)
 

@@ -189,7 +189,7 @@ Skill is CRPS skill versus "same as last quarter" (positive = twin better), resc
 | UAL United | airlines | factory | 26 | revenue growth +0.45 · op margin +0.52 |
 | WMT Walmart | general retail | factory | 31 | revenue growth 0.00 · op margin +0.15 |
 
-**Patterns to say out loud:** airlines strongest (TSA and jet fuel are direct, timely sensors); margins beat naive
+**Patterns** (lead with the first; the rest only if asked): airlines strongest (TSA and jet fuel are direct, timely sensors); margins beat naive
 more often than revenue; restaurant and hotel revenue roughly tie naive (little company-specific public signal).
 
 **Hand-built twins in more depth:**
@@ -289,7 +289,7 @@ SHA-256 `fabe5e811fcf5fe2e0b909a5d7c7e6ff5e69a8ee691645214ec7e816c0016282`.
 reduce demand for cruises"), jet fuel as input cost; suggested occupancy, berth days, fuel per ton,
 passengers as operating metrics. **RCL rehearsal:** 103 s, similar choices plus capacity (new ships) → revenue.
 
-**Honest result** (`docs/experiments.md` §2): on UAL, MAR, SBUX, TGT the LLM moved shared-KPI skill by ±0.03 (MAR
+**Result, if asked** (`docs/experiments.md` §2): on UAL, MAR, SBUX, TGT the LLM moved shared-KPI skill by ±0.03 (MAR
 revenue slightly worse). Value is coverage plus new KPIs that beat naive: United fuel share +0.37, labor share
 +0.32; Target SG&A ratio +0.36, cost-of-sales ratio +0.21. On Starbucks it mixed two XBRL concepts of different
 scope, so new KPIs need a person's check before entering the portfolio.
@@ -331,7 +331,7 @@ scope, so new KPIs need a person's check before entering the portfolio.
 
 ---
 
-## 12. Limitations (say them before they're asked)
+## 12. Limitations (answer when asked; the backup slide after the close has them)
 
 - Consensus beats the twin on Chipotle comps (6 quarters): analysts see information free data doesn't.
 - Restaurant and hotel revenue roughly ties naive.
