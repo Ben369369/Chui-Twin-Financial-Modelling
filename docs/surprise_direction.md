@@ -1,6 +1,6 @@
 # Surprise direction: does the twin call beat or miss?
 
-Generated 2026-10-19 20:30 UTC by `scripts/reports/surprise_direction.py`. Walk-forward from 2017Q1 with the scorecard's exclusions; each forecast uses only data public an hour before the release, and each expectation only if it was public before that moment. A call is the sign of (twin median - expectation); the outcome is the sign of (actual - expectation). The best constant rule is "always beat" or "always miss", whichever scored more: a twin with no information scores about that. p is the one-sided binomial chance of at least that many hits by coin flip.
+Generated 2026-10-19 22:05 UTC by `scripts/reports/surprise_direction.py`. Walk-forward from 2017Q1 with the scorecard's exclusions; each forecast uses only data public an hour before the release, and each expectation only if it was public before that moment. A call is the sign of (twin median - expectation); the outcome is the sign of (actual - expectation). The best constant rule is "always beat" or "always miss", whichever scored more: a twin with no information scores about that. p is the one-sided binomial chance of at least that many hits by coin flip.
 
 | Twin | KPI | Against | Quarters | Twin hits | Hit rate | Actual beat | Best constant rule | p (vs coin) |
 |---|---|---|---|---|---|---|---|---|

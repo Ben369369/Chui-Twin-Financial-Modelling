@@ -21,7 +21,7 @@ from datetime import date, datetime, time, timedelta, timezone
 from adapters.base import Adapter
 from adapters.http import PoliteClient, read_raw, save_raw, snapshot_ref
 from engine.observation import ExternalForecast, GroundTruth, Observation, RawSnapshot
-from engine.periods import period_of, shift
+from engine.periods import bounds, period_of, shift
 
 SUBMISSIONS = "https://data.sec.gov/submissions/CIK{cik10}.json"
 SUBMISSIONS_PAGE = "https://data.sec.gov/submissions/{name}"
@@ -270,6 +270,7 @@ class Fact:
     accn: str
     concept: str
     derived: bool = False  # True for Q4 = FY - 9M YTD
+    end: date | None = None  # the fiscal period's last day (fiscal quarters need not end with a calendar quarter)
 
 
 def _days(row: dict) -> int:
@@ -290,7 +291,8 @@ def quarterly_facts(facts: dict, concepts: list[str], freq: str = "quarter", uni
             if 80 <= _days(r) <= 100:
                 p = period_of(date.fromisoformat(r["end"]), freq)
                 direct.add((p, r["accn"]))
-                out.setdefault(p, []).append(Fact(p, float(r["val"]), date.fromisoformat(r["filed"]), r["accn"], concept))
+                out.setdefault(p, []).append(Fact(p, float(r["val"]), date.fromisoformat(r["filed"]), r["accn"], concept,
+                                                  end=date.fromisoformat(r["end"])))
         ytd9 = [r for r in rows if 260 <= _days(r) <= 285]
         for fy in (r for r in rows if 350 <= _days(r) <= 380):
             end = date.fromisoformat(fy["end"])
@@ -302,7 +304,7 @@ def quarterly_facts(facts: dict, concepts: list[str], freq: str = "quarter", uni
                            and 80 <= (end - date.fromisoformat(r["end"])).days <= 100), key=lambda r: r["filed"])
             if nine:
                 out.setdefault(p, []).append(Fact(p, float(fy["val"]) - float(nine[-1]["val"]),
-                                                  date.fromisoformat(fy["filed"]), fy["accn"], concept, True))
+                                                  date.fromisoformat(fy["filed"]), fy["accn"], concept, True, end))
     # Earliest filing first (point in time); within one filing, the highest-priority concept wins.
     # Concepts differ in scope: McDonald's tags company-operated sales as SalesRevenueGoodsNet next to
     # total Revenues, and taking the narrower one put its "margin" near 100%.
@@ -319,10 +321,29 @@ def _known_by(facts: list[Fact], when: date) -> Fact | None:
     return next(f for f in known if f.filed == latest)
 
 
-def xbrl_ground_truth(snap: RawSnapshot, entity_id: str, freq: str, rules: dict[str, dict]) -> list[GroundTruth]:
+EARNINGS_ITEM = "2.02"  # 8-K item "Results of Operations and Financial Condition": the earnings release
+
+
+def earnings_releases(submission_snaps: list[RawSnapshot]) -> list[Filing]:
+    """Every 8-K filed under item 2.02, oldest first."""
+    return filings(submission_snaps, ["8-K"], [EARNINGS_ITEM])
+
+
+def first_release(releases: list[Filing], period_end: date, filed: date) -> Filing | None:
+    """The first earnings release after the period ended and no later than the 10-Q/10-K that reported it.
+    The release carries the income statement, so its figures were public from that moment."""
+    # Compare EDGAR filing dates (US Eastern calendar days, like `filed`): an evening release has a UTC
+    # acceptance time on the next day.
+    return next((f for f in releases if period_end < date.fromisoformat(f.filing_date) <= filed), None)
+
+
+def xbrl_ground_truth(snap: RawSnapshot, entity_id: str, freq: str, rules: dict[str, dict],
+                      releases: list[Filing] | None = None) -> list[GroundTruth]:
     """rules: {kpi: {kind: yoy, concepts: [...]}} or {kind: ratio, numerator: [...], denominator: [...]}
     or {kind: value, concepts: [...], scale: 1.0}. Percent outputs are x100.
-    One row per KPI per period, at the period's first filing (available_at = filed + 1 day)."""
+    One row per KPI per period, from the period's first filing. available_at is the earnings release
+    (8-K item 2.02) that preceded that filing when there is one, else the filing date + 1 day. Dating at
+    the 10-Q alone put backtest forecasts after the results were public (Q4: about a month after)."""
     facts = json.loads(read_raw(snap))
     ref = snapshot_ref(snap)
     rows: list[GroundTruth] = []
@@ -350,10 +371,15 @@ def xbrl_ground_truth(snap: RawSnapshot, entity_id: str, freq: str, rules: dict[
                     continue
             else:
                 value, detail = first.value * float(rule.get("scale", 1.0)), first.concept
+            rel = first_release(releases or [], first.end or bounds(p)[1], when)
+            fallback = datetime.combine(when + timedelta(days=1), time(0), timezone.utc)
+            available = min(rel.acceptance, fallback) if rel else fallback
+            released = f" released 8-K accn:{rel.accession}" if rel else ""
             rows.append(GroundTruth(
                 entity_id=entity_id, period=p, kpi=kpi, value=value,
-                available_at=datetime.combine(when + timedelta(days=1), time(0), timezone.utc),
-                source_ref=f"SEC XBRL accn:{first.accn} {detail}{' (Q4 = FY - 9M)' if first.derived else ''} | {ref}",
+                available_at=available,
+                source_ref=f"SEC XBRL accn:{first.accn} {detail}{' (Q4 = FY - 9M)' if first.derived else ''}"
+                           f"{released} | {ref}",
                 confidence=0.99, verified=False,
             ))
     return rows

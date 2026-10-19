@@ -43,8 +43,8 @@ behind them (section 5), and live forecasts are sealed before the outcome (secti
 
 | Link | Evidence so far |
 |---|---|
-| 1. Public sensors track the hidden states | The twin beats "same as last quarter" on 25 of 37 KPI series, and "same quarter last year" on 35 of 37 (section 7) |
-| 2. The twin knows more than the expectation | Beats management guidance on accuracy: CRPS skill +0.29 (Delta revenue, 14 quarters), +0.31 (Chipotle comps, 20 quarters). Loses to analyst consensus: −0.37 (Chipotle comps, 6 quarters) |
+| 1. Public sensors track the hidden states | The twin beats both naive baselines ("same as last quarter" and "same quarter last year") on 24 of 37 KPI series (section 7) |
+| 2. The twin knows more than the expectation | Beats management guidance on accuracy: CRPS skill +0.29 (Delta revenue, 14 quarters), +0.41 (Chipotle comps, 18 quarters). Loses to analyst consensus: −0.37 (Chipotle comps, 6 quarters) |
 | 3. That knowledge is not already in the price | Not tested |
 
 The sharper test of link 2 is whether the twin calls the **direction** of the surprise
@@ -103,8 +103,8 @@ to end on a dummy template with made-up state names.
 ## 4. Data and point-in-time correctness
 
 - **Coverage:** 164,221 observations of 68 signal series from 6 public sources (FRED, BLS, TSA, GDELT,
-  Wikimedia, public sitemaps). From SEC filings there are 2,564
-  reported KPI values for 17 companies (including extra KPIs from the LLM onboarding experiment), plus 56 management-guidance values and 6 consensus values.
+  Wikimedia, public sitemaps). From SEC filings there are 2,190
+  reported KPI values for 17 companies, plus 56 management-guidance values and 6 consensus values.
 - **Against the hackathon's dataset list:** the system draws on 10 of its entries: TSA checkpoint numbers,
   Wikimedia pageviews, GDELT 2.0, BLS (CES wages; JOLTS tested and not adopted), SEC EDGAR filings and XBRL,
   EDGAR full text (10-K for LLM onboarding, 8-K releases for KPIs and guidance), FRED, Census MRTS including
@@ -116,8 +116,11 @@ to end on a dummy template with made-up state names.
   parsing, so a parser can be fixed and rerun.
 - **Point in time:** every observation stores `observed_at` (the period it describes) and `available_at`
   (when it could first be known). Release lags are set conservatively: 45 days after month end for
-  monthly macro data, and the EDGAR acceptance time for filings. A backtest at time *t* uses only rows
-  with `available_at ≤ t`. A test checks this.
+  monthly macro data, and the EDGAR acceptance time for filings. Reported results are dated at the
+  earnings press release (SEC 8-K item 2.02), not at the 10-Q or 10-K that follows it. Daily signals
+  (news tone, page views, TSA) become available the day after the day they describe, so nothing from
+  release day reaches a forecast. A backtest at time *t* uses only rows with `available_at ≤ t`. Tests
+  check this.
 - **Traceability:** every value carries a `source_ref`: the URL, the SEC accession number and exhibit,
   the raw snapshot path, and for text extractions the exact sentence it came from. The dashboard shows
   the sources behind each driver bar.
@@ -159,24 +162,33 @@ to airlines and hotels with about 3.9.
 
 - **Walk-forward:** for each reported quarter, the forecast is made 1 hour before the earnings release,
   and everything is refit from scratch on data available at that moment. Tested from 2017Q1.
+- **A timing fix (Oct 19):** an outside review found that results taken from XBRL were dated at the
+  10-Q or 10-K, which comes after the press release: a day later for most quarters, about a month later
+  for Q4. Those forecasts could see news tone and page views reacting to the results. They are now dated
+  at the press release, and all twins were rescored. The effect was small (series beating "last
+  quarter": 25 → 26 of 37), and the sealed live forecasts were never affected.
 - **Excluded from scoring:** the COVID quarters (2020Q1–2021Q4), plus any regime break a spec declares
   (travel through 2022Q4). Specs can also leave those quarters out of calibration, and the travel specs do.
 - **Baselines:** last quarter (`naive_last`), the same quarter last year (`seasonal_naive`), management
-  guidance, and analyst consensus where public.
+  guidance, and analyst consensus where public. Which naive baseline is harder depends on the KPI.
+  Growth rates are already year over year, so seasonality cancels and "last quarter" (momentum) is the
+  harder one: in all 17 growth series. Margins are seasonal levels, and "same quarter last year" is
+  harder in 9 of 20 margin and ratio series. The headline therefore counts series that beat **both**.
 - **Metrics:** MAE, RMSE, bias, CRPS (scores the whole forecast distribution, not just the point) and 80%
   interval coverage. Skill = 1 − CRPS(twin)/CRPS(baseline) on the same quarters; positive means the twin
   is better.
 
 ## 7. Results
 
-Full table: `docs/portfolio_scorecard.md` (17 twins, 37 KPI series; rescored 2026-10-18).
+Full table: `docs/portfolio_scorecard.md` (17 twins, 37 KPI series; rescored 2026-10-19 after the timing fix).
 
 | Result | Value |
 |---|---|
-| KPI series beating "last quarter" on CRPS | **25 of 37** |
+| KPI series beating **both** naive baselines on CRPS | **24 of 37** |
+| KPI series beating "last quarter" on CRPS | **26 of 37** |
 | KPI series beating "same quarter last year" on CRPS | **35 of 37** |
 | DAL revenue growth vs Delta's own guidance (14 guided quarters) | skill **+0.29** (twin better) |
-| CMG comps vs Chipotle's guidance (20 quarters) | skill **+0.31** (twin better) |
+| CMG comps vs Chipotle's guidance (18 quarters) | skill **+0.41** (twin better) |
 | CMG comps vs analyst consensus (6 quarters) | skill **−0.37** (consensus better) |
 
 Selected KPIs:
@@ -184,7 +196,7 @@ Selected KPIs:
 | Twin | KPI | Quarters | MAE twin | MAE last quarter | Skill vs last quarter | 80% coverage |
 |---|---|---|---|---|---|---|
 | DAL | revenue growth | 27 | 2.83 | 4.08 | +0.31 | 0.67 |
-| DAL | operating margin | 27 | 2.32 | 4.93 | +0.37 | 1.00 |
+| DAL | operating margin | 27 | 2.32 | 4.93 | +0.36 | 1.00 |
 | AAL (factory) | operating margin | 26 | 2.60 | 5.68 | +0.49 | 0.85 |
 | PHM (factory) | revenue growth | 27 | 4.74 | 4.45 | +0.33 | 0.96 |
 | PHM (factory) | pre-tax margin | 27 | 2.32 | 2.46 | +0.68 | 0.96 |
@@ -238,12 +250,12 @@ guidance of 2.65%) 57%; SHA-256 `fabe5e811fcf…`, OpenTimestamps), ten days bef
 
 `scripts/validate_ground_truth.py` runs automatic checks on **every** row (`docs/validation_report.md`):
 
-| Check | What it tests | Result (2,564 rows) |
+| Check | What it tests | Result (2,190 rows) |
 |---|---|---|
 | Text span | The source sentence appears verbatim in the saved filing, and its number (signed by its wording) equals the stored value | 154 of 154 pass |
 | Identity | comps = transactions + check on reported values, within the company's own rounding | 14 of 14 pass |
 | Bounds | Values inside physical limits | all pass |
-| Outliers | Values more than 4 sd from the KPI's history, flagged for review | 24 flagged: all real events (COVID, including Carnival's near-zero 2020 revenue; Starbucks' 2013 Kraft arbitration charge, Marriott's 2009 timeshare write-down, Pulte's 2010 post-Centex goodwill impairment and merger-inflated growth) |
+| Outliers | Values more than 4 sd from the KPI's history, flagged for review | 23 flagged: all real events (COVID, including Carnival's near-zero 2020 revenue; Starbucks' 2013 Kraft arbitration charge, Marriott's 2009 timeshare write-down, Pulte's 2010 post-Centex goodwill impairment and merger-inflated growth) |
 
 Building this caught three bugs **in the checker**, not in the data. Examples: "1.8% fewer transactions"
 was read as positive, and "December increased 14.7% and declined 4.8% for the full quarter" holds two
@@ -287,16 +299,16 @@ rules-only twins (UAL, MAR, SBUX, TGT) with the LLM step and rescored both versi
 
 | Twin | Revenue growth, rules → + LLM | Op margin, rules → + LLM |
 |---|---|---|
-| UAL | +0.45 → +0.45 | +0.52 → +0.53 |
+| UAL | +0.45 → +0.44 | +0.52 → +0.53 |
 | MAR | −0.07 → **−0.13** | +0.20 → +0.20 |
-| SBUX | +0.05 → +0.06 | +0.55 → **+0.58** |
-| TGT | +0.01 → +0.01 | −0.05 → −0.05 |
+| SBUX | +0.06 → +0.06 | +0.55 → **+0.58** |
+| TGT | +0.02 → +0.02 | +0.01 → +0.01 |
 
 (CRPS skill against "last quarter"; positive is better.) On the KPIs both versions share, the LLM changed
 skill by at most ±0.06, inside the noise for these sample sizes, and made MAR revenue slightly worse. **We do
 not claim an accuracy gain.** Its value is coverage: it onboards industries no pack covers, and it finds
 company-specific KPIs the twin forecasts better than naive (UAL fuel share of revenue +0.37, labor share
-+0.32; Target SG&A ratio +0.36, cost-of-sales ratio +0.38). It still needs review: on Starbucks it mixed two
++0.32; Target SG&A ratio +0.36, cost-of-sales ratio +0.21). It still needs review: on Starbucks it mixed two
 XBRL concepts of different scope for one KPI, which then forecast far worse than naive. New KPIs therefore
 stay out of the portfolio scorecard until a person has checked them.
 
@@ -358,7 +370,7 @@ walk-forward rescore; every source is logged with its terms; licensed data never
 
 ```bash
 pip install numpy "pydantic>=2" pyyaml requests fastapi uvicorn anthropic
-python -m pytest -q                                     # 71 tests, no network (saved fixtures)
+python -m pytest -q                                     # 75 tests, no network (saved fixtures)
 export CHUI_SEC_USER_AGENT="Your Name you@example.com"  # SEC requires a contact
 export ANTHROPIC_API_KEY=...                            # only for --llm onboarding and the chat assistant
 python scripts/ingest.py specs/cmg.yaml --signals --ground-truth

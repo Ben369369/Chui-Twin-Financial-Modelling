@@ -59,14 +59,16 @@ rules-only specs on the same day's data. Walk-forward from 2017Q1 with the score
 
 | Twin | Revenue growth, rules | Revenue growth, + LLM | Op margin, rules | Op margin, + LLM |
 |---|---|---|---|---|
-| UAL (26 q) | +0.45 | +0.45 | +0.52 | +0.53 |
+| UAL (26 q) | +0.45 | +0.44 | +0.52 | +0.53 |
 | MAR (26 q) | −0.07 | **−0.13** | +0.20 | +0.20 |
-| SBUX (26/29 q) | +0.05 | +0.06 | +0.55 | **+0.58** (MAE 2.01 → 1.81) |
-| TGT (31 q) | +0.01 | +0.01 | −0.05 | −0.05 |
+| SBUX (26/29 q) | +0.06 | +0.06 | +0.55 | **+0.58** (MAE 2.00 → 1.78) |
+| TGT (31 q) | +0.02 | +0.02 | +0.01 | +0.01 |
 
 **New KPIs the LLM added** (skill vs last quarter): UAL fuel share of revenue +0.37 and labor share +0.32;
-TGT SG&A ratio +0.36 and cost-of-sales ratio +0.38; SBUX store operating expense −0.23 and product and
-distribution cost −0.14 (MAE 5.23 against 0.65 for "last quarter").
+TGT SG&A ratio +0.36 and cost-of-sales ratio +0.21; SBUX store operating expense −0.23 and product and
+distribution cost −3.62 (MAE 4.34 against 0.62 for "last quarter", 21 quarters). All numbers in this section were
+rescored 2026-10-19 after the release-timing fix (`provenance.md`); the shared-KPI cells moved by at most 0.06
+and the reading below is unchanged.
 
 **Reading.**
 1. On the default KPIs the LLM changes almost nothing: its edge priors mostly confirm the pack defaults, and

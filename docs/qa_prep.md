@@ -6,8 +6,8 @@ Short answers first; the evidence line is where to point if they push. Numbers a
 
 **Where is the alpha? Does this make money?**
 Our definition: an information edge on the next reported results, relative to what the market expects, from
-data public at the time. Three links must hold. Sensors track the business: yes, 25 of 37 KPI series beat "last
-quarter". The twin knows more than the expectation: yes against management guidance (skill +0.29 Delta, +0.31
+data public at the time. Three links must hold. Sensors track the business: yes, 24 of 37 KPI series beat both naive
+baselines. The twin knows more than the expectation: yes against management guidance (skill +0.29 Delta, +0.41
 Chipotle), not yet against consensus (−0.37, 6 quarters). The edge is not already priced: untested. So we do
 not claim demonstrated alpha; we built the system that would generate it and the instrument that measures it
 honestly. *Evidence:* technical appendix §2, `docs/surprise_direction.md`.
@@ -37,11 +37,22 @@ shock that worries you (fuel +30%, a food-safety scare) and see the distribution
 
 **How do you avoid lookahead bias?**
 Every observation stores `observed_at` (the period it describes) and `available_at` (when it could first be known),
-and the backtest only uses rows with `available_at` before the forecast time. Lags are conservative: monthly
-macro data counts as known 45 days after month end, XBRL facts the day after filing, guidance from the release's
-EDGAR acceptance time. *Evidence:* `tests/test_point_in_time.py`, `provenance.md` (available_at column).
+and the backtest only uses rows with `available_at` before the forecast time. Each quarter is forecast 1 hour
+before the earnings press release (SEC 8-K item 2.02). Monthly macro data counts as known 45 days after month end;
+daily signals the next day. *Say this before they ask:* an outside review on Oct 19 found that results taken from
+XBRL were dated at the 10-Q, which comes after the press release (a day for most quarters, a month for Q4), so some
+forecasts could see news reacting to the results. We fixed it, rescored all 17 twins the same night, and the
+results barely moved: 25 → 26 of 37 series beat last quarter. The sealed forecasts were never affected.
+*Evidence:* `tests/test_point_in_time.py`, `tests/test_release_timing.py`, `provenance.md`.
 *The caveat to volunteer:* model structure (which signals, which KPIs) was chosen with today's knowledge. The
 clean tests are the 14 rules-only factory twins, which use untuned industry defaults, and the sealed forecasts.
+
+**Why compare against "same as last quarter"? Airlines are seasonal; isn't "same quarter last year" fairer?**
+It depends on the KPI, so we count series that beat both. Growth rates are already year over year, so the
+seasons cancel and "last quarter" (momentum) is the harder baseline: Delta revenue growth, last quarter's error
+4.1 points against 15.7 for last year. Margins are seasonal levels, and there last year is often harder: Delta
+operating margin, 2.8 against 4.9. The twin only ties last year there (+0.01), and Hilton's margin loses to it
+(−0.11). Headline: 24 of 37 series beat both. *Evidence:* technical appendix §6 and §7.
 
 **Why such a simple model? Why not ML?**
 About 26–31 scored quarters per KPI. A complex model would fit noise. The engine is a precision-weighted state
@@ -66,7 +77,7 @@ sensors. Every twin publishes its own score so users can see which to trust.
 
 **Why do analysts beat you on Chipotle?**
 They have information free data doesn't (management access, card-spend panels, channel checks). Over 6 quarters,
-consensus wins (skill −0.37). We beat management guidance on Chipotle comps (+0.31, 20 quarters) and on Delta
+consensus wins (skill −0.37). We beat management guidance on Chipotle comps (+0.41, 18 quarters) and on Delta
 revenue (+0.29, 14 quarters). The honest pitch: matching guidance-level accuracy across many companies cheaply,
 not beating the sell side on one.
 
@@ -140,8 +151,8 @@ Anyone can drop the `.json` and `.ots` files on opentimestamps.org. `scripts/res
 and accepts an outcome only if it became public after the seal.
 
 **How do you validate extracted numbers?**
-Automatic checks on all 2,564 reported values (0 failures): text spans must appear verbatim in the saved filing,
-comps = transactions + check, physical bounds, and outliers over 4 sd flagged (24, all real events such as COVID).
+Automatic checks on all 2,190 reported values (0 failures): text spans must appear verbatim in the saved filing,
+comps = transactions + check, physical bounds, and outliers over 4 sd flagged (23, all real events such as COVID).
 A random sample goes to manual review. *Evidence:* `docs/validation_report.md`.
 
 ## Product

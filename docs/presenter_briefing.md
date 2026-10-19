@@ -87,6 +87,7 @@ writes that file from a ticker. Built for the Longaeva AI Hackathon; Chipotle an
 | Oct 9 | Stage 2 submission; Delta reported: margin hit, revenue miss |
 | Oct 14 | Selected for finals |
 | Oct 18 | LLM onboarding; Carnival twin; CMG Q3 sealed; portfolio rescored (17 twins) |
+| Oct 19 | Outside review finds backtest timing bug (results dated at the 10-Q, after the press release); fixed, all twins rescored; alpha section, implementation plan |
 | **Oct 20** | **Final submission due** |
 | **Oct 21** | **Finals presentation** |
 | Oct 28 | Chipotle reports Q3 after the close; the sealed bet resolves |
@@ -130,7 +131,7 @@ refreshes ground truth from SEC, retries rate-limited GDELT series, upgrades tim
 | Chipotle sitemaps + Wayback Machine | US restaurant count, open job postings (counts only) | Capacity, labor |
 | Analyst consensus | 6 quarters of Chipotle comps consensus, hand-entered from public news quotes | Consensus baseline |
 
-Scale today: 164,221 observations of 68 series from 6 sources; 2,564 reported KPI values for 17 companies; 56
+Scale today: 164,221 observations of 68 series from 6 sources; 2,190 reported KPI values for 17 companies; 56
 guidance values; 362 raw snapshots in the database. Every source, its terms and its access method are in
 `provenance.md`.
 
@@ -166,27 +167,27 @@ Full math: `docs/model.md`.
 
 ## 6. The 17 twins
 
-Skill is CRPS skill versus "same as last quarter" (positive = twin better), rescored Oct 18.
+Skill is CRPS skill versus "same as last quarter" (positive = twin better), rescored Oct 19 after the timing fix.
 
 | Twin | Industry pack | Built by | Scored quarters | Skill by KPI |
 |---|---|---|---|---|
 | CMG Chipotle | restaurant | hand | 30 | transactions +0.19 · check −0.10 · comps +0.21 · restaurant margin −0.07 · revenue growth −0.06 |
-| DAL Delta | airline | hand | 27 | revenue growth +0.31 · operating margin +0.37 |
-| AAL American | airlines | factory | 26 | revenue growth +0.11 · op margin +0.49 |
-| CCL Carnival | hotels | factory + LLM | 27 | revenue growth +0.02 · op margin −0.05 |
-| DHI D.R. Horton | homebuilders | factory | 30 | revenue growth +0.13 · pre-tax margin +0.11 |
-| DRI Darden | restaurants | factory | 31 | revenue growth −0.04 · op margin +0.11 |
+| DAL Delta | airline | hand | 27 | revenue growth +0.31 · operating margin +0.36 |
+| AAL American | airlines | factory | 26 | revenue growth +0.09 · op margin +0.49 |
+| CCL Carnival | hotels | factory + LLM | 27 | revenue growth +0.02 · op margin −0.06 |
+| DHI D.R. Horton | homebuilders | factory | 30 | revenue growth +0.13 · pre-tax margin +0.10 |
+| DRI Darden | restaurants | factory | 31 | revenue growth −0.01 · op margin +0.10 |
 | HLT Hilton | hotels | factory | 26 | revenue growth −0.05 · op margin +0.30 |
-| LEN Lennar | homebuilders | factory | 31 | revenue growth −0.04 · op margin +0.16 |
+| LEN Lennar | homebuilders | factory | 31 | revenue growth −0.06 · op margin +0.18 |
 | LUV Southwest | airlines | factory | 26 | revenue growth +0.07 · op margin +0.09 |
 | MAR Marriott | hotels | factory | 26 | revenue growth −0.07 · op margin +0.20 |
 | MCD McDonald's | restaurants | factory | 30 | revenue growth −0.02 · op margin −0.01 |
 | PHM PulteGroup | homebuilders | factory | 27 | revenue growth +0.33 · pre-tax margin +0.68 |
-| SBUX Starbucks | restaurants | factory | 29 | revenue growth +0.05 · op margin +0.55 |
-| TGT Target | general retail | factory | 31 | revenue growth +0.01 · op margin −0.05 |
+| SBUX Starbucks | restaurants | factory | 29 | revenue growth +0.06 · op margin +0.55 |
+| TGT Target | general retail | factory | 31 | revenue growth +0.02 · op margin +0.01 |
 | TXRH Texas Roadhouse | restaurants | factory | 29 | revenue growth +0.12 · op margin +0.08 |
 | UAL United | airlines | factory | 26 | revenue growth +0.45 · op margin +0.52 |
-| WMT Walmart | general retail | factory | 31 | revenue growth −0.02 · op margin +0.15 |
+| WMT Walmart | general retail | factory | 31 | revenue growth 0.00 · op margin +0.15 |
 
 **Patterns to say out loud:** airlines strongest (TSA and jet fuel are direct, timely sensors); margins beat naive
 more often than revenue; restaurant and hotel revenue roughly tie naive (little company-specific public signal).
@@ -206,13 +207,14 @@ more often than revenue; restaurant and hotel revenue roughly tie naive (little 
 
 | Result | Value |
 |---|---|
-| KPI series beating "same as last quarter" | **25 of 37** |
+| KPI series beating **both** naive baselines (the headline) | **24 of 37** |
+| KPI series beating "same as last quarter" | **26 of 37** |
 | KPI series beating "same quarter last year" | **35 of 37** |
-| Factory twins (no tuning) beating "last quarter" | 21 of 30 KPI series |
+| Factory twins (no tuning) beating "last quarter" | 22 of 30 KPI series (20 beat both) |
 | Delta revenue growth vs Delta's guidance | skill **+0.29** (14 quarters), twin better |
-| Chipotle comps vs Chipotle's guidance | skill **+0.31** (20 quarters), twin better |
+| Chipotle comps vs Chipotle's guidance | skill **+0.41** (18 quarters), twin better |
 | Chipotle comps vs analyst consensus | skill **−0.37** (6 quarters), consensus better |
-| Ground-truth values validated | **2,564**, 0 failures, 24 outliers flagged (all real events) |
+| Ground-truth values validated | **2,190**, 0 failures, 23 outliers flagged (all real events) |
 | Time to build a new twin | about 100 s (RCL rehearsal: 103 s) |
 | LLM cost per twin | about $0.20–0.35 |
 
@@ -289,7 +291,7 @@ passengers as operating metrics. **RCL rehearsal:** 103 s, similar choices plus 
 
 **Honest result** (`docs/experiments.md` §2): on UAL, MAR, SBUX, TGT the LLM moved shared-KPI skill by ±0.03 (MAR
 revenue slightly worse). Value is coverage plus new KPIs that beat naive: United fuel share +0.37, labor share
-+0.32; Target SG&A ratio +0.36, cost-of-sales ratio +0.38. On Starbucks it mixed two XBRL concepts of different
++0.32; Target SG&A ratio +0.36, cost-of-sales ratio +0.21. On Starbucks it mixed two XBRL concepts of different
 scope, so new KPIs need a person's check before entering the portfolio.
 
 ---
@@ -313,8 +315,10 @@ scope, so new KPIs need a person's check before entering the portfolio.
 1. **Traceable:** every observation, ground-truth value and forecast carries a `source_ref` (filing accession and
    exhibit, URL plus quote, or raw file path).
 2. **Point in time:** every row has `observed_at` and `available_at`; backtests use only rows available at the
-   forecast moment. Lags are conservative (monthly macro +45 days, XBRL filing date +1 day, guidance at EDGAR
-   acceptance time).
+   forecast moment. Lags are conservative (monthly macro +45 days; daily signals available the next day; guidance
+   at EDGAR acceptance time). Reported results are dated at the earnings press release (8-K item 2.02). Until Oct
+   19 they were dated at the later 10-Q, so some backtest forecasts came after the release; an outside review
+   caught it, we fixed it and rescored, and the results barely moved (25 → 26 of 37 beating last quarter).
 3. **Raw first:** every fetch is saved untouched before parsing; parsers can be fixed and rerun.
 4. **Legal only:** public sources, no logins, robots.txt and terms checked, all logged in `provenance.md`. One
    accepted risk to own: Chipotle's site terms say "personal, noncommercial use"; only URL counts are stored.

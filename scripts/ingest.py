@@ -21,7 +21,8 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from adapters import adapter_for  # noqa: E402
-from adapters.edgar import DOCUMENT_PATTERN, EdgarAdapter, extract_ground_truth, extract_guidance, filings, xbrl_ground_truth  # noqa: E402
+from adapters.edgar import (DOCUMENT_PATTERN, EdgarAdapter, earnings_releases, extract_ground_truth,  # noqa: E402
+                            extract_guidance, filings, xbrl_ground_truth)
 from adapters.http import load_snapshots  # noqa: E402
 from engine.spec import load_spec  # noqa: E402
 from engine.observation import ExternalForecast  # noqa: E402
@@ -50,8 +51,13 @@ def ingest_xbrl(rspec, conn, reparse: bool) -> None:
                      and s.params.get("cik") == cik), key=lambda s: s.fetched_at)
     snap = cached[-1] if reparse and cached else EdgarAdapter().fetch_companyfacts(cik)
     db.save_snapshots(conn, [snap])
-    rows = xbrl_ground_truth(snap, rspec.ticker, rspec.period, cfg["rules"])
+    subs = EdgarAdapter().fetch_submissions(cik)  # fresh: the release list must include the latest 8-Ks
+    db.save_snapshots(conn, subs)
+    releases = earnings_releases(subs)
+    rows = xbrl_ground_truth(snap, rspec.ticker, rspec.period, cfg["rules"], releases)
     db.save_ground_truth(conn, rows)
+    dated = sum("released 8-K" in r.source_ref for r in rows)
+    print(f"  xbrl rows dated at the earnings release (8-K item 2.02): {dated} of {len(rows)}")
     for kpi in cfg["rules"]:
         ps = sorted(r.period for r in rows if r.kpi == kpi)
         print(f"  xbrl {kpi:16s} {len(ps):3d} periods  {ps[0] if ps else '-'} .. {ps[-1] if ps else '-'}")

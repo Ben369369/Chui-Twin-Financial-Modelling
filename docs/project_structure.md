@@ -222,7 +222,7 @@ nine months when needed).
 | `runs`, `states`, `forecasts` | run id | forecast runs, estimated states, forecast quantiles, seal hash |
 
 `available_at` is part of the primary key, so a revised value is a new row rather than an overwrite; a backtest
-can see exactly what was known on any date. Current contents: 164,221 observations of 68 series; 2,564 reported KPI
+can see exactly what was known on any date. Current contents: 164,221 observations of 68 series; 2,190 reported KPI
 values for 17 companies; 56 guidance and 6 consensus values; 362 snapshot records.
 
 ### 5.3 Templates and specs (`templates/`, `specs/`, `engine/spec.py`)
@@ -376,13 +376,14 @@ Run with `python -m pytest`. LLM and chat tests use hand-written stand-ins for m
 
 | Result | Value |
 |---|---|
-| KPI series beating "same as last quarter" (CRPS) | 25 of 37 |
+| KPI series beating both naive baselines (CRPS) | 24 of 37 |
+| KPI series beating "same as last quarter" (CRPS) | 26 of 37 |
 | KPI series beating "same quarter last year" | 35 of 37 |
-| Factory twins (no tuning) beating "last quarter" | 21 of 30 series |
+| Factory twins (no tuning) beating "last quarter" | 22 of 30 series |
 | Delta revenue growth vs Delta's guidance | skill +0.29 (14 quarters), twin better |
-| Chipotle comps vs Chipotle's guidance | skill +0.31 (20 quarters), twin better |
+| Chipotle comps vs Chipotle's guidance | skill +0.41 (18 quarters), twin better |
 | Chipotle comps vs analyst consensus | skill −0.37 (6 quarters), consensus better |
-| Ground-truth values checked automatically | 2,564, 0 failures, 24 outliers flagged (real events) |
+| Ground-truth values checked automatically | 2,190, 0 failures, 23 outliers flagged (real events) |
 
 Airlines are strongest (direct, timely sensors). Margins beat naive more often than revenue. Restaurant and hotel
 revenue roughly ties naive. Full table: `docs/portfolio_scorecard.md`.
