@@ -19,9 +19,64 @@ One shared engine:
 
 The claim is about **the system, not one company**. Seventeen twins in six industries (five industry packs
 plus cruise lines) run on the same engine. Fifteen of them were built by a factory from the ticker alone, with no per-company tuning: fourteen
-by rules, and one (Carnival, an industry no pack covers) with an LLM reading the 10-K (section 9).
+by rules, and one (Carnival, an industry no pack covers) with an LLM reading the 10-K (section 10).
 
-## 2. Architecture
+## 2. Alpha, as we define it
+
+The brief asks us to simulate the system that generates alpha, as we define it.
+
+**Definition.** Alpha, here, is an information edge on a company's next reported results: knowing, before the
+release and from data that was public at the time, where the reported KPIs will land relative to what the market
+expects. Prices move on the gap between results and expectations, so the edge lies in forecasting that gap,
+not the level.
+
+**The system that generates it** is the company's own operations. A few hidden states (demand, capacity, price,
+input cost, labor, sentiment, expansion) drive the KPIs the company reports. Those states move weeks before
+they are reported, and public data watches them move: TSA checkpoint counts and jet fuel prices for an airline;
+restaurant sales, wages, store counts and news tone for a restaurant chain. The twin simulates that system. It
+estimates the states from these sensors, carries them through a causal graph to the KPIs, simulates 10,000
+paths, and reads off the distribution of the reported number and the probability that it beats the
+expectation. The reasoning is shown, not asserted: every forecast breaks down into drivers and the data series
+behind them (section 5), and live forecasts are sealed before the outcome (section 8).
+
+**From data to alpha is a chain of three links**, and each needs its own evidence:
+
+| Link | Evidence so far |
+|---|---|
+| 1. Public sensors track the hidden states | The twin beats "same as last quarter" on 25 of 37 KPI series, and "same quarter last year" on 35 of 37 (section 7) |
+| 2. The twin knows more than the expectation | Beats management guidance on accuracy: CRPS skill +0.29 (Delta revenue, 14 quarters), +0.31 (Chipotle comps, 20 quarters). Loses to analyst consensus: −0.37 (Chipotle comps, 6 quarters) |
+| 3. That knowledge is not already in the price | Not tested |
+
+The sharper test of link 2 is whether the twin calls the **direction** of the surprise
+(`scripts/reports/surprise_direction.py`, `docs/surprise_direction.md`). A call is the sign of (twin median −
+expectation), scored walk-forward against the sign of (actual − expectation):
+
+| Twin, KPI | Against | Quarters | Twin called it | Best constant rule | p (vs coin) |
+|---|---|---|---|---|---|
+| Delta, revenue growth | guidance | 14 | 9 (64%) | 50% | 0.21 |
+| Chipotle, comps | guidance | 18 | 13 (72%) | 72% ("always beat") | 0.05 |
+| Chipotle, comps | consensus | 6 | 3 (50%) | 50% | 0.66 |
+
+**Reading it honestly.** Link 1 holds. Link 2 holds against management guidance on accuracy, but the direction
+test is weaker. Chipotle beat its own guidance in 13 of 18 quarters, so the twin's 72% only matches "always
+predict a beat". Delta's 64% against a 50% base rate is suggestive but not conclusive. Against analyst consensus,
+the closest public stand-in for what the price expects, the twin shows no edge on the 6 quarters we could
+collect. Link 3 is untested. **We do not claim demonstrated alpha.** What we have built is the system that would
+generate it, and the instrument that measures honestly whether it does.
+
+**Where it is most likely to appear:** where public sensors are more direct and more timely than the analyst
+process. Airlines are the case in point: TSA counts are daily, and the airline twins are the strongest in the
+portfolio.
+
+**What would demonstrate it:**
+1. Point-in-time consensus history for every twin, so link 2 can be scored against the market's expectation
+   rather than management's.
+2. An earnings-day event study: does the twin's probability of beating consensus predict the sign of the
+   post-release return? This needs a price source whose terms allow it, logged in `provenance.md`.
+3. Sealed live forecasts, which accumulate a record nobody can fit after the fact. That machinery is running:
+   Delta's Q3 resolved on Oct 9, and Chipotle's Q3 resolves on Oct 28.
+
+## 3. Architecture
 
 ```
 public sources ──> adapters ──> observations (point-in-time) ──┐
@@ -45,11 +100,18 @@ Two tests enforce the separation. `test_engine_no_company_code.py` searches the 
 template state names and series prefixes. `test_template_agnostic.py` runs estimation and simulation end
 to end on a dummy template with made-up state names.
 
-## 3. Data and point-in-time correctness
+## 4. Data and point-in-time correctness
 
 - **Coverage:** 164,221 observations of 68 signal series from 6 public sources (FRED, BLS, TSA, GDELT,
   Wikimedia, public sitemaps). From SEC filings there are 2,564
   reported KPI values for 17 companies (including extra KPIs from the LLM onboarding experiment), plus 56 management-guidance values and 6 consensus values.
+- **Against the hackathon's dataset list:** the system draws on 10 of its entries: TSA checkpoint numbers,
+  Wikimedia pageviews, GDELT 2.0, BLS (CES wages; JOLTS tested and not adopted), SEC EDGAR filings and XBRL,
+  EDGAR full text (10-K for LLM onboarding, 8-K releases for KPIs and guidance), FRED, Census MRTS including
+  food services (via FRED), Case-Shiller (via FRED) and Census housing starts (via FRED); jet fuel prices are
+  EIA's, via FRED. Beyond the list: store and job-posting counts from Chipotle's public sitemaps, with
+  history from the Internet Archive. Not used, with reasons in `provenance.md`: Google Trends (no official
+  open API) and EIA or USDA AMS directly (planned; they need registered keys).
 - **Raw first:** every fetch is saved untouched to `data/raw/<source>/<date>/` (362 snapshots) before
   parsing, so a parser can be fixed and rerun.
 - **Point in time:** every observation stores `observed_at` (the period it describes) and `available_at`
@@ -66,7 +128,7 @@ to end on a dummy template with made-up state names.
   hindsight into old backtest quarters. Market prices and counts are not revised. A fix using ALFRED
   vintages is listed in `provenance.md`.
 
-## 4. Model
+## 5. Model
 
 Kept deliberately simple: about 30 scored quarters per twin cannot support a complex model.
 
@@ -93,7 +155,7 @@ Shock half-lives for the scenario presets were measured from real events (`shock
 example, Chipotle's 2015 food-safety crisis decayed with a half-life of about 7.4 quarters, and COVID's hit
 to airlines and hotels with about 3.9.
 
-## 5. Evaluation protocol
+## 6. Evaluation protocol
 
 - **Walk-forward:** for each reported quarter, the forecast is made 1 hour before the earnings release,
   and everything is refit from scratch on data available at that moment. Tested from 2017Q1.
@@ -105,7 +167,7 @@ to airlines and hotels with about 3.9.
   interval coverage. Skill = 1 − CRPS(twin)/CRPS(baseline) on the same quarters; positive means the twin
   is better.
 
-## 6. Results
+## 7. Results
 
 Full table: `docs/portfolio_scorecard.md` (17 twins, 37 KPI series; rescored 2026-10-18).
 
@@ -141,7 +203,7 @@ Selected KPIs:
   that is reported. The clean tests are (a) the 15 factory twins (14 rules-only, 1 LLM), which use industry defaults with no
   tuning, and (b) the sealed live forecasts below.
 
-## 7. Live out-of-sample test: sealed forecasts
+## 8. Live out-of-sample test: sealed forecasts
 
 Before Delta reported Q3 2026, its forecast (revenue growth median 15.2%, 80% range 10.6 to 19.9, P(above
 guidance) 52%) was written to canonical JSON and its SHA-256 recorded. The hash was then timestamped
@@ -172,7 +234,7 @@ existed before the outcome, without trusting us.
 Chipotle's Q3 forecast was sealed on Oct 18, 2026 (comps median 2.94%, 80% range 0.64 to 5.15, P(above
 guidance of 2.65%) 57%; SHA-256 `fabe5e811fcf…`, OpenTimestamps), ten days before its Oct 28 report.
 
-## 8. Validating extracted data: automation and manual review
+## 9. Validating extracted data: automation and manual review
 
 `scripts/validate_ground_truth.py` runs automatic checks on **every** row (`docs/validation_report.md`):
 
@@ -193,7 +255,7 @@ fixed-seed random sample of 20 (`docs/validation_sample.md`) plus anything flagg
 y or n, and `--apply` records them as verified. Reporting the agreement rate on the sample tells users how
 far to trust the automatic extraction.
 
-## 9. LLM onboarding: the model proposes, code decides
+## 10. LLM onboarding: the model proposes, code decides
 
 `python scripts/make_twin.py <TICKER> --llm` adds one step to the factory. After the SEC lookup and the
 SIC-based pack choice, an LLM (`claude-sonnet-5-5`, prompt `prompts/onboard_spec_v1.md`) reads the
@@ -238,16 +300,16 @@ company-specific KPIs the twin forecasts better than naive (UAL fuel share of re
 XBRL concepts of different scope for one KPI, which then forecast far worse than naive. New KPIs therefore
 stay out of the portfolio scorecard until a person has checked them.
 
-## 10. Experiments, including negative results
+## 11. Experiments, including negative results
 
 `docs/experiments.md` records every signal tested. For example, JOLTS quits and job-openings rates were
 tested as hiring-difficulty proxies (the office-hours question on labor data) and did **not** improve the
 CMG or DAL margins. DAL operating margin MAE went from 2.43 to 2.49–2.61. They were not adopted.
 Industry-wide hiring conditions are not company-specific, and they move with wages, which the model
-already uses. The LLM onboarding experiment (section 9) is recorded there too: adopted for coverage, not for
+already uses. The LLM onboarding experiment (section 10) is recorded there too: adopted for coverage, not for
 accuracy.
 
-## 11. Scope
+## 12. Scope, roadmap and implementation plan
 
 The system models **companies whose results come from observable operating drivers**: restaurants,
 retail, airlines, hotels, homebuilders and cruise lines today. It does not attempt the whole market:
@@ -259,7 +321,21 @@ Next steps, in order: turn the operating metrics the LLM suggests (comps, RevPAR
 extraction rules; read guidance from earnings-call transcripts as well as press releases; add strong-fit
 industries that reuse existing adapters (trucking, rail); then the bank template and the event module.
 
-## 12. Limitations
+**Implementation plan for an investment team.** Each phase ends with a decision based on scores, not on
+impressions.
+
+| Phase | Work | Needs from the team | Decision at the end |
+|---|---|---|---|
+| 1. Test the edge (weeks 1–2) | Load point-in-time consensus history as a new expectation source (the `external_forecasts` table already holds guidance and consensus). Rerun the beat/miss test (section 2) against consensus for every twin. Add a price source and run the earnings-day event study: does the twin's probability of beating consensus predict the sign of the post-release return? | Consensus and price history under existing licences, cleared by compliance | Continue only if beat/miss calls clear the best constant rule against consensus |
+| 2. Deploy (weeks 2–4) | Containerize (database, API, dashboard); move storage to Postgres, since the migrations are already portable SQL; run the daily job on a server. Build twins for the fund's coverage names in supported industries; an analyst checks each spec, including every LLM-proposed KPI. Seal a forecast before every report. | A server; about one analyst-hour per new name | Sealed record after one reporting season |
+| 3. Daily use (months 2–3) | A pre-earnings sheet per name (probability of beating consensus, the drivers and their sources); scenario runs for PMs; an alert when a hidden state moves more than 1 sd. Add licensed earnings-call transcripts so guidance given on calls is captured. | Transcript licence; analyst feedback | Keep the KPIs and signals that the walk-forward score supports |
+| 4. Widen (month 3 on) | New templates on the same engine: banks, then binary events | — | Same scorecard for every new twin |
+
+**Rules that carry over:** every forecast is sealed before the outcome; a model change ships only with a full
+walk-forward rescore; every source is logged with its terms; licensed data never leaves the team's systems
+(public data and code stay separable).
+
+## 13. Limitations
 
 - **Short histories:** about 26–31 scored quarters per KPI. Skill differences under about 0.05 are noise.
 - **A forecasting model, not a structural one:** scenario results are what the calibrated linear model
@@ -272,15 +348,17 @@ industries that reuse existing adapters (trucking, rail); then the bank template
 - **Guidance from press releases only:** guidance given only on earnings calls is missed. Chipotle's Q3
   2026 call guide of "around a plus 1%" comps is the live example: the twin compared itself with the
   2.65% implied by the press release's full-year range.
+- **No call transcripts, reviews or forums:** free transcript sources are licensed, and review and forum
+  APIs restrict this use, so the text the system reads is filings and news tone only.
 - **LLM hindsight:** the LLM reads today's 10-K, and the backtest scores the resulting structure on earlier
   quarters, the same caveat as choosing a pack. Its instructions forbid using known outcomes, but that
   cannot be verified.
 
-## 13. Reproduce
+## 14. Reproduce
 
 ```bash
 pip install numpy "pydantic>=2" pyyaml requests fastapi uvicorn anthropic
-python -m pytest -q                                     # 70 tests, no network (saved fixtures)
+python -m pytest -q                                     # 71 tests, no network (saved fixtures)
 export CHUI_SEC_USER_AGENT="Your Name you@example.com"  # SEC requires a contact
 export ANTHROPIC_API_KEY=...                            # only for --llm onboarding and the chat assistant
 python scripts/ingest.py specs/cmg.yaml --signals --ground-truth
@@ -288,6 +366,7 @@ python scripts/backtest.py specs/cmg.yaml --from 2017Q1 --exclude 2020Q1:2021Q4
 python scripts/make_twin.py SBUX UAL MAR               # factory: ticker in, scored twin out
 python scripts/make_twin.py RCL --llm                  # same, with the LLM reading the 10-K
 python scripts/validate_ground_truth.py
+python scripts/reports/surprise_direction.py           # does the twin call beat or miss vs expectations?
 python scripts/resolve_sealed.py
 uvicorn api.serve:app --port 8000                       # dashboard and API
 ```

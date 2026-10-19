@@ -1,6 +1,6 @@
 # Demo script (finals, 12 minutes inside the 30-minute talk)
 
-The demo sits between deck slide 11 ("Let's run it") and slide 12 (shocks). The 5-minute midpoint version is in git
+The demo sits between deck slide 13 ("Let's run it") and slide 14 (shocks). The 5-minute midpoint version is in git
 history (`git show a8cc3e1:docs/demo_script.md`).
 
 ## Setup (30 minutes before)
@@ -88,7 +88,7 @@ Open **CMG**, then the sealed-forecasts tab.
 > today. Delta's resolved on October 9: the margin was a hit, revenue missed, and the miss is published with the
 > reason."
 
-Back to the deck, slide 12.
+Back to the deck, slide 14.
 
 ## If something breaks
 
@@ -98,3 +98,33 @@ Back to the deck, slide 12.
 - **A twin errors:** switch to DAL or UAL, the most robust.
 - **Chat unavailable:** skip to 11:00 and use the time for questions.
 - **Everything fails:** play the backup video.
+
+## Hand-over: Longaeva volunteers try it themselves
+
+The finals include "real-world testing with Longaeva investment team volunteers". Hand them the laptop on the
+**Portfolio** page, with the dashboard running and a second terminal open in the repo root. Offer these four
+things, about 2 minutes each, and let them drive:
+
+1. **Open any twin and run a scenario.** Click a preset (*Food-safety scare*, *Fuel / commodity spike*, *Demand
+   slump*…) or drag a state slider. The forecast band and the *Scenario impact* bars move. Click a driver bar to see
+   the data series behind it.
+2. **Economy shock.** On Portfolio, click *Jet fuel +30%* or *Restaurant sales −5%*: every exposed twin responds.
+3. **Ask the twin.** Chat panel, any question in plain words ("What happens to Delta's margin if fares fall 10%?").
+   Every number in the answer comes from a tool call on the twin.
+4. **Build a company of their choice.** `python scripts/make_twin.py <TICKER>` (about 1–2 minutes; a GDELT 429
+   line is normal). Then refresh and open `#/twin/<TICKER>`.
+
+**Tickers that build** (SEC industry code checked 2026-10-19): restaurants YUM, WING; airlines JBLU, ALK; hotels H,
+WH; homebuilders TOL, NVR; general retail DG, DLTR, COST, M. Avoid recent IPOs such as CAVA (2023): too few quarters
+to score. Add `--llm` only for a company no pack covers that is still driven by operations (cruise lines: RCL); it
+costs about $0.20–0.40 per run, so keep it to one or two.
+
+**When they pick something outside the system** (a bank, a biotech, a chip maker), let it refuse. It prints one
+line, for example `[JPM] NOT COVERED: no industry pack covers SIC 6021 …`. With `--llm`, the model reads the 10-K
+and agrees: on 2026-10-19 for JPMorgan it answered that none of the packs fit a diversified bank, quoting the
+10-K. Say: "It is built for businesses driven by observable operations. It refuses rather than inventing a model.
+Banks need their own template (deposits, credit quality, funding cost), and that is first on the roadmap after
+deeper twins."
+
+**Don't:** close the dashboard terminal; run `--llm` on many tickers; promise a new twin's accuracy before its
+scores print (read the skill numbers off the screen, negatives included).

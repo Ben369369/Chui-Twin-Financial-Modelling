@@ -99,11 +99,15 @@ def make_news_query(article: str | None, name: str) -> str:
     return clean_name(name)
 
 
+class NotCovered(ValueError):
+    """The company is outside every industry pack: an expected answer, not a crash."""
+
+
 def pick_pack(sic: int, packs: dict) -> tuple[str, dict]:
     for name, pack in packs["packs"].items():
         if sic in pack["sic"]:
             return name, pack
-    raise ValueError(f"no industry pack covers SIC {sic}; add one to {PACKS.name}")
+    raise NotCovered(f"no industry pack covers SIC {sic}; add one to {PACKS.name}, or try --llm")
 
 
 def pack_template(pack_name: str | None, packs: dict) -> str:
@@ -136,7 +140,11 @@ def build_spec(ticker: str, news_query: str | None = None, wiki_article: str | N
         result = onboard(company, packs, template, sic_pack=pack_name)
         if pack_name is None:
             if result.checked.pack is None:
-                raise ValueError(f"no pack covers SIC {company.sic} and the LLM's pack choice did not pass the checks")
+                p = result.checked.draft.pack
+                if p.pack == "none":
+                    raise NotCovered(f"no pack covers SIC {company.sic}, and the LLM agrees none fits: {p.reason} "
+                                     f"(10-K: \"{p.quote}\")")
+                raise NotCovered(f"no pack covers SIC {company.sic} and the LLM's pack choice did not pass the checks")
             pack_name, pack = result.checked.pack, packs["packs"][result.checked.pack]
     d = packs["defaults"]
     article = wiki_article or wikipedia_article(company.name, company.ticker)

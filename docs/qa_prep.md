@@ -2,6 +2,37 @@
 
 Short answers first; the evidence line is where to point if they push. Numbers as of the 2026-10-18 rescore.
 
+## Alpha (the brief's own question: expect it first)
+
+**Where is the alpha? Does this make money?**
+Our definition: an information edge on the next reported results, relative to what the market expects, from
+data public at the time. Three links must hold. Sensors track the business: yes, 25 of 37 KPI series beat "last
+quarter". The twin knows more than the expectation: yes against management guidance (skill +0.29 Delta, +0.31
+Chipotle), not yet against consensus (−0.37, 6 quarters). The edge is not already priced: untested. So we do
+not claim demonstrated alpha; we built the system that would generate it and the instrument that measures it
+honestly. *Evidence:* technical appendix §2, `docs/surprise_direction.md`.
+
+**Does it call beat or miss?**
+Delta revenue vs guidance: 9 of 14 right against a 50% base rate (p = 0.21), suggestive. Chipotle comps vs
+guidance: 13 of 18, but Chipotle beat its own guide 13 of 18 times, so "always predict a beat" scores the same:
+no edge. Against consensus: 3 of 6. *Say it before they do:* the Chipotle 72% is the base rate, not skill.
+
+**Why no trading backtest?**
+Two missing inputs: point-in-time consensus history for every twin (we have 6 Chipotle quarters, hand-entered
+from news) and a price source whose terms allow it. With both, the test is an earnings-day event study: does the
+twin's probability of beating consensus predict the sign of the post-release return? Longaeva's consensus
+and price data would make it a direct test, because the twin already outputs that probability at every
+historical release.
+
+**Where would an edge most likely show up?**
+Where public sensors are more direct and more timely than the analyst process. Airlines: TSA counts are daily,
+and the airline twins are the strongest in the portfolio (United revenue +0.45, op margin +0.52 vs last quarter).
+
+**How would an investment team use it?**
+Between reports: watch the hidden states move (news tone falling at Chipotle in July–August). Before a release:
+read the probability of beating guidance or consensus, and which data series drive it. For a position: run the
+shock that worries you (fuel +30%, a food-safety scare) and see the distribution, not one number.
+
 ## Method
 
 **How do you avoid lookahead bias?**

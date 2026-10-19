@@ -16,7 +16,7 @@ from engine.primitives import KPIDef
 from engine.spec import Spec, load_spec, resolve
 from engine.primitives import load_template
 from engine.twin import Twin
-from onboarding.factory import clean_name, load_packs, make_news_query, pick_pack, ticker_in_infobox
+from onboarding.factory import NotCovered, clean_name, load_packs, make_news_query, pick_pack, ticker_in_infobox
 from tests.synthetic import generate
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -257,3 +257,11 @@ def test_implied_quarterly_from_annual_guidance_is_point_in_time():
     # A quarter guided explicitly in the same release is not overwritten.
     assert {r.period for r in implied_quarterly([fy], reported, explicit={("2026Q3", t(7, 29))})} == {"2026Q4"}
     assert worded_range("low", "single", "mid") == (1, 6)
+
+
+def test_uncovered_industry_is_refused_cleanly():
+    packs = load_packs()
+    bank_sic = 6021  # national commercial banks: no pack covers them
+    assert all(bank_sic not in p["sic"] for p in packs["packs"].values())
+    with pytest.raises(NotCovered):
+        pick_pack(bank_sic, packs)

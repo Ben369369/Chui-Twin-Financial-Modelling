@@ -25,7 +25,7 @@ sys.path.insert(0, str(ROOT))
 from engine.evaluation.backtest import TWIN, walk_forward  # noqa: E402
 from engine.periods import span  # noqa: E402
 from engine.spec import load_spec  # noqa: E402
-from onboarding.factory import build_spec, write_spec  # noqa: E402
+from onboarding.factory import NotCovered, build_spec, write_spec  # noqa: E402
 from scripts.ingest import ingest_ground_truth, ingest_signals  # noqa: E402
 from storage import db  # noqa: E402
 
@@ -149,6 +149,8 @@ def main() -> None:
                 print(f"  {kpi:15s} n={k['n']:2d} MAE twin {k['mae_twin']:.2f} naive {fmt(k['mae_naive'], '.2f')} "
                       f"skill vs naive {fmt(k['skill_naive'])} vs seasonal {fmt(k['skill_seasonal'])}")
             print(f"  {'built in %.0fs, ' % build_s if build_s is not None else ''}total {time.time() - t0:.0f}s")
+        except NotCovered as e:
+            print(f"[{item}] NOT COVERED: {e}")
         except Exception as e:
             print(f"[{item}] FAILED: {type(e).__name__}: {e}")
             traceback.print_exc(limit=2)

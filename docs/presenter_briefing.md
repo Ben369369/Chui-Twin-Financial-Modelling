@@ -31,8 +31,8 @@ For Benedict, before the finals on Wednesday, Oct 21, 2026 (4:30–6:00 p.m. ET;
 `ANTHROPIC_API_KEY`, which is set on this laptop). Click through Portfolio, DAL, CMG and CCL once so they load fast
 (each forecast takes about 0.4 s the first time).
 
-**During the talk:** present the deck full screen; at slide 11 switch to the browser (Alt+Tab), run the demo, then
-switch back for slide 12. For the live onboarding step you need a second terminal (the first one is busy running
+**During the talk:** present the deck full screen; at slide 13 switch to the browser (Alt+Tab), run the demo, then
+switch back for slide 14. For the live onboarding step you need a second terminal (the first one is busy running
 the dashboard) with the command typed in advance: `python scripts/make_twin.py RCL --llm`. After it finishes, the
 new twin appears at `#/twin/RCL` after a page refresh.
 
