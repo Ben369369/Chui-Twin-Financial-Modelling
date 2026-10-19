@@ -16,6 +16,10 @@ honestly. *Evidence:* technical appendix §2, `docs/surprise_direction.md`.
 Delta revenue vs guidance: 9 of 14 right against a 50% base rate (p = 0.21), suggestive. Chipotle comps vs
 guidance: 13 of 18, but Chipotle beat its own guide 13 of 18 times, so "always predict a beat" scores the same:
 no edge. Against consensus: 3 of 6. *Say it before they do:* the Chipotle 72% is the base rate, not skill.
+*Then the stronger test:* beat/miss throws away the size of each miss. On error size, the twin was closer than
+Delta's own guidance in 11 of 14 quarters (exact permutation p = 0.005), and Delta beat its guide only 7 of 14
+times, so it is not a guide-low artifact. Chipotle: closer in 15 of 18 (p = 0.02), partly correcting a guide that
+runs low. Against consensus: closer in 2 of 6, worse. *Evidence:* `docs/surprise_direction.md`.
 
 **Why no trading backtest?**
 Two missing inputs: point-in-time consensus history for every twin (we have 6 Chipotle quarters, hand-entered

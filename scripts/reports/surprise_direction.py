@@ -1,4 +1,9 @@
-"""Does the twin call the direction of the surprise against expectations?
+"""Does the twin know more than the published expectation (guidance, consensus)?
+
+Two tests per KPI and expectation, on the same walk-forward quarters:
+  1. Direction: does the twin call beat or miss?
+  2. Accuracy: is the twin's forecast closer to the actual than the expectation? Uses the size of each quarter's
+     CRPS gain (a point forecast's CRPS is its absolute error), so it has more power than beat/miss.
 
 For every scored quarter where an expectation (guidance, consensus) was public before the release, compare the
 sign of (twin median - expectation) with the sign of (actual - expectation). Report the hit rate next to the best
@@ -31,6 +36,17 @@ def p_at_least(hits: int, n: int) -> float:
     return sum(math.comb(n, k) for k in range(hits, n + 1)) / 2 ** n
 
 
+def p_sign_flip(gains: list[float]) -> float:
+    """Exact one-sided paired permutation test: the share of the 2^n sign flips whose mean gain is at least the
+    observed one. Under "the twin is no better than the expectation", each quarter's gain is equally likely +/-."""
+    n, observed = len(gains), sum(gains)
+    count = 0
+    for mask in range(1 << n):
+        total = sum(-g if mask >> i & 1 else g for i, g in enumerate(gains))
+        count += total >= observed - 1e-12
+    return count / (1 << n)
+
+
 def direction_table(rspec, conn, n_paths: int = 4000) -> list[dict]:
     obs = db.load_observations(conn, [s.series for s in rspec.signals])
     gt = db.load_ground_truth(conn, rspec.ticker)
@@ -45,8 +61,9 @@ def direction_table(rspec, conn, n_paths: int = 4000) -> list[dict]:
     out = []
     for source in sorted({e.source for e in ext}):
         for kpi in sorted({k for k, _ in by}):
-            pairs = [(m[TWIN].point - m[source].point, m[TWIN].actual - m[source].point, p)
-                     for (k, p), m in sorted(by.items()) if k == kpi and source in m and TWIN in m]
+            both = [(p, m) for (k, p), m in sorted(by.items()) if k == kpi and source in m and TWIN in m]
+            gains = [m[source].crps - m[TWIN].crps for _, m in both]  # > 0: the twin was closer
+            pairs = [(m[TWIN].point - m[source].point, m[TWIN].actual - m[source].point, p) for p, m in both]
             pairs = [x for x in pairs if x[0] != 0 and x[1] != 0]  # an exact tie has no direction
             if not pairs:
                 continue
@@ -55,7 +72,10 @@ def direction_table(rspec, conn, n_paths: int = 4000) -> list[dict]:
             beat = sum(outcome > 0 for _, outcome, _ in pairs)
             out.append({"ticker": rspec.ticker, "kpi": kpi, "vs": source, "n": n, "hits": hits,
                         "beat": beat, "best_constant": max(beat, n - beat), "p": p_at_least(hits, n),
-                        "first": pairs[0][2], "last": pairs[-1][2]})
+                        "first": pairs[0][2], "last": pairs[-1][2],
+                        "acc_n": len(gains), "closer": sum(g > 0 for g in gains),
+                        "p_closer": p_at_least(sum(g > 0 for g in gains), len(gains)),
+                        "mean_gain": sum(gains) / len(gains), "p_perm": p_sign_flip(gains)})
     return out
 
 
@@ -80,6 +100,25 @@ def render(rows: list[dict]) -> str:
         "",
         "Read a row as evidence of an information edge only if the hit rate clears the best constant rule, not just "
         "50%, and p is small. With 6–18 quarters per row, none of these is conclusive.",
+        "",
+        "## Accuracy: is the twin closer to the actual than the expectation?",
+        "",
+        "Same quarters. Gain = CRPS(expectation) - CRPS(twin) per quarter; a point forecast's CRPS is its absolute "
+        "error. Sign test: how often the twin was closer. Permutation p: exact one-sided paired test on the mean gain "
+        "(all 2^n sign flips). This uses the size of each quarter's gain, so it has more power than beat/miss, but it "
+        "answers a different question: closer than the expectation, not the direction of the surprise.",
+        "",
+        "| Twin | KPI | Against | Quarters | Twin closer | Sign test p | Mean CRPS gain | Permutation p |",
+        "|---|---|---|---|---|---|---|---|",
+    ]
+    for r in rows:
+        lines.append(f"| {r['ticker']} | {r['kpi']} | {r['vs']} | {r['acc_n']} | {r['closer']} of {r['acc_n']} | "
+                     f"{r['p_closer']:.3f} | {r['mean_gain']:+.2f} | {r['p_perm']:.3f} |")
+    lines += [
+        "",
+        "Caveats: a company that guides low (Chipotle beat its guide in most quarters) can be beaten partly by "
+        "correcting that bias; several tests on 6–18 quarters; the hand-built twins' structure was chosen on this "
+        "backtest. None of this is a test against what the price already reflects.",
         "",
     ]
     return "\n".join(lines)

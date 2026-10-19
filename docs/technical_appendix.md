@@ -44,7 +44,7 @@ behind them (section 5), and live forecasts are sealed before the outcome (secti
 | Link | Evidence so far |
 |---|---|
 | 1. Public sensors track the hidden states | The twin beats both naive baselines ("same as last quarter" and "same quarter last year") on 24 of 37 KPI series (section 7) |
-| 2. The twin knows more than the expectation | Beats management guidance on accuracy: CRPS skill +0.29 (Delta revenue, 14 quarters), +0.41 (Chipotle comps, 18 quarters). Loses to analyst consensus: −0.37 (Chipotle comps, 6 quarters) |
+| 2. The twin knows more than the expectation | Beats management guidance on accuracy: CRPS skill +0.29 (Delta revenue, 14 quarters; closer in 11 of 14, p = 0.005), +0.41 (Chipotle comps, 18 quarters). Loses to analyst consensus: −0.37 (Chipotle comps, 6 quarters) |
 | 3. That knowledge is not already in the price | Not tested |
 
 The sharper test of link 2 is whether the twin calls the **direction** of the surprise
@@ -57,9 +57,24 @@ expectation), scored walk-forward against the sign of (actual − expectation):
 | Chipotle, comps | guidance | 18 | 13 (72%) | 72% ("always beat") | 0.05 |
 | Chipotle, comps | consensus | 6 | 3 (50%) | 50% | 0.66 |
 
-**Reading it honestly.** Link 1 holds. Link 2 holds against management guidance on accuracy, but the direction
-test is weaker. Chipotle beat its own guidance in 13 of 18 quarters, so the twin's 72% only matches "always
-predict a beat". Delta's 64% against a 50% base rate is suggestive but not conclusive. Against analyst consensus,
+Beat/miss keeps one bit per quarter. On the same quarters, a test that also uses the **size** of each quarter's
+gain asks whether the twin's forecast was closer to the actual than the expectation (gain = CRPS of the
+expectation − CRPS of the twin; a point forecast's CRPS is its absolute error; exact one-sided permutation test
+over all 2^n sign flips):
+
+| Twin, KPI | Against | Quarters | Twin closer | Sign test p | Mean CRPS gain | Permutation p |
+|---|---|---|---|---|---|---|
+| Delta, revenue growth | guidance | 14 | 11 of 14 | 0.03 | +1.06 points | **0.005** |
+| Chipotle, comps | guidance | 18 | 15 of 18 | 0.004 | +0.94 points | **0.02** |
+| Chipotle, comps | consensus | 6 | 2 of 6 | 0.89 | −0.37 points | 0.81 |
+
+**Reading it honestly.** Link 1 holds. Link 2 holds against management guidance on accuracy, and the size-based
+test says that is unlikely to be luck: the twin was closer than Delta's own guidance in 11 of 14 quarters (p =
+0.005). Delta beat its guidance in only 7 of 14 quarters, so this is not a guide-low artifact. For Chipotle, which
+guides low, part of the gain may simply correct that bias. The direction test is weaker. Chipotle beat its own
+guidance in 13 of 18 quarters, so the twin's 72% only matches "always predict a beat". Delta's 64% against a 50%
+base rate is suggestive but not conclusive. These are several tests on 14–18 quarters, and the hand-built twins'
+structure was chosen on this backtest. Against analyst consensus,
 the closest public stand-in for what the price expects, the twin shows no edge on the 6 quarters we could
 collect. Link 3 is untested. **We do not claim demonstrated alpha.** What we have built is the system that would
 generate it, and the instrument that measures honestly whether it does.
@@ -378,7 +393,7 @@ python scripts/backtest.py specs/cmg.yaml --from 2017Q1 --exclude 2020Q1:2021Q4
 python scripts/make_twin.py SBUX UAL MAR               # factory: ticker in, scored twin out
 python scripts/make_twin.py RCL --llm                  # same, with the LLM reading the 10-K
 python scripts/validate_ground_truth.py
-python scripts/reports/surprise_direction.py           # does the twin call beat or miss vs expectations?
+python scripts/reports/surprise_direction.py           # beat/miss and accuracy vs guidance and consensus
 python scripts/resolve_sealed.py
 uvicorn api.serve:app --port 8000                       # dashboard and API
 ```
