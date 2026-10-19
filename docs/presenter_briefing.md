@@ -157,7 +157,7 @@ Kept simple on purpose: about 26–31 scored quarters per KPI cannot support a c
 6. **Attribution.** A driver waterfall (each bar linked to its data series and raw files) and leave-one-signal-out
    counterfactuals.
 7. **Evaluation.** Walk-forward from 2017Q1: at each historical earnings release, refit using only data available
-   at that moment, forecast, score. COVID quarters (2020Q1–2021Q4) scored separately; travel twins also exclude
+   at that moment, forecast, score. COVID quarters (2020Q1–2021Q4) excluded from scoring; travel twins also exclude
    calibration through 2022Q4. Metric: **CRPS** (scores the whole distribution). **Skill** = 1 − CRPS(twin) /
    CRPS(baseline); positive means the twin wins.
 
