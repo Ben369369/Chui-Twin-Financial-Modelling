@@ -11,7 +11,7 @@ Built for the Longaeva AI Hackathon (Stage 2, October 2026).
 ## Run the demo
 
 ```bash
-pip install numpy "pydantic>=2" pyyaml requests fastapi uvicorn
+pip install numpy "pydantic>=2" pyyaml requests fastapi uvicorn anthropic
 cd web && npm install && npm run build && cd ..
 uvicorn api.serve:app --port 8000          # open http://localhost:8000
 ```
