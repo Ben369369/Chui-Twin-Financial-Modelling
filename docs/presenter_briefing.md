@@ -284,7 +284,7 @@ SHA-256 `fabe5e811fcf5fe2e0b909a5d7c7e6ff5e69a8ee691645214ec7e816c0016282`.
    and why rejected ones were dropped. Raw prompt and response saved under `data/raw/llm/`.
 
 **Carnival** (SIC 4400, no pack): hotels pack chosen; airfares added as a drag on demand ("Increases in airfares …
-reduce demand for cruises"), jet fuel as unhedged input cost; suggested occupancy, berth days, fuel per ton,
+reduce demand for cruises"), jet fuel as input cost; suggested occupancy, berth days, fuel per ton,
 passengers as operating metrics. **RCL rehearsal:** 103 s, similar choices plus capacity (new ships) → revenue.
 
 **Honest result** (`docs/experiments.md` §2): on UAL, MAR, SBUX, TGT the LLM moved shared-KPI skill by ±0.03 (MAR

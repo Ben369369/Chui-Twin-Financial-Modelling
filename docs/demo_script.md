@@ -12,6 +12,12 @@ history (`git show a8cc3e1:docs/demo_script.md`).
    `<LIVE_TICKER>` = **RCL** (Royal Caribbean). Rehearsed 2026-10-18: 103 s end to end; the model chose the hotels
    pack (no pack covers SIC 4400), added jet fuel ("6.4% of revenue", quantified 10% sensitivity) and airfares, and
    an edge from capacity (new ships) to revenue growth. The live run's choices can differ: read them off the screen.
+   Rehearsed again 2026-10-19: 55 s; same pack and drivers, 5 edges, **0 rejected**, and one new KPI named
+   `fuel_pct_revenue` that is really built from total cost of goods sold (its description admits it is a proxy).
+   It printed skill **−0.52** vs naive, after the code dropped eight COVID quarters above 100% as scope mismatches.
+   If that happens live, say it, don't hide it: "The model named this KPI fuel share but built it from total cost
+   of goods. It forecasts worse than naive. That is exactly why new KPIs stay out of the portfolio until a person
+   checks them." If the run shows 0 rejections, show a rejection from `specs/auto/ccl.onboarding.json` instead.
    Its spec was deleted after the rehearsal so the live run builds it fresh; delete `specs/auto/rcl.*` again if a
    later rehearsal recreates it. Fallback if the run fails: show `specs/auto/ccl.onboarding.json`.
 3. Second browser tab: `docs/sealed_forecasts.md` on GitHub or in the editor.
@@ -78,7 +84,7 @@ number in its reply comes from a tool call on the twin, not from the model's mem
 ## 11:00 The open bet (60 s)
 
 Open **CMG**, then the sealed-forecasts tab.
-> "Chipotle's Q3 forecast was sealed on Monday and anchored in Bitcoin. It resolves on October 28, a week after
+> "Chipotle's Q3 forecast was sealed on Sunday, October 18, and anchored in Bitcoin. It resolves on October 28, a week after
 > today. Delta's resolved on October 9: the margin was a hit, revenue missed, and the miss is published with the
 > reason."
 

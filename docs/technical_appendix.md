@@ -1,6 +1,6 @@
 # Chui Twin: Technical Appendix
 
-Longaeva AI Hackathon, Stage 2 (October 2026). Code: https://github.com/Ben369369/Chui-Twin-Financial-Modelling
+Longaeva AI Hackathon, finals (October 2026). Code: https://github.com/Ben369369/Chui-Twin-Financial-Modelling
 
 This appendix covers how the system works, how it was tested and where it falls short. It is meant for
 readers who want to check the claims. Full model math is in `docs/model.md`, and data sources and terms
@@ -17,8 +17,9 @@ One shared engine:
 4. traces every forecast back to the data behind it,
 5. scores every twin the same way against simple and expert baselines.
 
-The claim is about **the system, not one company**. Sixteen twins in five industries run on the same
-engine. Fourteen of them were built by a factory from the ticker alone, with no per-company tuning.
+The claim is about **the system, not one company**. Seventeen twins in six industries (five industry packs
+plus cruise lines) run on the same engine. Fifteen of them were built by a factory from the ticker alone, with no per-company tuning: fourteen
+by rules, and one (Carnival, an industry no pack covers) with an LLM reading the 10-K (section 9).
 
 ## 2. Architecture
 
@@ -37,8 +38,8 @@ public sources ──> adapters ──> observations (point-in-time) ──┐
 | `engine/` | estimation, calibration, simulation, attribution, evaluation, sealing | nothing (a test fails if a ticker, state name or series name appears here) |
 | `adapters/` | SEC EDGAR and XBRL, FRED, BLS, TSA, Wikimedia, GDELT, a generic sitemap counter with Wayback history | usually nothing |
 | `templates/` | an industry's states, default causal edges with priors, KPI structure | one YAML file per industry |
-| `onboarding/` | ticker → SEC SIC code → industry pack → spec | the ticker |
-| `specs/` | per company: KPIs, signals, edge overrides, extraction rules | written by hand (2) or by the factory (14) |
+| `onboarding/` | ticker → SEC SIC code → industry pack → spec; optionally an LLM reads the 10-K and proposes additions | the ticker |
+| `specs/` | per company: KPIs, signals, edge overrides, extraction rules | written by hand (2) or by the factory (15) |
 
 Two tests enforce the separation. `test_engine_no_company_code.py` searches the engine for tickers,
 template state names and series prefixes. `test_template_agnostic.py` runs estimation and simulation end
@@ -135,7 +136,7 @@ Selected KPIs:
 - Analyst consensus still beats the twin on Chipotle comps. Analysts see information that free public
   data does not.
 - Interval coverage is uneven: some twins are too wide (coverage 1.00), and DAL revenue is a little narrow
-  (0.69).
+  (0.67).
 - **Selection bias:** the KPI structures for the two hand-built twins were chosen on the same backtest
   that is reported. The clean tests are (a) the 15 factory twins (14 rules-only, 1 LLM), which use industry defaults with no
   tuning, and (b) the sealed live forecasts below.
@@ -192,26 +193,73 @@ fixed-seed random sample of 20 (`docs/validation_sample.md`) plus anything flagg
 y or n, and `--apply` records them as verified. Reporting the agreement rate on the sample tells users how
 far to trust the automatic extraction.
 
-## 9. Experiments, including negative results
+## 9. LLM onboarding: the model proposes, code decides
+
+`python scripts/make_twin.py <TICKER> --llm` adds one step to the factory. After the SEC lookup and the
+SIC-based pack choice, an LLM (`claude-sonnet-5-5`, prompt `prompts/onboard_spec_v1.md`) reads the
+company's latest 10-K (about 100–170k tokens) together with a menu of what the system can use: the template
+states, the industry packs, every series an adapter can fetch, and the XBRL concepts this company actually
+reports. It returns structured JSON, validated with pydantic, proposing:
+
+- an industry pack, when no pack covers the company's SIC code;
+- up to 4 extra driver series, each mapped to a state with a sign and strength;
+- up to 2 extra KPIs built from XBRL concepts, with edges into them;
+- edge strengths, and up to 4 operating metrics (suggestions only, not used by the model).
+
+**Every proposal must carry a quote copied from the 10-K.** Code, not the model, then decides. A proposal is
+dropped if its quote is not in the filing, its series cannot be fetched, its XBRL concept has fewer than
+16 quarters of history or is no longer reported, it names an unknown state or KPI, or a new KPI has no
+accepted edge. Accepted items are merged over the pack defaults. `specs/auto/<ticker>.onboarding.json`
+records every proposal, its quote, and the reason for each rejection; the raw prompt and response are saved
+under `data/raw/llm/` like any other source. A twin costs about $0.20–0.35 in API calls and builds in about
+100 seconds.
+
+**Carnival** (SIC 4400, no pack) is the first twin built this way. The model chose the hotels pack, quoting
+the 10-K's list of competitors ("hotels, resorts …"), and added jet fuel as an input cost and airfares
+as a drag on demand, each with a quote. Code rejected three proposals: an edge from capacity to revenue,
+because its quote ("1.0% capacity increase in ALBDs") was not in the filing, and two proposed KPIs that had no
+accepted edge. A rehearsal on Royal Caribbean took 103 seconds end to end.
+
+**Result** (`docs/experiments.md` §2, `docs/llm_onboarding_scorecard.md`). We reran four existing
+rules-only twins (UAL, MAR, SBUX, TGT) with the LLM step and rescored both versions on the same data.
+
+| Twin | Revenue growth, rules → + LLM | Op margin, rules → + LLM |
+|---|---|---|
+| UAL | +0.45 → +0.45 | +0.52 → +0.53 |
+| MAR | −0.07 → **−0.13** | +0.20 → +0.20 |
+| SBUX | +0.05 → +0.06 | +0.55 → **+0.58** |
+| TGT | +0.01 → +0.01 | −0.05 → −0.05 |
+
+(CRPS skill against "last quarter"; positive is better.) On the KPIs both versions share, the LLM changed
+skill by at most ±0.06, inside the noise for these sample sizes, and made MAR revenue slightly worse. **We do
+not claim an accuracy gain.** Its value is coverage: it onboards industries no pack covers, and it finds
+company-specific KPIs the twin forecasts better than naive (UAL fuel share of revenue +0.37, labor share
++0.32; Target SG&A ratio +0.36, cost-of-sales ratio +0.38). It still needs review: on Starbucks it mixed two
+XBRL concepts of different scope for one KPI, which then forecast far worse than naive. New KPIs therefore
+stay out of the portfolio scorecard until a person has checked them.
+
+## 10. Experiments, including negative results
 
 `docs/experiments.md` records every signal tested. For example, JOLTS quits and job-openings rates were
 tested as hiring-difficulty proxies (the office-hours question on labor data) and did **not** improve the
 CMG or DAL margins. DAL operating margin MAE went from 2.43 to 2.49–2.61. They were not adopted.
 Industry-wide hiring conditions are not company-specific, and they move with wages, which the model
-already uses.
+already uses. The LLM onboarding experiment (section 9) is recorded there too: adopted for coverage, not for
+accuracy.
 
-## 10. Scope
+## 11. Scope
 
 The system models **companies whose results come from observable operating drivers**: restaurants,
-retail, airlines, hotels and homebuilders today. It does not attempt the whole market:
+retail, airlines, hotels, homebuilders and cruise lines today. It does not attempt the whole market:
 - Banks need a new template (deposits, credit quality, margin).
 - Binary-event companies such as clinical-stage biotech need a separate event engine.
 - Both are on the roadmap in `docs/coverage_and_roadmap.md` and need no change to the existing engine.
 
-For the next two weeks the priority is depth (validation, live sealed forecasts, LLM-assisted onboarding),
-not more companies.
+Next steps, in order: turn the operating metrics the LLM suggests (comps, RevPAR, occupancy) into checked
+extraction rules; read guidance from earnings-call transcripts as well as press releases; add strong-fit
+industries that reuse existing adapters (trucking, rail); then the bank template and the event module.
 
-## 11. Limitations
+## 12. Limitations
 
 - **Short histories:** about 26–31 scored quarters per KPI. Skill differences under about 0.05 are noise.
 - **A forecasting model, not a structural one:** scenario results are what the calibrated linear model
@@ -221,16 +269,24 @@ not more companies.
 - **Seasonal margins** only tie the same-quarter-last-year baseline.
 - **Rate limits:** the GDELT news-tone API rate-limits heavily, so some news-tone series can lag a few
   days. The daily job retries them.
+- **Guidance from press releases only:** guidance given only on earnings calls is missed. Chipotle's Q3
+  2026 call guide of "around a plus 1%" comps is the live example: the twin compared itself with the
+  2.65% implied by the press release's full-year range.
+- **LLM hindsight:** the LLM reads today's 10-K, and the backtest scores the resulting structure on earlier
+  quarters, the same caveat as choosing a pack. Its instructions forbid using known outcomes, but that
+  cannot be verified.
 
-## 12. Reproduce
+## 13. Reproduce
 
 ```bash
-pip install numpy "pydantic>=2" pyyaml requests fastapi uvicorn
-python -m pytest -q                                     # 63 tests, no network (saved fixtures)
+pip install numpy "pydantic>=2" pyyaml requests fastapi uvicorn anthropic
+python -m pytest -q                                     # 70 tests, no network (saved fixtures)
 export CHUI_SEC_USER_AGENT="Your Name you@example.com"  # SEC requires a contact
+export ANTHROPIC_API_KEY=...                            # only for --llm onboarding and the chat assistant
 python scripts/ingest.py specs/cmg.yaml --signals --ground-truth
 python scripts/backtest.py specs/cmg.yaml --from 2017Q1 --exclude 2020Q1:2021Q4
 python scripts/make_twin.py SBUX UAL MAR               # factory: ticker in, scored twin out
+python scripts/make_twin.py RCL --llm                  # same, with the LLM reading the 10-K
 python scripts/validate_ground_truth.py
 python scripts/resolve_sealed.py
 uvicorn api.serve:app --port 8000                       # dashboard and API
