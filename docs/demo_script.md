@@ -104,15 +104,30 @@ Chipotle −1.1.
 **Do:** open the **DAL** tab.
 
 **Say:**
-> "This is Delta's twin. Revenue growth for next quarter, with an 80% range. The grey diamond is Delta's own
-> guidance, read out of its press release. The twin starts from guidance and forecasts the surprise."
+> "This is Delta's twin. Revenue growth for the December quarter: a median of about 22%, with an 80% range of
+> roughly 17 to 27. On October 9, Delta guided about 20%. The twin, built only from public signals, puts that
+> inside its range, a couple of points above."
+
+**Don't point at a guidance diamond or the "Versus expectations" panel on Delta.** Delta's Q4 guide was worded
+"approximately 20 percent", which the guidance reader doesn't parse yet, so neither appears for Q4. The 20% above
+is from the Oct 9 press release (8-K 0000027904-26-000035).
 
 **Explain** (only what the room needs):
 - **The band:** the middle line is the median of 10,000 simulated paths; the shaded area is where 80% of them
   land.
-- **Versus expectations:** the twin's gap to guidance, and the probability of beating it.
-- **Driver bars:** what is moving each forecast, and by how much.
+- **Driver bars ("What moves revenue growth"):** the forecast is last quarter's reported growth (21.07) plus a
+  small learned drift (+1.28) plus each signal's change since the last report. Every bar is under 0.3 points
+  (airfare inflation cooling −0.29, news tone −0.15, Wikipedia and TSA about zero), so the signals say "about like
+  last quarter".
 - **Hidden states:** demand, capacity, price, input cost, labor and sentiment, estimated each quarter.
+
+**If asked why the twin starts from last quarter rather than Delta's guide:** "It anchors on guidance when it can
+read it. Delta's Q4 guide was worded 'approximately 20 percent', which our reader doesn't parse yet, so it falls
+back to last quarter's number. The fix is one rule in the spec, and it's on the list."
+
+**If asked whether 22% is too high, since Q3 included refinery sales:** "Fair point. Q3's 21% included
+third-party refinery revenue that Delta's own guide excludes. That's the same definition gap behind our sealed
+Q3 revenue miss on slide 11, and why we now match each anchor's definition to its KPI."
 
 **Do:** click one **driver bar** (TSA or jet fuel) to open its sources.
 
