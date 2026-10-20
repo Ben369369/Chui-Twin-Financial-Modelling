@@ -117,8 +117,8 @@ to end on a dummy template with made-up state names.
 
 ## 4. Data and point-in-time correctness
 
-- **Coverage:** 164,221 observations of 68 signal series from 6 public sources (FRED, BLS, TSA, GDELT,
-  Wikimedia, public sitemaps). From SEC filings there are 2,190
+- **Coverage:** the 17 twins use 55 signal series (138,717 observations) from 6 public sources (FRED,
+  BLS, TSA, GDELT, Wikimedia, public sitemaps); the database also keeps series tested and rejected. From SEC filings there are 2,190
   reported KPI values for 17 companies, plus 56 management-guidance values and 6 consensus values.
 - **Against the hackathon's dataset list:** the system draws on 10 of its entries: TSA checkpoint numbers,
   Wikimedia pageviews, GDELT 2.0, BLS (CES wages; JOLTS tested and not adopted), SEC EDGAR filings and XBRL,
@@ -127,7 +127,7 @@ to end on a dummy template with made-up state names.
   EIA's, via FRED. Beyond the list: store and job-posting counts from Chipotle's public sitemaps, with
   history from the Internet Archive. Not used, with reasons in `provenance.md`: Google Trends (no official
   open API) and EIA or USDA AMS directly (planned; they need registered keys).
-- **Raw first:** every fetch is saved untouched to `data/raw/<source>/<date>/` (362 snapshots) before
+- **Raw first:** every fetch is saved untouched to `data/raw/<source>/<date>/` (448 snapshot records) before
   parsing, so a parser can be fixed and rerun.
 - **Point in time:** every observation stores `observed_at` (the period it describes) and `available_at`
   (when it could first be known). Release lags are set conservatively: 45 days after month end for
@@ -233,7 +233,7 @@ Selected KPIs:
 ## 8. Live out-of-sample test: sealed forecasts
 
 Before Delta reported Q3 2026, its forecast (revenue growth median 15.2%, 80% range 10.6 to 19.9, P(above
-guidance) 52%) was written to canonical JSON and its SHA-256 recorded. The hash was then timestamped
+guidance) 53%) was written to canonical JSON and its SHA-256 recorded. The hash was then timestamped
 through OpenTimestamps in Bitcoin block 969637 (Oct 2, 2026). Anyone can confirm that the forecast
 existed before the outcome, without trusting us.
 
@@ -259,7 +259,8 @@ existed before the outcome, without trusting us.
   KPI; for Delta that means a revenue KPI excluding refinery sales, which is not built yet.
 
 Chipotle's Q3 forecast was sealed on Oct 18, 2026 (comps median 2.94%, 80% range 0.64 to 5.15, P(above
-guidance of 2.65%) 57%; SHA-256 `fabe5e811fcf…`, OpenTimestamps), ten days before its Oct 28 report.
+guidance of 2.65%) 57%; SHA-256 `fabe5e811fcf…`, anchored in Bitcoin block 972040 via OpenTimestamps), ten days
+before its Oct 28 report.
 
 ## 9. Validating extracted data: automation and manual review
 
@@ -385,7 +386,7 @@ walk-forward rescore; every source is logged with its terms; licensed data never
 
 ```bash
 pip install numpy "pydantic>=2" pyyaml requests fastapi uvicorn anthropic
-python -m pytest -q                                     # 75 tests, no network (saved fixtures)
+python -m pytest -q                                     # 76 tests, no network (saved fixtures)
 export CHUI_SEC_USER_AGENT="Your Name you@example.com"  # SEC requires a contact
 export ANTHROPIC_API_KEY=...                            # only for --llm onboarding and the chat assistant
 python scripts/ingest.py specs/cmg.yaml --signals --ground-truth

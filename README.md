@@ -6,7 +6,7 @@ states (demand, capacity, price, input cost, labor, sentiment). One shared engin
 states, simulates them forward with Monte Carlo, traces every forecast back to its sources, and
 scores every twin the same way against naive, seasonal, guidance and consensus baselines.
 
-Built for the Longaeva AI Hackathon (Stage 2, October 2026).
+Built for the Longaeva AI Hackathon (finals, October 2026).
 
 ## Run the demo
 
@@ -15,6 +15,8 @@ pip install numpy "pydantic>=2" pyyaml requests fastapi uvicorn anthropic
 cd web && npm install && npm run build && cd ..
 uvicorn api.serve:app --port 8000          # open http://localhost:8000
 ```
+
+The chat panel and LLM onboarding (`make_twin.py --llm`) also need `ANTHROPIC_API_KEY` set.
 
 The dashboard shows:
 - **Portfolio:** every twin's walk-forward scorecard.
@@ -45,10 +47,10 @@ Latest scorecard: `docs/portfolio_scorecard.md`.
 
 - 17 twins on one engine: 2 hand-built, 14 built by the rules-only factory with no tuning, and Carnival onboarded by the LLM (`--llm`), which no industry pack covered.
 - On CRPS, the twin beats both naive baselines on 24 of 37 KPI series: "same as last quarter" on 26 and "same quarter last year" on 35 (rescored 2026-10-19, after dating reported results at the earnings press release; see `provenance.md`).
-- Against expert expectations:
-  - DAL revenue growth anchored on management guidance beats guidance (CRPS skill +0.29, 14 guided quarters).
-  - CMG comps anchored on consensus, then guidance, beats guidance (CRPS skill +0.41, 18 quarters) but still trails consensus (CRPS skill −0.37, 6 quarters).
-  - Both are stated in the docs.
+- Against management guidance, the expectation each company publishes itself:
+  - DAL revenue growth: CRPS skill +0.29 over 14 guided quarters; the twin was closer than Delta's guidance in 11 of 14 quarters (exact permutation test, p = 0.005).
+  - CMG comps: CRPS skill +0.41 over 18 quarters.
+  - Full comparisons, including analyst consensus, are in `docs/technical_appendix.md` §2 and `docs/surprise_direction.md`.
 
 Sealed out-of-sample forecasts and how to verify them: `docs/sealed_forecasts.md`.
 

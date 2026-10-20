@@ -84,7 +84,7 @@ writes that file from a ticker. Built for the Longaeva AI Hackathon; Chipotle an
 | Sep 30 – Oct 1 | Engine, adapters, CMG and DAL twins; twin factory; 16-twin portfolio |
 | Oct 2 | DAL Q3 forecast sealed (Bitcoin block 969637) |
 | Oct 5–6 | Midpoint check-in with the mentor |
-| Oct 9 | Stage 2 submission; Delta reported: margin hit, revenue miss |
+| Oct 9 | Stage 2 submission (earlier round); Delta reported: margin hit, revenue miss |
 | Oct 14 | Selected for finals |
 | Oct 18 | LLM onboarding; Carnival twin; CMG Q3 sealed; portfolio rescored (17 twins) |
 | Oct 19 | Outside review finds backtest timing bug (results dated at the 10-Q, after the press release); fixed, all twins rescored; alpha section, implementation plan |
@@ -131,8 +131,8 @@ refreshes ground truth from SEC, retries rate-limited GDELT series, upgrades tim
 | Chipotle sitemaps + Wayback Machine | US restaurant count, open job postings (counts only) | Capacity, labor |
 | Analyst consensus | 6 quarters of Chipotle comps consensus, hand-entered from public news quotes | Consensus baseline |
 
-Scale today: 164,221 observations of 68 series from 6 sources; 2,190 reported KPI values for 17 companies; 56
-guidance values; 362 raw snapshots in the database. Every source, its terms and its access method are in
+Scale today (Oct 20): the 17 twins use 55 series (138,717 observations) from 6 sources; 2,190 reported KPI values
+for 17 companies; 56 guidance values; 448 raw snapshot records in the database. Every source, its terms and its access method are in
 `provenance.md`.
 
 ---

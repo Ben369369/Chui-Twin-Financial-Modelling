@@ -360,6 +360,11 @@ def xbrl_ground_truth(snap: RawSnapshot, entity_id: str, freq: str, rules: dict[
                 base = _known_by([f for f in prior if f.concept == first.concept], when) or _known_by(prior, when)
                 if base is None or base.value == 0:
                     continue
+                if base.value < 0 or first.value < 0:
+                    # Growth against or into a negative value (e.g. net refunds exceeding revenue in 2020) has no
+                    # meaning and produced values like -1456%.
+                    print(f"  xbrl {kpi} {p}: negative value ({first.value:.0f} vs {base.value:.0f}); growth undefined, dropped")
+                    continue
                 value, detail = 100.0 * (first.value / base.value - 1.0), f"{first.concept} vs {base.accn}"
             elif kind == "ratio":
                 den = _known_by(other.get(p, []), when)

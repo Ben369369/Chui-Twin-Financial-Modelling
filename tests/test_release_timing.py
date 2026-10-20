@@ -37,3 +37,30 @@ def test_evening_release_matches_a_same_day_10q():
                   acceptance=datetime(2020, 1, 29, 2, 12, tzinfo=timezone.utc), report_date="2020-01-28",
                   items="2.02,9.01", primary_document="x.htm")
     assert first_release([late], date(2019, 12, 29), filed=date(2020, 1, 28)) is late
+
+
+def test_growth_against_a_negative_base_is_dropped():
+    import json
+    from adapters.edgar import xbrl_ground_truth
+    from engine.observation import RawSnapshot
+
+    def q(end, start, val, accn, filed):
+        return {"start": start, "end": end, "val": val, "accn": accn, "filed": filed}
+    facts = {"facts": {"us-gaap": {"Revenues": {"units": {"USD": [
+        q("2019-09-30", "2019-07-01", 100.0, "a1", "2019-10-25"),
+        q("2020-09-30", "2020-07-01", -5.0, "a2", "2020-10-25"),   # net refunds exceed revenue
+        q("2021-09-30", "2021-07-01", 60.0, "a3", "2021-10-25"),
+        q("2022-09-30", "2022-07-01", 120.0, "a4", "2022-10-25"),
+    ]}}}}}
+    import adapters.edgar as edgar
+    snap = RawSnapshot(source="edgar", fetched_at=datetime(2026, 1, 1, tzinfo=timezone.utc), path="x", sha256="0",
+                       params={"kind": "companyfacts"})
+    orig = edgar.read_raw
+    edgar.read_raw = lambda s: json.dumps(facts).encode()
+    try:
+        rows = xbrl_ground_truth(snap, "TEST", "quarter", {"revenue_growth": {"kind": "yoy", "concepts": ["Revenues"]}})
+    finally:
+        edgar.read_raw = orig
+    by = {r.period: r.value for r in rows}
+    assert "2020Q3" not in by and "2021Q3" not in by       # into, and against, a negative value
+    assert abs(by["2022Q3"] - 100.0) < 1e-9                  # 60 -> 120 is still +100%

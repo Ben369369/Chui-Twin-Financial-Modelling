@@ -28,10 +28,10 @@ The engine itself is industry-agnostic. Industry structure lives in templates, a
   - Chipotle: 59 quarters of comps, transactions, check and margin extracted from earnings releases; store count and job postings from public sitemaps, with history from the Internet Archive; news tone; macro signals; consensus from public news quotes.
   - Delta: GAAP KPIs from XBRL; TSA throughput, jet fuel and airfare CPI; management guidance extracted from releases.
 - **Twin factory (onboarding v0):** `scripts/make_twin.py <TICKER>` resolves the company at SEC, picks an industry pack by SIC code, attaches shared industry signals plus the company's verified Wikipedia article and news query, pulls KPIs from XBRL, and backtests.
-- **Evaluation:** beats "last quarter" on 25 of 37 KPI series and "same quarter last year" on 35 of 37; beats management guidance on Delta revenue and Chipotle comps; trails analyst consensus on Chipotle comps. See `docs/portfolio_scorecard.md`.
+- **Evaluation:** beats both naive baselines on 24 of 37 KPI series ("last quarter" on 26, "same quarter last year" on 35); beats management guidance on Delta revenue (closer in 11 of 14 quarters, p = 0.005) and Chipotle comps. See `docs/portfolio_scorecard.md` and `docs/technical_appendix.md` §2.
 - **Shock library:** half-lives measured from real events (Chipotle 2015 food safety, COVID, the Delta 2024 outage) feed the scenario presets.
-- **Validation:** automatic checks on all 2,564 reported values (0 failures), plus a manual sample (`docs/validation_report.md`). Experiments, including the ones that failed, are in `docs/experiments.md`.
-- **Live test:** the Delta Q3 forecast was sealed and timestamped in Bitcoin before the release. Chipotle's is sealed before Oct 28.
+- **Validation:** automatic checks on all 2,190 reported values (0 failures), plus a manual sample (`docs/validation_report.md`). Experiments, including the ones that failed, are in `docs/experiments.md`.
+- **Live test:** the Delta Q3 forecast was sealed and timestamped in Bitcoin before the release. Chipotle's was sealed on Oct 18 (Bitcoin block 972040) and resolves on Oct 28.
 
 ## Expansion order
 

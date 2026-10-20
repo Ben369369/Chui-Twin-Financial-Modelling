@@ -167,7 +167,7 @@ chui-twin/
     experiments/           e.g. jolts_labor.py (tested, rejected)
     reports/               PDF renderers (this document, the appendix, status reports)
 
-  tests/                   70 tests; fixtures are saved real responses; no network
+  tests/                   76 tests; fixtures are saved real responses; no network
   docs/                    model, appendix, scorecard, experiments, validation, sealed forecasts, coverage, ...
   data/                    chui.sqlite + raw/ (gitignored; ~550 MB of raw responses)
 ```
@@ -222,8 +222,9 @@ nine months when needed).
 | `runs`, `states`, `forecasts` | run id | forecast runs, estimated states, forecast quantiles, seal hash |
 
 `available_at` is part of the primary key, so a revised value is a new row rather than an overwrite; a backtest
-can see exactly what was known on any date. Current contents: 164,221 observations of 68 series; 2,190 reported KPI
-values for 17 companies; 56 guidance and 6 consensus values; 362 snapshot records.
+can see exactly what was known on any date. Current contents (Oct 20): 177,084 observations of 70 series (55 used by the
+17 twins; the rest were tested and rejected, superseded, or come from rehearsals); 2,190 reported KPI values for 17 companies; 56 guidance and 6 consensus
+values; 448 snapshot records.
 
 ### 5.3 Templates and specs (`templates/`, `specs/`, `engine/spec.py`)
 
@@ -423,7 +424,7 @@ python scripts/backtest.py specs/dal.yaml                    # walk-forward with
 python scripts/forecast.py specs/cmg.yaml --seal             # current forecast, sealed and timestamped
 cd web && npm install && npm run build && cd ..
 python -m uvicorn api.serve:app --port 8000                  # dashboard at http://localhost:8000
-python -m pytest                                             # 70 tests, no network
+python -m pytest                                             # 76 tests, no network
 ```
 
 ---
