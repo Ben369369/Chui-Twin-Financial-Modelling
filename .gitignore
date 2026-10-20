@@ -12,3 +12,10 @@ web/dist/
 *.ots.bak
 
 docs/Chui_Twin_status_report_2026-10-02.pdf
+
+# Private presentation prep (kept outside the repo)
+docs/qa_prep.md
+docs/presenter_briefing.md
+docs/demo_script.md
+docs/Chui_Twin_Demo_Script.pdf
+private/
