@@ -127,7 +127,8 @@ back to last quarter's number. The fix is one rule in the spec, and it's on the 
 
 **If asked whether 22% is too high, since Q3 included refinery sales:** "Fair point. Q3's 21% included
 third-party refinery revenue that Delta's own guide excludes. That's the same definition gap behind our sealed
-Q3 revenue miss on slide 11, and why we now match each anchor's definition to its KPI."
+Q3 revenue miss on slide 11. The lesson we recorded is to match each anchor's definition to its KPI; the next step
+is a revenue KPI that excludes refinery sales, like Delta's own guide."
 
 **Do:** click one **driver bar** (TSA or jet fuel) to open its sources.
 

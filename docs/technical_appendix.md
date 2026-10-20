@@ -255,8 +255,8 @@ existed before the outcome, without trusting us.
 - **Cause:** GAAP revenue includes Delta's third-party refinery sales, which rose 76% with high fuel prices
   and added about 6.7 points of growth. The guidance the twin anchors on excludes the refinery; on that
   basis revenue grew 15.7%, 0.5 points from the twin's median. The twin anchored a GAAP KPI on non-GAAP
-  guidance. The scored result stays as sealed. Future forecasts will match each anchor's definition to
-  its KPI.
+  guidance. The scored result stays as sealed. The lesson is to match each anchor's definition to its
+  KPI; for Delta that means a revenue KPI excluding refinery sales, which is not built yet.
 
 Chipotle's Q3 forecast was sealed on Oct 18, 2026 (comps median 2.94%, 80% range 0.64 to 5.15, P(above
 guidance of 2.65%) 57%; SHA-256 `fabe5e811fcf…`, OpenTimestamps), ten days before its Oct 28 report.
