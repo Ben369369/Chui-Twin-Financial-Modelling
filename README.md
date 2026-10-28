@@ -52,6 +52,31 @@ Latest scorecard: `docs/portfolio_scorecard.md`.
   - CMG comps: CRPS skill +0.41 over 18 quarters.
   - Full comparisons, including analyst consensus, are in `docs/technical_appendix.md` §2 and `docs/surprise_direction.md`.
 
+### Live test: sealed Q3 2026 forecasts
+
+Each forecast was hashed and timestamped in Bitcoin (OpenTimestamps) before the company reported, then
+scored against the earnings release. 6 of 7 KPIs landed inside the twin's 80% range.
+
+| Twin | KPI | Sealed | Median (80% range) | Actual | Inside 80% |
+|---|---|---|---|---|---|
+| CMG | comps, yoy % | Oct 18 | 2.94 (0.64 to 5.15) | 2.1 | yes |
+| CMG | transactions, yoy % | Oct 18 | 1.71 (−0.75 to 4.12) | 0.8 | yes |
+| CMG | average check, yoy % | Oct 18 | 1.24 (0.05 to 2.41) | 1.3 | yes |
+| CMG | restaurant-level margin, % | Oct 18 | 25.43 (20.97 to 29.97) | 23.3 | yes |
+| CMG | revenue growth, yoy % | Oct 18 | 9.53 (−0.01 to 19.15) | 9.6 | yes |
+| DAL | operating margin, % (GAAP) | Oct 2 | 6.9 (−1.8 to 15.6) | 7.2 | yes |
+| DAL | revenue growth, yoy % (GAAP) | Oct 2 | 15.2 (10.6 to 19.9) | 21.1 | no |
+
+- **CMG comps:** the median missed by 0.84 points. Guidance (2.65, implied from the full year) missed by 0.55,
+  "same as last quarter" (2.2) by 0.1, and "same quarter last year" (0.3) by 1.8. The miss came from
+  transactions: the largest driver of the sealed forecast was a July–August drop in news tone, which hit
+  traffic less than the twin expected.
+- **DAL revenue:** GAAP revenue includes third-party refinery sales, which rose 76% with fuel prices. Delta's
+  guidance excludes them, and on that basis growth was 15.7%, 0.5 points from the twin's median. The twin had
+  anchored a GAAP KPI on non-GAAP guidance; the scored result stays GAAP, as sealed.
+- Sources: Chipotle 8-K accession 0001058090-26-000103 (EX-99.1, filed 2026-10-28); Delta 8-K accession
+  0000027904-26-000035 (EX-99.1, filed 2026-10-09). Q4 2026 forecasts for both twins are sealed and pending.
+
 Sealed out-of-sample forecasts and how to verify them: `docs/sealed_forecasts.md`.
 
 **Start here for review:** `docs/technical_appendix.md` (method, evaluation, validation, limitations).
