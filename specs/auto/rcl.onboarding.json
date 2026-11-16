@@ -1,0 +1,101 @@
+{
+ "model": "claude-sonnet-5-5",
+ "prompt_version": "onboard_spec_v1",
+ "prompt_ref": "anthropic:messages | raw:raw/llm/2026-10-21/onboard_RCL_prompt_610d156516ce.md",
+ "response_ref": "anthropic:messages | raw:raw/llm/2026-10-21/onboard_RCL_response_3871bae3bd3a.json",
+ "stop_reason": "end_turn",
+ "input_tokens": 169432,
+ "output_tokens": 1472,
+ "accession": "0000884887-26-000007",
+ "filing_url": "https://www.sec.gov/Archives/edgar/data/884887/000088488726000007/rcl-20251231.htm",
+ "filing_ref": "https://www.sec.gov/Archives/edgar/data/884887/000088488726000007/rcl-20251231.htm | raw:raw/edgar/2026-10-21/0000884887_26_000007_rcl_20251231_htm_afebd20af5b6.htm",
+ "text_note": "",
+ "xbrl_concepts_offered": 53,
+ "business_summary": "Royal Caribbean Group operates three global cruise brands (Royal Caribbean, Celebrity, Silversea) and holds 50% of TUI Cruises. Revenue is about 70% passenger tickets and 30% onboard and other. Results depend on capacity growth from newbuilds, occupancy and net yields, and fuel is a major cost (6.4% of revenue, 60% hedged for 2026).",
+ "pack_proposed": {
+  "pack": "hotels",
+  "reason": "Cruise vacations are leisure travel sold with lodging-like pricing and compete with hotels and resorts. TSA travel volume proxies demand and lodging CPI proxies price. No cruise pack exists, so this is the closest fit.",
+  "quote": "We compete within the global vacation industry primarily with a number of cruise lines as well as land-based vacation alternatives for consumers' leisure time."
+ },
+ "accepted": {
+  "drivers": [
+   {
+    "series": "fred:CUSR0000SETG01",
+    "state": "price",
+    "sign": 1,
+    "lag_days": 0,
+    "transform": "yoy_log",
+    "strength": "weak",
+    "reason": "Airfare is part of the cruise vacation price, and higher airfare can dampen cruise demand.",
+    "quote": "Increases in the price of airfare would increase the overall price of the cruise vacation to our guests, which may adversely impact demand for our cruises."
+   },
+   {
+    "series": "fred:DJFUELUSGULF",
+    "state": "input_cost",
+    "sign": 1,
+    "lag_days": 90,
+    "transform": "yoy_log",
+    "strength": "moderate",
+    "reason": "Fuel is a quantified exposure, and swaps hedge 60% of 2026 needs, which delays the cost pass-through.",
+    "quote": "We estimate that a hypothetical 10% increase in our weighted-average fuel price from that experienced during the year ended December 31, 2025 would increase our forecasted 2026 fuel cost by approximately $55 million, net of the impact of fuel swap agreements."
+   }
+  ],
+  "kpis": [],
+  "edges": [
+   {
+    "state": "demand",
+    "kpi": "revenue_growth",
+    "prior_mean": 0.5,
+    "reason": "Cruise demand and occupancy drive ticket and onboard revenue.",
+    "quote": "Demand for cruises is affected by international, national, and local economic conditions."
+   },
+   {
+    "state": "price",
+    "kpi": "revenue_growth",
+    "prior_mean": 0.4,
+    "reason": "Yield growth from higher ticket pricing adds to revenue.",
+    "quote": "driven by yield growth as result of higher load factors and higher ticket pricing on both existing ships and new ships in 2025, compared to 2024."
+   },
+   {
+    "state": "input_cost",
+    "kpi": "op_margin",
+    "prior_mean": -0.3,
+    "reason": "Fuel and other input costs reduce margin.",
+    "quote": "Increases in fuel prices have and could continue to materially and adversely affect our business as fuel prices impact not only our fuel costs, but also some of our other expenses, such as crew travel, freight, and commodity prices."
+   }
+  ]
+ },
+ "operating_kpis_suggested": [
+  {
+   "name": "Net Yields",
+   "definition": "Adjusted Gross Margin per available passenger cruise day",
+   "quote": "Net Yields represent Adjusted Gross Margin per APCD."
+  },
+  {
+   "name": "Occupancy",
+   "definition": "Passenger Cruise Days divided by Available Passenger Cruise Days",
+   "quote": "Occupancy (\"Load factor\"), in accordance with cruise vacation industry practice, is calculated by dividing Passenger Cruise Days (as defined below) by APCD."
+  },
+  {
+   "name": "Net Cruise Costs excluding Fuel per APCD",
+   "definition": "Cost control measure excluding commissions, onboard costs and fuel",
+   "quote": "In measuring our ability to control costs in a manner that positively impacts net income, we believe changes in Net Cruise Costs and Net Cruise Costs excluding Fuel to be the most relevant indicators of our cost performance."
+  }
+ ],
+ "rejected": [
+  {
+   "kind": "kpi",
+   "item": {
+    "name": "fuel_pct_revenue",
+    "kind": "ratio",
+    "concepts": [
+     "CostOfGoodsAndServicesSold"
+    ],
+    "description": "Cost of goods and services sold as a percent of revenue, a proxy for operating cost intensity.",
+    "reason": "Cost intensity, with fuel a major component, drives operating margin.",
+    "quote": "Fuel cost, net of the financial impact of fuel swap agreements, as a percentage of our total revenues, was approximately 6.4% in 2025, 7.0% in 2024 and 8.3% in 2023."
+   },
+   "why": "no accepted edge into it"
+  }
+ ]
+}
