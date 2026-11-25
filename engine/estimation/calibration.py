@@ -207,7 +207,9 @@ def _fit_change(rspec: ResolvedSpec, kpi: str, history: StateHistory, ground_tru
     for j, pr in enumerate(parents):
         X[:, 1 + j] = [history.mean(pr, p) - history.mean(pr, shift(p, -1)) for p in periods]
     n = len(dy)
-    levels = [r.value for r in rows.values()]
+    # The historical mean stands in for an undisclosed y[t-1]; like level models, leave out the periods
+    # the spec excludes from calibration (a regime break would otherwise drag it far from normal).
+    levels = [r.value for p, r in rows.items() if p not in rspec.excluded_periods] or [r.value for r in rows.values()]
     sd = max(float(dy.std(ddof=1)) if n >= 3 else 1.0, 1e-6)
     m0 = np.array([0.0] + [e.prior_mean * sd for e in edges])
     # Versus last quarter, a rate cannot drift forever: keep the intercept near 0. Versus an

@@ -79,6 +79,9 @@ def check_span(g) -> str | None:
     if " ".join(span.split()) not in text:
         return "span not found verbatim in the raw document"
     vals = span_values(span)
+    # Tables print a flat change as "- %" (or say "flat"); extract_values reads that as 0.
+    if g.value == 0.0 and re.search(r"(?:\s[-–—]\s?%|\bflat\b|\bunchanged\b)", span, re.I):
+        vals.append(0.0)
     if not any(abs(v - g.value) <= 0.051 for v in vals):
         return f"span says {vals}, stored value is {g.value}"
     return ""

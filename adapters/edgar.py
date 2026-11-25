@@ -211,14 +211,17 @@ class Extraction:
 
 def extract_values(text: str, rules: dict[str, list[dict]]) -> dict[str, Extraction]:
     """rules: {kpi: [{pattern: regex with (?P<value>..) and optional (?P<dir>..), scale: 1.0}, ...]}.
-    The first matching rule wins. A `dir` group containing a negative word flips the sign."""
+    The first matching rule wins. A `dir` group containing a negative word flips the sign.
+    A value of "-", "flat" or "unchanged" (tables print a flat change as "- %") reads as 0."""
     out = {}
     for kpi, candidates in rules.items():
         for i, rule in enumerate(candidates):
             m = re.search(rule["pattern"], text, re.I)
             if not m:
                 continue
-            v = float(m.group("value").replace(",", "")) * float(rule.get("scale", 1.0))
+            raw_value = m.group("value").strip()
+            flat = raw_value in ("-", "–", "—") or _FLAT.match(raw_value)
+            v = 0.0 if flat else float(raw_value.replace(",", "")) * float(rule.get("scale", 1.0))
             gd = m.groupdict()
             if gd.get("dir") and NEGATIVE_WORDS.search(gd["dir"]):
                 v = -abs(v)
@@ -229,15 +232,24 @@ def extract_values(text: str, rules: dict[str, list[dict]]) -> dict[str, Extract
     return out
 
 
+def filing_period(snap: RawSnapshot, freq: str) -> str:
+    """The period an earnings release reports: the one before the period it was filed in."""
+    filed = snap.params.get("filing_date") or snap.params["acceptance"][:10]
+    return shift(period_of(date.fromisoformat(filed), freq), -1)
+
+
 def extract_ground_truth(snapshots: list[RawSnapshot], entity_id: str, freq: str, rules: dict[str, list[dict]],
-                         period_pattern: str = PERIOD_PATTERN) -> tuple[list[GroundTruth], list[dict]]:
-    """Returns ground-truth rows and a per-document report (for coverage checks)."""
+                         period_pattern: str = PERIOD_PATTERN,
+                         period_from: str = "text") -> tuple[list[GroundTruth], list[dict]]:
+    """Returns ground-truth rows and a per-document report (for coverage checks).
+    period_from: "text" reads the period from the document ("quarter ended ..."); "filing" takes the
+    period before the filing date's, for filers whose releases do not state it in a parseable way."""
     rows, report = [], []
     for snap in snapshots:
         if snap.params.get("kind") != "document":
             continue
         text = html_to_text(read_raw(snap))
-        period = detect_period(text, freq, period_pattern)
+        period = filing_period(snap, freq) if period_from == "filing" else detect_period(text, freq, period_pattern)
         found = extract_values(text, rules) if period else {}
         report.append({"accession": snap.params["accession"], "period": period, "found": sorted(found),
                        "missing": sorted(set(rules) - set(found))})
@@ -449,7 +461,8 @@ def extract_guidance(snapshots: list[RawSnapshot], entity_id: str, freq: str,
                         lo, hi = hi, lo
                 else:
                     lo = _signed(g.get("lo"), g.get("lo_dir"))
-                    hi = _signed(g.get("hi"), g.get("hi_dir") or g.get("lo_dir"))
+                    # A single number ("Approx. 20%") is a point: hi defaults to lo.
+                    hi = _signed(g["hi"] if g.get("hi") is not None else g.get("lo"), g.get("hi_dir") or g.get("lo_dir"))
                 kind = rule.get("period", "release_quarter")
                 if kind == "explicit":
                     period = f"20{g['yy']}Q{g['q']}"

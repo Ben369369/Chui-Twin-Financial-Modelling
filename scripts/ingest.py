@@ -24,6 +24,7 @@ from adapters import adapter_for  # noqa: E402
 from adapters.edgar import (DOCUMENT_PATTERN, EdgarAdapter, earnings_releases, extract_ground_truth,  # noqa: E402
                             extract_guidance, filings, xbrl_ground_truth)
 from adapters.http import load_snapshots  # noqa: E402
+from engine.periods import span  # noqa: E402
 from engine.spec import load_spec  # noqa: E402
 from engine.observation import ExternalForecast  # noqa: E402
 from storage import db  # noqa: E402
@@ -122,7 +123,12 @@ def ingest_edgar(rspec, conn, start: date, reparse: bool, cfg: dict) -> None:
     typed = {s.params["accession"] for s in cached if s.params.get("kind") == "index_html"}
     docs = [s for s in cached if s.params.get("kind") == "document"
             and (re.search(pattern, s.params["document"], re.I) or s.params["accession"] in typed)]
-    rows, report = extract_ground_truth(docs, rspec.ticker, rspec.period, cfg.get("rules", {}))
+    rows, report = extract_ground_truth(docs, rspec.ticker, rspec.period, cfg.get("rules", {}),
+                                        period_from=cfg.get("period_from", "text"))
+    # Periods whose release figures are not comparable (e.g. growth stated against a different base year).
+    excluded = {p for item in cfg.get("exclude_periods", [])
+                for p in span(item.partition(":")[0], item.partition(":")[2] or item.partition(":")[0])}
+    rows = [g for g in rows if g.period not in excluded]
 
     # Several exhibits can describe one period (e.g. a later restatement); keep the first release.
     first: dict[tuple[str, str], object] = {}
