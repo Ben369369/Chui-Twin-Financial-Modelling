@@ -14,6 +14,16 @@ via public calendar servers. Nobody has to trust us.
 | 2026-10-02 20:58 | DAL | 2026Q3 revenue growth, yoy % (GAAP) | 15.2 | 10.6 to 19.9 | guidance mid-teens (15.0); P(above) 53% | Delta Q3 release, ~Oct 9 | `f6892ab9366122fd81b64c1106b052c1962638c6ab8644587c5baee2d2058bd8` (OpenTimestamps: submitted 2026-10-02 21:13 UTC, anchored in Bitcoin block 969637) |
 | 2026-10-18 19:00 | CMG | 2026Q3 comps, yoy % | 2.94 | 0.64 to 5.15 | guidance 2.65 (implied from full year); P(above) 57% | Chipotle Q3 release, Oct 28 after close | `fabe5e811fcf5fe2e0b909a5d7c7e6ff5e69a8ee691645214ec7e816c0016282` (OpenTimestamps: submitted 2026-10-18, anchored in Bitcoin block 972040) |
 | (same file) | CMG | 2026Q3 transactions / check / restaurant-level margin / revenue growth | 1.71 / 1.24 / 25.43 / 9.53 | −0.75 to 4.12 / 0.05 to 2.41 / 20.97 to 29.97 / −0.01 to 19.15 | – | Oct 28 | same hash |
+| 2026-11-25 02:49 | CMG | 2026Q4 comps, yoy % (re-seal after Q3) | 4.94 | 2.73 to 7.15 | guidance 3.20 (implied from full year); P(above) 85% | Chipotle Q4 release, ~Feb 2 | `3a4bc035a9c2eb5df1da32349251573028ef2ee1421a4b093435809394b5e3a7` (OpenTimestamps: submitted 2026-11-25) |
+| (same file) | CMG | 2026Q4 transactions / check / restaurant-level margin / revenue growth | 3.55 / 1.41 / 23.21 / 10.96 | 1.16 to 5.91 / 0.27 to 2.55 / 18.84 to 27.70 / 1.43 to 20.59 | – | ~Feb 2 | same hash |
+| 2026-11-25 02:49 | DAL | 2026Q4 revenue growth, yoy % (GAAP) / operating margin, % (re-seal after Q3) | 21.00 / 6.12 | 16.27 to 25.84 / −2.48 to 14.52 | – | Delta Q4 release, ~Jan 8–13 | `838cc0ae172409bbff92bcfba915aa742fa5d93fed6e332ed18e7bbd0367e803` (OpenTimestamps: submitted 2026-11-25) |
+
+**Re-seals and automatic seals (from 2026-11-25).** The October files also cover 2026Q4, sealed before Q3 was known.
+The Nov 25 files re-seal Q4 with Q3 in the data. The DAL re-seal still uses the GAAP-anchored revenue model described
+under the DAL outcome below; the fix is not in it. From now on `scripts/auto_seal.py` (run by `run_daily.py`) seals
+every twin (18 specs today) once per quarter, opening 10 days before the release expected from the company's own past release
+dates. The rule for scoring, fixed before any of these resolve: when a period has several seals, the headline score is
+the latest seal made before the release; every seal stays listed in `docs/sealed_results.md`.
 
 **CMG data note (2026-10-18).** The largest driver of the sealed comps and transactions forecasts is a drop in
 Chipotle news tone (GDELT) in July and August 2026; the sentiment state for Q3 is −1.16 sd. GDELT's own response

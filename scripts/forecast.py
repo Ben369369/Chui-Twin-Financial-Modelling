@@ -78,13 +78,18 @@ def main() -> None:
             print(f"      {v:+7.2f}  {drv}{'  <- ' + sig if sig else ''}")
 
     if args.seal:
-        path, digest = seal(fc.to_record(), ROOT / "forecasts" / "sealed")
-        print(f"\nSealed {path.relative_to(ROOT)}\nsha256 {digest}")
-        # Independent timestamp: anchor the hash in Bitcoin via OpenTimestamps (writes <file>.ots).
-        r = subprocess.run([sys.executable, str(ROOT / "scripts" / "ots.py"), "stamp", str(path)],
-                           capture_output=True, text=True)
-        print("OpenTimestamps: " + ("stamped, Bitcoin proof pending (run_daily.py upgrades it)"
-                                    if r.returncode == 0 else f"failed ({r.stderr.strip()[-200:]}); stamp manually"))
+        seal_and_stamp(fc.to_record())
+
+
+def seal_and_stamp(record: dict) -> Path:
+    """Write the sealed file, then anchor its hash in Bitcoin via OpenTimestamps (writes <file>.ots)."""
+    path, digest = seal(record, ROOT / "forecasts" / "sealed")
+    print(f"\nSealed {path.relative_to(ROOT)}\nsha256 {digest}")
+    r = subprocess.run([sys.executable, str(ROOT / "scripts" / "ots.py"), "stamp", str(path)],
+                       capture_output=True, text=True)
+    print("OpenTimestamps: " + ("stamped, Bitcoin proof pending (run_daily.py upgrades it)"
+                                if r.returncode == 0 else f"failed ({r.stderr.strip()[-200:]}); stamp manually"))
+    return path
 
 
 if __name__ == "__main__":
