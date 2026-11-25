@@ -63,6 +63,11 @@ def main() -> None:
                 failures.append(f"{rspec.ticker} ground truth")
                 print(f"  FAIL {type(e).__name__}: {e}")
 
+    # Seal each twin's next forecast in the days before its expected release (scripts/auto_seal.py).
+    r = subprocess.run([sys.executable, str(ROOT / "scripts" / "auto_seal.py")])
+    if r.returncode != 0:
+        failures.append("auto_seal")
+
     # Embed Bitcoin proofs into sealed-forecast timestamps once the calendars have them.
     for ots in sorted((ROOT / "forecasts" / "sealed").glob("*.ots")):
         subprocess.run([sys.executable, str(ROOT / "scripts" / "ots.py"), "upgrade", str(ots)], capture_output=True)
