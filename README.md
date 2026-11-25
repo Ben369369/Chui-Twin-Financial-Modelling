@@ -49,6 +49,7 @@ Latest scorecard: `docs/portfolio_scorecard.md`.
 - On CRPS, the twin beats both naive baselines on 24 of 37 KPI series: "same as last quarter" on 26 and "same quarter last year" on 35 (rescored 2026-10-19, after dating reported results at the earnings press release; see `provenance.md`).
 - Against management guidance, the expectation each company publishes itself:
   - DAL revenue growth: CRPS skill +0.29 over 14 guided quarters; the twin was closer than Delta's guidance in 11 of 14 quarters (exact permutation test, p = 0.005).
+    - Like for like (added 2026-11-25): that comparison scores GAAP revenue, which includes refinery sales, against guidance that excludes them. On Delta's adjusted revenue, the figure the guidance is for, the twin was closer than guidance in 12 of 14 quarters (CRPS skill +0.28, p = 0.003). It does not call beat or miss better than "always beat" (9 of 14 vs 10 of 14), and its 80% ranges held only 9 of 14 outcomes, so they are too narrow.
   - CMG comps: CRPS skill +0.41 over 18 quarters.
   - Full comparisons, including analyst consensus, are in `docs/technical_appendix.md` §2 and `docs/surprise_direction.md`.
 

@@ -9,8 +9,17 @@ history_start: 2014Q1
 exclude_from_calibration: ["2020Q1:2022Q4"]
 
 kpis:
-  # Anchored on management guidance: models the surprise vs guidance from signal moves since it was issued.
-  revenue_growth: {unit: pct, bounds: [-100, null], target: change, anchor: guidance, description: "total operating revenue, yoy %"}
+  # GAAP revenue includes third-party refinery sales, which move with fuel prices (+76% yoy in 2026Q3,
+  # about 6.7 points of growth); Delta's guidance excludes them. Still anchored on that guidance, an
+  # approximate bar: the walk-forward backtest (2017Q1-2026Q3, 31 quarters) scored CRPS 4.67 anchored vs
+  # 5.29 unanchored (2026-11-25; a choice made on the backtest, so selection-biased). The fuel edge below
+  # carries part of the refinery wedge. Kept because the earlier scorecard and pending seals use it.
+  revenue_growth: {unit: pct, bounds: [-100, null], target: change, anchor: guidance, description: "GAAP total operating revenue, yoy %"}
+  # The figure Delta guides to and the Street follows: revenue excluding third-party refinery sales,
+  # as stated in each release ("Total Revenue, adjusted"). Anchored on guidance: models the surprise vs
+  # guidance from signal moves since it was issued. Stated growth is rounded in some years (to 1 pt in
+  # 2021-24 and 2026Q3), which adds at most 0.5 pt of noise.
+  revenue_growth_adj: {unit: pct, bounds: [-100, null], target: change, anchor: guidance, description: "total revenue excluding third-party refinery sales (Delta's adjusted figure), yoy %"}
   # Airline margins are seasonal (summer peak, Q1 trough): same quarter last year carries most of the signal.
   op_margin:
     bounds: [null, 100]
@@ -59,6 +68,14 @@ edges:
   - {from: sentiment,  to: revenue_growth, prior_mean: 0.2,  prior_sd: 0.2}
   - {from: price,      to: revenue_growth, prior_mean: 0.4,  prior_sd: 0.3}
   - {from: capacity,   to: revenue_growth, prior_mean: 0.2,  prior_sd: 0.2}
+  # Refinery sales to third parties rise with fuel prices and are in GAAP revenue only. Added 2026-11-25
+  # from the accounting (Delta's revenue note), after the 2026Q3 outcome was known; weak prior. Backtest
+  # gain was within noise (CRPS 4.74 -> 4.67).
+  - {from: input_cost, to: revenue_growth, prior_mean: 0.3,  prior_sd: 0.3}
+  - {from: demand,     to: revenue_growth_adj, prior_mean: 0.8,  prior_sd: 0.3}
+  - {from: sentiment,  to: revenue_growth_adj, prior_mean: 0.2,  prior_sd: 0.2}
+  - {from: price,      to: revenue_growth_adj, prior_mean: 0.4,  prior_sd: 0.3}
+  - {from: capacity,   to: revenue_growth_adj, prior_mean: 0.2,  prior_sd: 0.2}
   - {from: input_cost, to: op_margin,      prior_mean: -0.6, prior_sd: 0.3}
   - {from: labor,      to: op_margin,      prior_mean: -0.3, prior_sd: 0.3}
   - {from: price,      to: op_margin,      prior_mean: 0.4,  prior_sd: 0.3}
@@ -79,16 +96,31 @@ ground_truth:
         max: 100
         numerator: [OperatingIncomeLoss]
         denominator: [RevenueFromContractWithCustomerExcludingAssessedTax, Revenues]
-  # Earnings releases: no KPI rules (XBRL covers KPIs), only management guidance.
-  # Guidance is for ADJUSTED revenue (ex refinery sales) while the KPI is GAAP: approximate bar.
+  # Earnings releases: adjusted revenue growth (ex third-party refinery sales) and management guidance.
+  # Guidance is for adjusted revenue: exact bar for revenue_growth_adj, approximate bar for GAAP revenue_growth.
   # Pre-2023 outlooks compared with 2019, not the prior year, so rules require YoY wording.
   edgar:
     cik: "27904"
     forms: ["8-K"]
     items: ["2.02"]
-    rules: {}
+    # Delta's release headers do not state the period in a parseable form; an item 2.02 release
+    # reports the quarter before the one it is filed in.
+    period_from: filing
+    # From 2021Q1 to 2022Q4 the releases' revenue table compares with 2019, not the prior year
+    # (e.g. 2021Q4 "(26)%" = 8,430 vs 11,437 in 2019Q4), so those values are not yoy growth.
+    exclude_periods: ["2021Q1:2022Q4"]
+    rules:
+      # Revenue table line, e.g. "Total Revenue, adjusted (See Note A) $ 17,585 16% 15%" (first % = yoy change;
+      # second = unit revenue). Negative changes print as "(17.2)%", flat ones as "- %". Present from 2018Q3.
+      revenue_growth_adj:
+        - pattern: 'Total Revenue,? adjusted(?: \(See Note A\))? \$ ?[\d,]+ \((?P<value>\d+(?:\.\d+)?) ?\) ?%'
+          negate: true
+        - pattern: 'Total Revenue,? adjusted(?: \(See Note A\))? \$ ?[\d,]+ (?P<value>-|\d+(?:\.\d+)?) ?%'
     guidance:
-      revenue_growth:
+      revenue_growth_adj: &revenue_guidance
+        # From 4Q26 Delta prints a single figure: "4Q26 FY 2026 Total Revenue YoY (%) Approx. 20%".
+        - pattern: '(?P<q>[1-4])Q(?P<yy>\d\d)\s+(?:FY\s?\d{4}\s+)?Total Revenue\s+YoY\s+\(%\)\s+Approx\.?\s+(?P<lo>\d+(?:\.\d+)?)\s?%'
+          period: explicit
         - pattern: '(?P<q>[1-4])Q(?P<yy>\d\d)\s+(?:Forecast\s+)?(?:FY\s?\d{4}\s+Forecast\d?\s+)?Total Revenue\s?\d?\s+YoY\s+(?P<lo_dir>Up|Down|\+|-)?\s?(?P<lo>\d+(?:\.\d+)?)\s?%?\s?-\s?(?P<hi_dir>up|down)?\s?(?P<hi>\d+(?:\.\d+)?)\s?%'
           period: explicit
         - pattern: 'expect (?:the )?(?:March|June|September|December) quarter (?:adjusted |total )?revenue (?:growth )?to be (?P<lo>\d+(?:\.\d+)?) to (?P<hi>\d+(?:\.\d+)?) percent higher than (?:the prior year|(?!2019)20\d\d)'
@@ -100,3 +132,4 @@ ground_truth:
         # From 2026 Delta guides in words: "3Q26 Total Revenue YoY (%) Up Mid-Teens".
         - pattern: '(?P<q>[1-4])Q(?P<yy>\d\d)\s+Total Revenue\s+YoY\s+\(%\)\s+(?P<lo_dir>Up|Down)\s+(?P<qual>low|mid|high)[- ](?P<band>single[- ]digits?|teens)'
           period: explicit
+      revenue_growth: *revenue_guidance

@@ -59,3 +59,9 @@ hash verified, and the outcome was public only after the seal. Scored by `script
 - **Fix, for future forecasts and not applied to this one:** match the anchor's definition to the KPI.
   Either forecast adjusted revenue (GAAP minus refinery sales, both from the release) against guidance,
   or add refinery sales as a separate KPI driven by fuel prices.
+- **Applied 2026-11-25, after the Nov 25 re-seal:** a new KPI, `revenue_growth_adj` (Delta's "Total Revenue,
+  adjusted" growth from each release), is anchored on guidance, which is its own definition. GAAP
+  `revenue_growth` keeps the guidance anchor as an approximate bar (unanchored scored worse in the backtest,
+  CRPS 5.29 vs 4.67) and gains a weak fuel-cost link for refinery sales. Delta's new single-figure guidance
+  ("4Q26 Total Revenue YoY (%) Approx. 20%") is now extracted; the Nov 25 seal had none for Q4. Seals from
+  the next automatic run (window opens about Dec 29) include both KPIs.

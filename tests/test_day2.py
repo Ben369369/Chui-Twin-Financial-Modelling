@@ -129,7 +129,10 @@ def test_guidance_extraction_dal_2025q1_release():
     s = snap("edgar_dal_2025q1_ex991.htm", "edgar",
              {"kind": "document", "accession": "0000027904-25-000020", "document": "delta_ex9901.htm",
               "acceptance": "2025-04-09T10:30:18+00:00"})
-    (g,) = extract_guidance([s], "DAL", "quarter", rules)
+    # The same guidance serves revenue_growth_adj (exact bar) and GAAP revenue_growth (approximate bar).
+    gs = extract_guidance([s], "DAL", "quarter", rules)
+    assert sorted(x.kpi for x in gs) == ["revenue_growth", "revenue_growth_adj"]
+    (g,) = [x for x in gs if x.kpi == "revenue_growth_adj"]
     # "2Q25 Total Revenue YoY Down 2% - up 2%" -> midpoint 0 for 2025Q2, known at the release time
     assert (g.period, g.value, g.source) == ("2025Q2", 0.0, "guidance")
     assert g.available_at.isoformat() == "2025-04-09T10:30:18+00:00" and "span:" in g.source_ref
@@ -265,3 +268,22 @@ def test_uncovered_industry_is_refused_cleanly():
     assert all(bank_sic not in p["sic"] for p in packs["packs"].values())
     with pytest.raises(NotCovered):
         pick_pack(bank_sic, packs)
+
+
+def test_dal_adjusted_revenue_and_point_guidance_2026q3_release():
+    """Delta's Q3 2026 release (excerpt): adjusted revenue growth dated by filing, and "Approx. 20%" Q4 guidance."""
+    from adapters.edgar import extract_ground_truth, extract_guidance, extract_values
+
+    cfg = yaml.safe_load((ROOT / "specs/dal.yaml").read_text(encoding="utf-8"))["ground_truth"]["edgar"]
+    s = snap("edgar_dal_2026q3_excerpt.htm", "edgar",
+             {"kind": "document", "accession": "0000027904-26-000035", "document": "deltaairlinesannouncessept.htm",
+              "acceptance": "2026-10-09T10:30:47+00:00", "filing_date": "2026-10-09"})
+    rows, _ = extract_ground_truth([s], "DAL", "quarter", cfg["rules"], period_from=cfg["period_from"])
+    [g] = rows
+    assert (g.period, g.kpi, g.value) == ("2026Q3", "revenue_growth_adj", 16.0) and "17,585" in g.source_ref
+    (q4,) = [x for x in extract_guidance([s], "DAL", "quarter", cfg["guidance"]) if x.kpi == "revenue_growth_adj"]
+    assert (q4.period, q4.kpi, q4.value) == ("2026Q4", "revenue_growth_adj", 20.0)
+    # Negative and flat changes as the tables print them.
+    rules = cfg["rules"]
+    assert extract_values("Total Revenue, adjusted $ 8,592 (17.2)% (8)%", rules)["revenue_growth_adj"].value == -17.2
+    assert extract_values("Total Revenue, adjusted $ 14,594 - % (3.6 )%", rules)["revenue_growth_adj"].value == 0.0
