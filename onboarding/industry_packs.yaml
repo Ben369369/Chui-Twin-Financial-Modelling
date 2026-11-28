@@ -34,9 +34,9 @@ packs:
     template: operating
     signals:
       - {series: "fred:RSFSDP",        primitive: demand,     confidence: 0.5, half_life_days: 45, transform: yoy_log}
-      - {series: "fred:CUSR0000SEFV",  primitive: price,      confidence: 0.5, half_life_days: 60, transform: yoy_log}
+      - {series: "bls:CUSR0000SEFV",  primitive: price,      confidence: 0.5, half_life_days: 60, transform: yoy_log}
       - {series: "bls:CES7072200003",  primitive: labor,      confidence: 0.6, half_life_days: 60, transform: yoy_log}
-      - {series: "fred:APU0000703112", primitive: input_cost, confidence: 0.4, half_life_days: 60, transform: yoy_log, lag_days: 30}
+      - {series: "bls:APU0000703112", primitive: input_cost, confidence: 0.4, half_life_days: 60, transform: yoy_log, lag_days: 30}
 
   airlines:
     sic: [4512, 4513, 4522]
@@ -44,8 +44,8 @@ packs:
     exclude_from_calibration: ["2020Q1:2022Q4"]
     signals:
       - {series: "tsa:checkpoint_throughput", primitive: demand,     confidence: 0.6, half_life_days: 30, transform: yoy_log}
-      - {series: "fred:CUSR0000SETG01",       primitive: price,      confidence: 0.5, half_life_days: 60, transform: yoy_log}
-      - {series: "fred:DJFUELUSGULF",         primitive: input_cost, confidence: 0.7, half_life_days: 30, transform: yoy_log}
+      - {series: "bls:CUSR0000SETG01",       primitive: price,      confidence: 0.5, half_life_days: 60, transform: yoy_log}
+      - {series: "eia:PET.EER_EPJK_PF4_RGC_DPG.D",         primitive: input_cost, confidence: 0.7, half_life_days: 30, transform: yoy_log}
       - {series: "bls:CES4348100003",         primitive: labor,      confidence: 0.5, half_life_days: 60, transform: yoy_log}
 
   hotels:
@@ -54,7 +54,7 @@ packs:
     exclude_from_calibration: ["2020Q1:2022Q4"]
     signals:
       - {series: "tsa:checkpoint_throughput", primitive: demand, confidence: 0.4, half_life_days: 30, transform: yoy_log}
-      - {series: "fred:CUSR0000SEHB",         primitive: price,  confidence: 0.6, half_life_days: 60, transform: yoy_log}
+      - {series: "bls:CUSR0000SEHB",         primitive: price,  confidence: 0.6, half_life_days: 60, transform: yoy_log}
       - {series: "bls:CES7072100003",         primitive: labor,  confidence: 0.5, half_life_days: 60, transform: yoy_log}
 
   homebuilders:
@@ -64,7 +64,7 @@ packs:
       - {series: "fred:HOUST",        primitive: demand,     confidence: 0.5, half_life_days: 60, transform: yoy_log}
       - {series: "fred:MORTGAGE30US", primitive: demand,     confidence: 0.5, half_life_days: 30, transform: yoy_diff, sign: -1}
       - {series: "fred:CSUSHPISA",    primitive: price,      confidence: 0.5, half_life_days: 60, transform: yoy_log}
-      - {series: "fred:WPU081",       primitive: input_cost, confidence: 0.4, half_life_days: 60, transform: yoy_log}
+      - {series: "bls:WPU081",       primitive: input_cost, confidence: 0.4, half_life_days: 60, transform: yoy_log}
       - {series: "bls:CES2000000003", primitive: labor,      confidence: 0.4, half_life_days: 60, transform: yoy_log}
 
   general_retail:
@@ -72,5 +72,5 @@ packs:
     template: operating
     signals:
       - {series: "fred:RSGMS",        primitive: demand, confidence: 0.5, half_life_days: 45, transform: yoy_log}
-      - {series: "fred:CPILFESL",     primitive: price,  confidence: 0.4, half_life_days: 60, transform: yoy_log}
+      - {series: "bls:CUSR0000SA0L1E",     primitive: price,  confidence: 0.4, half_life_days: 60, transform: yoy_log}
       - {series: "bls:CES4200000003", primitive: labor,  confidence: 0.5, half_life_days: 60, transform: yoy_log}

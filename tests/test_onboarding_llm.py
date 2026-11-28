@@ -61,7 +61,7 @@ def run_check(series_ok=lambda s: None, kpi_ok=lambda k: None):
     packs = load_packs()
     template = load_template("operating", ROOT / "templates")
     return check(Draft.model_validate(DRAFT), TEXT, packs=packs, primitives={p.name for p in template.primitives},
-                 known_series={"fred:CPILFESL", "fred:RSGMS", "fred:HOUST", "fred:DJFUELUSGULF"},
+                 known_series={"bls:CUSR0000SA0L1E", "fred:RSGMS", "fred:HOUST", "eia:PET.EER_EPJK_PF4_RGC_DPG.D"},
                  default_kpis=set(packs["defaults"]["kpis"]),
                  pack_series=lambda name: {s["series"] for s in packs["packs"][name]["signals"]} if name else set(),
                  series_ok=series_ok, kpi_ok=kpi_ok)
@@ -78,12 +78,12 @@ def test_quotes_must_be_verbatim():
 def test_check_keeps_only_verified_items():
     c = run_check()
     assert c.pack == "airlines"
-    assert [d.series for d in c.drivers] == ["fred:CPILFESL", "fred:NEWID"]
+    assert [d.series for d in c.drivers] == ["bls:CUSR0000SA0L1E", "fred:NEWID"]  # old FRED name translated
     why = {(r["kind"], r["item"].get("series") or r["item"].get("name") or r["item"].get("kpi")): r["why"]
            for r in c.rejected}
     assert why[("driver", "fred:RSGMS")] == "quote not found in the 10-K"
     assert why[("driver", "fred:HOUST")].startswith("unknown state")
-    assert why[("driver", "fred:DJFUELUSGULF")] == "already a signal"
+    assert why[("driver", "eia:PET.EER_EPJK_PF4_RGC_DPG.D")] == "already a signal"  # moved name, same series
     assert why[("kpi", "Bad Name")] == "name must be snake_case"
     assert why[("edge", "no_such_kpi")].startswith("unknown KPI")
     assert [k.name for k in c.kpis] == ["fuel_share"]

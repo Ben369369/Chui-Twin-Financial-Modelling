@@ -1,0 +1,103 @@
+{
+ "response": {
+  "total": 9216,
+  "dateFormat": "YYYY-MM-DD",
+  "frequency": "daily",
+  "data": [
+   {
+    "period": "2026-11-24",
+    "duoarea": "RGC",
+    "area-name": "NA",
+    "product": "EPJK",
+    "product-name": "Kerosene-Type Jet Fuel",
+    "process": "PF4",
+    "process-name": "Spot Price FOB",
+    "series": "EER_EPJK_PF4_RGC_DPG",
+    "series-description": "U.S. Gulf Coast Kerosene-Type Jet Fuel Spot Price FOB (Dollars per Gallon)",
+    "value": 3.397,
+    "units": "$/GAL"
+   },
+   {
+    "period": "2026-11-23",
+    "duoarea": "RGC",
+    "area-name": "NA",
+    "product": "EPJK",
+    "product-name": "Kerosene-Type Jet Fuel",
+    "process": "PF4",
+    "process-name": "Spot Price FOB",
+    "series": "EER_EPJK_PF4_RGC_DPG",
+    "series-description": "U.S. Gulf Coast Kerosene-Type Jet Fuel Spot Price FOB (Dollars per Gallon)",
+    "value": 3.397,
+    "units": "$/GAL"
+   },
+   {
+    "period": "2026-11-20",
+    "duoarea": "RGC",
+    "area-name": "NA",
+    "product": "EPJK",
+    "product-name": "Kerosene-Type Jet Fuel",
+    "process": "PF4",
+    "process-name": "Spot Price FOB",
+    "series": "EER_EPJK_PF4_RGC_DPG",
+    "series-description": "U.S. Gulf Coast Kerosene-Type Jet Fuel Spot Price FOB (Dollars per Gallon)",
+    "value": 3.624,
+    "units": "$/GAL"
+   },
+   {
+    "period": "2026-11-19",
+    "duoarea": "RGC",
+    "area-name": "NA",
+    "product": "EPJK",
+    "product-name": "Kerosene-Type Jet Fuel",
+    "process": "PF4",
+    "process-name": "Spot Price FOB",
+    "series": "EER_EPJK_PF4_RGC_DPG",
+    "series-description": "U.S. Gulf Coast Kerosene-Type Jet Fuel Spot Price FOB (Dollars per Gallon)",
+    "value": 3.697,
+    "units": "$/GAL"
+   },
+   {
+    "period": "2026-11-18",
+    "duoarea": "RGC",
+    "area-name": "NA",
+    "product": "EPJK",
+    "product-name": "Kerosene-Type Jet Fuel",
+    "process": "PF4",
+    "process-name": "Spot Price FOB",
+    "series": "EER_EPJK_PF4_RGC_DPG",
+    "series-description": "U.S. Gulf Coast Kerosene-Type Jet Fuel Spot Price FOB (Dollars per Gallon)",
+    "value": 3.662,
+    "units": "$/GAL"
+   }
+  ],
+  "description": "EIA petroleum gas survey data",
+  "id": "petroleum"
+ },
+ "request": {
+  "command": "/v2/seriesid/PET.EER_EPJK_PF4_RGC_DPG.D",
+  "params": {
+   "frequency": "daily",
+   "data": [
+    "value"
+   ],
+   "facets": {
+    "series": [
+     "EER_EPJK_PF4_RGC_DPG"
+    ]
+   },
+   "start": null,
+   "end": null,
+   "sort": [
+    {
+     "column": "period",
+     "direction": "desc"
+    }
+   ],
+   "offset": 0,
+   "length": 5000
+  },
+  "route": "petroleum/pri/spt"
+ },
+ "apiVersion": "2.1.14",
+ "ExcelAddInVersion": "2.1.0"
+}

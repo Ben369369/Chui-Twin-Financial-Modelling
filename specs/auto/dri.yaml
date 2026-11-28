@@ -28,7 +28,7 @@ signals:
   confidence: 0.5
   half_life_days: 45
   transform: yoy_log
-- series: fred:CUSR0000SEFV
+- series: bls:CUSR0000SEFV
   primitive: price
   confidence: 0.5
   half_life_days: 60
@@ -38,7 +38,7 @@ signals:
   confidence: 0.6
   half_life_days: 60
   transform: yoy_log
-- series: fred:APU0000703112
+- series: bls:APU0000703112
   primitive: input_cost
   confidence: 0.4
   half_life_days: 60

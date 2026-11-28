@@ -49,10 +49,16 @@ class PoliteClient:
         self._last = time.monotonic()
 
     def get(self, url: str, params: dict | None = None, headers: dict | None = None) -> requests.Response:
+        return self._request("GET", url, params=params, headers=headers)
+
+    def post(self, url: str, json: dict | None = None, headers: dict | None = None) -> requests.Response:
+        return self._request("POST", url, json=json, headers=headers)
+
+    def _request(self, method: str, url: str, **kwargs) -> requests.Response:
         for attempt in range(self.max_retries + 1):
             self._wait()
             try:
-                r = self.session.get(url, params=params, headers=headers, timeout=self.timeout_s)
+                r = self.session.request(method, url, timeout=self.timeout_s, **kwargs)
             except (requests.ConnectionError, requests.Timeout):
                 if attempt == self.max_retries:
                     raise

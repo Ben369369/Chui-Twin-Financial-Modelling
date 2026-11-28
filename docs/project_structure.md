@@ -119,7 +119,7 @@ chui-twin/
     http.py                PoliteClient (spacing, retries, backoff, User-Agent); save_raw / read_raw
     edgar.py               SEC submissions, filing documents, XBRL company facts; release text extraction;
                            guidance extraction; quarterly facts with point-in-time ordering
-    fred.py  bls.py  tsa.py  wikimedia.py  gdelt.py
+    fred.py  bls.py  eia.py  tsa.py  wikimedia.py  gdelt.py
     scrapers/sitemap.py    generic sitemap URL counter with Wayback Machine history (config: sitemaps.yaml)
     series_catalog.yaml    human-readable series names (display only; the engine never reads it)
 
@@ -195,7 +195,8 @@ class Adapter(ABC):
 |---|---|---|---|
 | `edgar.py` | SEC submissions, 8-K exhibits, 10-K, XBRL company facts; declared User-Agent from env, ≤5 req/s | per filing | EDGAR acceptance time; XBRL: filing date + 1 day |
 | `fred.py` | fredgraph CSV, no key | daily to quarterly | period end + 2d / 7d / 45d / 100d by frequency |
-| `bls.py` | BLS API v2, no key (25 queries/day) | monthly | month end + 40d |
+| `bls.py` | BLS API v2, many series per query; key optional (`CHUI_BLS_API_KEY`: 25 → 500 queries/day) | monthly | month end + 40d |
+| `eia.py` | EIA API v2 by legacy series id; key `CHUI_EIA_API_KEY` (falls back to the public DEMO_KEY) | daily to annual | period end + 2d / 7d / 45d / 100d / 120d |
 | `tsa.py` | TSA passenger volumes HTML table | daily | day + 2d |
 | `wikimedia.py` | Pageviews REST API | daily | day + 2d |
 | `gdelt.py` | GDELT DOC API timeline tone; 1 request per 10 s, fails fast on 429 | daily | day + 1d |

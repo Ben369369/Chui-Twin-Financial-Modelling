@@ -29,12 +29,12 @@ signals:
   confidence: 0.6
   half_life_days: 30
   transform: yoy_log
-- series: fred:CUSR0000SETG01
+- series: bls:CUSR0000SETG01
   primitive: price
   confidence: 0.5
   half_life_days: 60
   transform: yoy_log
-- series: fred:DJFUELUSGULF
+- series: eia:PET.EER_EPJK_PF4_RGC_DPG.D
   primitive: input_cost
   confidence: 0.7
   half_life_days: 30

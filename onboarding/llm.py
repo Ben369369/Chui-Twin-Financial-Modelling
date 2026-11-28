@@ -25,6 +25,7 @@ from typing import Callable, Literal
 import yaml
 from pydantic import BaseModel
 
+from adapters import moved_series
 from adapters.edgar import FILING_DOC, REVENUE_CONCEPTS, EdgarAdapter, filings, html_to_text, quarterly_facts
 from adapters.http import read_raw, save_raw, snapshot_ref
 from engine.periods import period_of, shift
@@ -287,7 +288,10 @@ def check(draft: Draft, text: str, *, packs: dict, primitives: set[str], known_s
         out.pack = p.pack
 
     taken = set(pack_series(out.pack))
+    moved = moved_series()
     for d in draft.drivers:
+        if d.series in moved:  # an old name for a series now taken from its publisher
+            d = d.model_copy(update={"series": moved[d.series]})
         why = (f"unknown state {d.state!r}" if d.state not in primitives
                else "already a signal" if d.series in taken
                else f"too many drivers (max {MAX_DRIVERS})" if len(out.drivers) >= MAX_DRIVERS

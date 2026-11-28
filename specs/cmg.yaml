@@ -38,7 +38,7 @@ signals:
     notes: >
       Attention, not sentiment direction: views spike in both launches and
       food-safety scares. Low confidence; leave-one-out decides if it stays.
-  - series: "fred:CUSR0000SEFV"      # CPI food away from home, SA
+  - series: "bls:CUSR0000SEFV"      # CPI food away from home, SA
     primitive: price
     confidence: 0.5
     half_life_days: 60
@@ -48,13 +48,13 @@ signals:
     confidence: 0.6
     half_life_days: 60
     transform: yoy_log
-  - series: "fred:APU0000703112"     # avg price, ground beef 100% beef, per lb
+  - series: "bls:APU0000703112"     # avg price, ground beef 100% beef, per lb
     primitive: input_cost
     lag_days: 30
     confidence: 0.4
     half_life_days: 60
     transform: yoy_log
-  - series: "fred:APU0000706111"     # avg price, chicken, fresh whole, per lb
+  - series: "bls:APU0000706111"     # avg price, chicken, fresh whole, per lb
     primitive: input_cost
     lag_days: 30
     confidence: 0.3

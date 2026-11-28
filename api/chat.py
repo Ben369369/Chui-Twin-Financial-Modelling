@@ -68,7 +68,7 @@ TOOLS = [
                     "percent year over year and see every twin that uses it respond next quarter. Use "
                     "list_shared_series for valid series ids.",
      "input_schema": _schema({
-         "series": {"type": "string", "description": "series id, e.g. fred:DJFUELUSGULF"},
+         "series": {"type": "string", "description": "series id, e.g. eia:PET.EER_EPJK_PF4_RGC_DPG.D"},
          "move_pct": {"type": "number", "description": "percent year over year, e.g. 30 or -5"},
      })},
     {"name": "list_shared_series", "strict": True,
@@ -147,8 +147,10 @@ def tool_get_forecast(ticker: str, shocks: list[dict] | None) -> tuple[dict, lis
 
 
 def tool_economy_shock(series: str, move_pct: float) -> tuple[dict, list[dict]]:
+    from adapters import moved_series
     from api import main
 
+    series = moved_series().get(series, series)  # the model may know a series by its old FRED name
     try:
         res = main.portfolio_shock(series=series, size=None, move=move_pct, half_life=2.0, paths=2000)
     except HTTPException as e:

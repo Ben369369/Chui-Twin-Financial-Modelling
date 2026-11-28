@@ -33,7 +33,7 @@ signals:
   confidence: 0.4
   half_life_days: 30
   transform: yoy_log
-- series: fred:CUSR0000SEHB
+- series: bls:CUSR0000SEHB
   primitive: price
   confidence: 0.6
   half_life_days: 60
@@ -53,7 +53,7 @@ signals:
   confidence: 0.5
   half_life_days: 21
   transform: level
-- series: fred:CUSR0000SETG01
+- series: bls:CUSR0000SETG01
   primitive: price
   sign: 1
   lag_days: 0
@@ -63,7 +63,7 @@ signals:
   notes: 'LLM onboard_spec_v1: Airfare is part of the cruise vacation price, and higher airfare can dampen cruise demand.
     10-K: "Increases in the price of airfare would increase the overall price of the cruise vacation to our guests, which
     may adversely impact demand for our cruises."'
-- series: fred:DJFUELUSGULF
+- series: eia:PET.EER_EPJK_PF4_RGC_DPG.D
   primitive: input_cost
   sign: 1
   lag_days: 90
