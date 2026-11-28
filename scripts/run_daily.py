@@ -63,6 +63,11 @@ def main() -> None:
                 failures.append(f"{rspec.ticker} ground truth")
                 print(f"  FAIL {type(e).__name__}: {e}")
 
+    # Save today's analyst consensus raw, if a provider key is set (scripts/archive_consensus.py).
+    r = subprocess.run([sys.executable, str(ROOT / "scripts" / "archive_consensus.py")])
+    if r.returncode != 0:
+        failures.append("archive_consensus")
+
     # Seal each twin's next forecast in the days before its expected release (scripts/auto_seal.py).
     r = subprocess.run([sys.executable, str(ROOT / "scripts" / "auto_seal.py")])
     if r.returncode != 0:

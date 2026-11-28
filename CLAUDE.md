@@ -197,3 +197,7 @@ Week of Sep 30: scrapers running daily, CMG ground-truth table from EDGAR, publi
 - **EDGAR documents:** match exhibits by file name, then fall back to the EX-99 type in the filing's HTML index. Management guidance is extracted by spec rules into `external_forecasts` (source `guidance`).
 - **GDELT** rate-limits hard (one request per 5 s, then long cool-downs). It fails fast; `scripts/fill_missing.py` refetches missing series slowly.
 - **API:** `uvicorn api.main:app` (read-only; forecasts, scenarios via `?shock=primitive:period:size[:half_life]`, history, scorecard).
+
+## Implementation notes (added Nov 27)
+
+- **Data lives outside OneDrive** at `CHUI_DATA_DIR` (`C:\Users\benon\ChuiData` on the dev machine, set with setx). OneDrive sync locks stalled the daily job. The repo's `data/` is a frozen copy from 2026-11-27; do not write to it. `scripts/backup_data.py` (run by `run_daily.cmd`) copies the data back into OneDrive as one zip per raw fetch date, a gzipped database copy (newest 14 kept) and `misc.zip`; its docstring says how to restore. The daily log is `%CHUI_DATA_DIR%\daily.log`.
