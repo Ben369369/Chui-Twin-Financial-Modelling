@@ -185,7 +185,7 @@ Week of Sep 30: scrapers running daily, CMG ground-truth table from EDGAR, publi
 - Units: primitive states are standardized (mean 0, sd 1 over available history). Edge `prior_mean`/`prior_sd` are in standardized units: a one-sd move in the parent moves the child by `prior_mean` child-sd.
 - `storage/` holds the SQLite store (dev). Migrations in `migrations/` are written in portable SQL so the same files run on Postgres. Docker is not installed on the dev machine yet.
 - SEC User-Agent comes from env var `CHUI_SEC_USER_AGENT`, never hardcoded.
-- Series names encode their query: `fred:<id>`, `wiki:<article>`, `tsa:checkpoint_throughput`. The adapter registry in `adapters/__init__.py` routes by prefix.
+- Series names encode their query: `bls:<id>`, `eia:<legacy series id>`, `fred:<id>`, `wiki:<article>`, `tsa:checkpoint_throughput`. The adapter registry in `adapters/__init__.py` routes by prefix.
 - `tests/test_engine_no_company_code.py` greps `engine/` for tickers, template primitive names and series prefixes. Keep it passing.
 
 ## Implementation notes (added Oct 1)

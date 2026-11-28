@@ -33,7 +33,7 @@ signals:
   confidence: 0.4
   half_life_days: 30
   transform: yoy_log
-- series: fred:CUSR0000SEHB
+- series: bls:CUSR0000SEHB
   primitive: price
   confidence: 0.6
   half_life_days: 60
@@ -53,7 +53,7 @@ signals:
   confidence: 0.5
   half_life_days: 21
   transform: level
-- series: fred:DJFUELUSGULF
+- series: eia:PET.EER_EPJK_PF4_RGC_DPG.D
   primitive: input_cost
   sign: 1
   lag_days: 0
@@ -63,7 +63,7 @@ signals:
   notes: 'LLM onboard_spec_v1: Fuel is a major expense ($1.8B) and the filing says fuel prices affect costs; jet fuel is a
     proxy for marine fuel and for airfares. 10-K: "Future increases in the global price of fuel would increase the cost of
     our cruise ship operations as well as some of our other expenses, such as crew travel, freight and commodity prices."'
-- series: fred:CUSR0000SETG01
+- series: bls:CUSR0000SETG01
   primitive: demand
   sign: -1
   lag_days: 0

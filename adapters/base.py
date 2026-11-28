@@ -21,6 +21,14 @@ class Adapter(ABC):
     @abstractmethod
     def normalize(self, snapshots: list[RawSnapshot]) -> list[Observation]: ...
 
+    # How many series one fetch_many call may combine (sources with multi-series requests override).
+    batch_size: int = 1
+
+    def fetch_many(self, series: list[str], start: date, end: date) -> list[RawSnapshot]:
+        """Fetch several series of this adapter. Sources whose API takes many series per request override
+        this to save requests; the default fetches one at a time."""
+        return [s for name in series for s in self.fetch(self.params_for_series(name), start, end)]
+
     def params_for_series(self, series: str) -> dict:
         """Turn a series name into fetch params. Override when the query needs parsing."""
         prefix, _, query = series.partition(":")

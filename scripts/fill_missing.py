@@ -18,7 +18,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from adapters import adapter_for  # noqa: E402
+from adapters import batches  # noqa: E402
 from engine.spec import load_spec  # noqa: E402
 from storage import db  # noqa: E402
 
@@ -49,19 +49,26 @@ def main() -> None:
     if args.stale is not None:
         print(f"{len(stale)} stale (latest point over {args.stale} days old): {sorted(stale)}")
     missing += sorted(stale)
-    for i, series in enumerate(missing):
-        adapter = adapter_for(series)
+    # Series sharing a start date and a multi-series source go in one request (BLS: one query, not ten).
+    by_start: dict[date, list[str]] = {}
+    for series in missing:
+        by_start.setdefault(stale.get(series, date(2012, 1, 1)), []).append(series)
+    groups = [(start, adapter, group) for start, names in by_start.items() for adapter, group in batches(names)]
+    for i, (start, adapter, group) in enumerate(groups):
         if i and adapter.source in SLOW_SOURCES:
             time.sleep(args.gap)
         try:
-            start = stale.get(series, date(2012, 1, 1))
-            snaps = adapter.fetch(adapter.params_for_series(series), start, date.today() + timedelta(days=1))
-            obs = [o for o in adapter.normalize(snaps) if o.series == series]
+            snaps = adapter.fetch_many(group, start, date.today() + timedelta(days=1))
+            normalized = adapter.normalize(snaps)
             db.save_snapshots(conn, snaps)
-            db.save_observations(conn, obs)
-            print(f"  ok   {series:40s} {len(obs)} obs")
         except Exception as e:
-            print(f"  FAIL {series:40s} {type(e).__name__}: {e}")
+            for series in group:
+                print(f"  FAIL {series:40s} {type(e).__name__}: {e}")
+            continue
+        for series in group:
+            obs = [o for o in normalized if o.series == series]
+            db.save_observations(conn, obs)
+            print(f"  {'ok  ' if obs else 'FAIL'} {series:40s} {len(obs)} obs")
 
 
 if __name__ == "__main__":

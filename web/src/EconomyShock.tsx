@@ -5,10 +5,10 @@ import { listen, take } from './bus'
 
 // Presets in natural units: what people actually say ("fuel up 30%").
 const PRESETS: { name: string; series: string; move: number }[] = [
-  { name: 'Jet fuel +30%', series: 'fred:DJFUELUSGULF', move: 30 },
+  { name: 'Jet fuel +30%', series: 'eia:PET.EER_EPJK_PF4_RGC_DPG.D', move: 30 },
   { name: 'Restaurant sales −5%', series: 'fred:RSFSDP', move: -5 },
   { name: 'Air travel −10%', series: 'tsa:checkpoint_throughput', move: -10 },
-  { name: 'Beef prices +20%', series: 'fred:APU0000703112', move: 20 },
+  { name: 'Beef prices +20%', series: 'bls:APU0000703112', move: 20 },
   { name: 'Restaurant wages +6%', series: 'bls:CES7072200003', move: 6 },
 ]
 
@@ -16,7 +16,7 @@ type Bar = { name: string; ticker: string; kpi: string; value: number; base: num
 
 export function EconomyShock({ onOpen }: { onOpen: (t: string) => void }) {
   const [series, setSeries] = useState<SharedSeries[]>([])
-  const [pick, setPick] = useState('fred:DJFUELUSGULF')
+  const [pick, setPick] = useState('eia:PET.EER_EPJK_PF4_RGC_DPG.D')
   const [move, setMove] = useState(30)
   const [res, setRes] = useState<PortfolioShock | null>(null)
   const [busy, setBusy] = useState(false)

@@ -21,7 +21,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
-from adapters import adapter_for  # noqa: E402
+from adapters import batches  # noqa: E402
 from engine.spec import load_spec  # noqa: E402
 from scripts.ingest import ingest_ground_truth  # noqa: E402
 from storage import db  # noqa: E402
@@ -41,18 +41,25 @@ def main() -> None:
 
     series = sorted({s.series for r in specs for s in r.signals})
     print(f"{len(series)} series across {len(specs)} specs, {start}..{end}")
-    for name in series:
+    for adapter, group in batches(series):  # several series per request where the source allows it
         try:
-            adapter = adapter_for(name)
-            snaps = adapter.fetch(adapter.params_for_series(name), start, end)
-            obs = [o for o in adapter.normalize(snaps) if o.series == name]
+            snaps = adapter.fetch_many(group, start, end)
+            normalized = adapter.normalize(snaps)
             db.save_snapshots(conn, snaps)
+        except Exception as e:
+            failures.extend(group)
+            for name in group:
+                print(f"  FAIL {name:34s} {type(e).__name__}: {e}")
+            traceback.print_exc(limit=1)
+            continue
+        for name in group:
+            obs = [o for o in normalized if o.series == name]
+            if not obs and len(group) > 1:  # a batch can succeed while one of its series returns nothing
+                failures.append(name)
+                print(f"  FAIL {name:34s} no data in the batch response")
+                continue
             db.save_observations(conn, obs)
             print(f"  ok   {name:34s} {len(obs):5d} obs")
-        except Exception as e:
-            failures.append(name)
-            print(f"  FAIL {name:34s} {type(e).__name__}: {e}")
-            traceback.print_exc(limit=1)
 
     if not args.skip_ground_truth:
         for rspec in specs:

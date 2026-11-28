@@ -41,12 +41,12 @@ signals:
     confidence: 0.2
     half_life_days: 30
     transform: yoy_log
-  - series: "fred:CUSR0000SETG01"         # CPI airline fares, SA
+  - series: "bls:CUSR0000SETG01"         # CPI airline fares, SA
     primitive: price
     confidence: 0.5
     half_life_days: 60
     transform: yoy_log
-  - series: "fred:DJFUELUSGULF"           # US Gulf Coast kerosene-type jet fuel, daily
+  - series: "eia:PET.EER_EPJK_PF4_RGC_DPG.D"           # US Gulf Coast kerosene-type jet fuel, daily
     primitive: input_cost
     confidence: 0.7
     half_life_days: 30

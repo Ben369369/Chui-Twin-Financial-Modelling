@@ -38,7 +38,7 @@ def test_tool_loop_runs_tools_and_returns_actions():
     out = converse(client, messages, system=[])
     assert out["reply"] == "Airline margins fall."
     assert [c["name"] for c in out["tool_calls"]] == ["economy_shock", "get_scorecard"]
-    assert out["actions"] == [{"type": "economy_shock", "series": "fred:DJFUELUSGULF", "move": 30}]
+    assert out["actions"] == [{"type": "economy_shock", "series": "eia:PET.EER_EPJK_PF4_RGC_DPG.D", "move": 30}]  # old name translated
     # Both tool results go back in ONE user message, matched by id, after the assistant turn.
     results = messages[2]["content"]
     assert messages[2]["role"] == "user" and [r["tool_use_id"] for r in results] == ["t1", "t2"]

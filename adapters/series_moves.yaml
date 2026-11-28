@@ -1,0 +1,13 @@
+# Series moved from a redistributor's copy to the publisher's own (old name: new name).
+# FRED's terms (2024) forbid storing its content; the publishers' data is US government public domain.
+# scripts/move_series.py checks parity and renames specs; onboarding translates LLM proposals of old names.
+# Moved 2026-11-28 after an exact-match parity check (scripts/move_series.py check):
+fred:CUSR0000SETG01: bls:CUSR0000SETG01        # CPI airline fares
+fred:CUSR0000SEFV: bls:CUSR0000SEFV            # CPI food away from home
+fred:CUSR0000SEHB: bls:CUSR0000SEHB            # CPI lodging away from home
+fred:CPILFESL: bls:CUSR0000SA0L1E              # core CPI (FRED's id for the same BLS series)
+fred:APU0000703112: bls:APU0000703112          # average price, ground beef
+fred:APU0000706111: bls:APU0000706111          # average price, whole chicken
+fred:WPU081: bls:WPU081                        # PPI lumber and wood products
+fred:DJFUELUSGULF: eia:PET.EER_EPJK_PF4_RGC_DPG.D  # Gulf Coast jet fuel spot
+fred:DCOILWTICO: eia:PET.RWTC.D                # WTI crude spot

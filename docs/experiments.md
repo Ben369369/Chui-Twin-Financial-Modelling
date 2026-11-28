@@ -84,3 +84,22 @@ and the reading below is unchanged.
 
 **Decision.** Adopted as `make_twin.py --llm` for new tickers. Specs in `specs/experiments/llm/` stay out of the
 portfolio. Carnival (`specs/auto/ccl.yaml`) is the first LLM-onboarded twin.
+
+## 3. Publisher sources instead of FRED, stage 1 (2026-11-28): adopted
+
+**Why.** FRED's terms forbid storing its content, which the raw-first rule requires, and using it to train ML
+systems. The publishers' data is public domain. Stage 1 moves the nine series that BLS and EIA publish directly
+(`adapters/series_moves.yaml`); Census (stage 2) and FHFA in place of Case-Shiller (stage 3) follow.
+
+**Parity.** Every common period matched within 0.1%: exactly for all BLS series, 99.9% of days for WTI (one
+day differs: FRED 101.91, EIA 96.34 on 2026-10-14). EIA lacks 8 trading days that FRED has. BLS, like FRED,
+has no October 2025 CPI or average prices (not published during the shutdown).
+
+**Backtest, all 18 twins, same data and seeds, before and after the rename.** 27 of 40 KPIs beat "last quarter"
+before and after; mean 80%-interval coverage 0.858 both times. 21 KPIs moved, none by more than 0.025
+MAE. The largest: DAL operating margin 2.36 → 2.39 (worse), MCD operating margin 3.50 → 3.48, HLT operating
+margin 2.16 → 2.14 (better). The differences come from BLS monthly data being dated 40 days after month
+end instead of FRED's 45, and from the few days where EIA and FRED differ. CMG did not change at all: its forecast dates do not fall in those five days.
+
+**Decision.** Adopted. The daily job fetches the nine series from BLS (one batched query a day) and EIA (one
+request per series). Old FRED rows stay in the database; specs no longer use them.

@@ -28,7 +28,7 @@ signals:
   confidence: 0.5
   half_life_days: 45
   transform: yoy_log
-- series: fred:CPILFESL
+- series: bls:CUSR0000SA0L1E
   primitive: price
   confidence: 0.4
   half_life_days: 60

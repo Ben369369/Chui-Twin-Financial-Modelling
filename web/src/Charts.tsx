@@ -40,7 +40,7 @@ export function prettySeries(s: string): string {
   const [src, ...rest] = s.split(':')
   const q = rest.join(':')
   const names: Record<string, string> = {
-    fred: 'FRED', bls: 'BLS', tsa: 'TSA checkpoint travelers', wiki: 'Wikipedia views',
+    fred: 'FRED', bls: 'BLS', eia: 'EIA', tsa: 'TSA checkpoint travelers', wiki: 'Wikipedia views',
     sitemap: 'Sitemap count', gdelt: 'News',
   }
   if (src === 'gdelt') return `News ${q.startsWith('tone:') ? 'tone' : 'volume'}: ${q.split(':').slice(1).join(':')}`

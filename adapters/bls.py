@@ -1,25 +1,36 @@
-"""BLS Public Data API v2, used without a registration key (25 queries/day, 10 years per query).
+"""BLS Public Data API v2: CPI, average prices, PPI, employment and earnings, many series per request.
 
-Series: "bls:<SERIES_ID>", e.g. "bls:CES7072200003" (avg hourly earnings, food services).
+Series: "bls:<SERIES_ID>", e.g. "bls:CES7072200003" (avg hourly earnings, food services),
+"bls:CUSR0000SEFV" (CPI food away from home), "bls:APU0000703112" (ground beef, per lb).
 
-available_at: BLS does not return release dates here. CES data for month M is
-released on the first Friday of M+1 or M+2; we use period end + 40 days,
-which is conservative. Preliminary values are revised twice; the API returns
-the latest vintage (same caveat as FRED).
+Registration key: env CHUI_BLS_API_KEY, optional. Without it: 25 queries a day, 25 series and 10 years
+per query. With it: 500 queries a day, 50 series and 20 years per query. The key goes in the POST body,
+never in a URL or a saved file. fetch_many combines series, so the daily job spends one query, not one
+per series.
+
+available_at: BLS does not return release dates here. CPI, average prices and PPI for month M come out
+mid M+1; CES earnings on the first Friday of M+1 or M+2. We use period end + 40 days, which is
+conservative for all of them. Preliminary values are revised; the API returns the latest vintage.
 """
 
 from __future__ import annotations
 
 import json
+import os
 from datetime import date, datetime, time, timedelta, timezone
 
 from adapters.base import Adapter
 from adapters.http import PoliteClient, read_raw, save_raw, snapshot_ref
 from engine.observation import Observation, RawSnapshot
 
-URL = "https://api.bls.gov/publicAPI/v2/timeseries/data/{sid}"
+URL = "https://api.bls.gov/publicAPI/v2/timeseries/data/"
+KEY_ENV = "CHUI_BLS_API_KEY"
 MONTHLY_RELEASE_LAG_DAYS = 40
-MAX_YEARS_PER_QUERY = 10
+
+
+def _limits(keyed: bool) -> tuple[int, int]:
+    """(series per query, years per query)."""
+    return (50, 20) if keyed else (25, 10)
 
 
 class BlsAdapter(Adapter):
@@ -28,20 +39,35 @@ class BlsAdapter(Adapter):
 
     def __init__(self, client: PoliteClient | None = None):
         self.client = client or PoliteClient(min_interval_s=2.0)
+        self.key = os.environ.get(KEY_ENV) or None
+        self.batch_size = _limits(bool(self.key))[0]
 
     def params_for_series(self, series: str) -> dict:
         return {"series_id": super().params_for_series(series)["query"]}
 
     def fetch(self, params: dict, start: date, end: date) -> list[RawSnapshot]:
-        sid, snaps = params["series_id"], []
-        y = start.year
+        return self._fetch_ids([params["series_id"]], start, end)
+
+    def fetch_many(self, series: list[str], start: date, end: date) -> list[RawSnapshot]:
+        ids = [self.params_for_series(s)["series_id"] for s in series]
+        return [s for i in range(0, len(ids), self.batch_size)
+                for s in self._fetch_ids(ids[i:i + self.batch_size], start, end)]
+
+    def _fetch_ids(self, ids: list[str], start: date, end: date) -> list[RawSnapshot]:
+        years = _limits(bool(self.key))[1]
+        snaps, y = [], start.year
         while y <= end.year:
-            y2 = min(end.year, y + MAX_YEARS_PER_QUERY - 1)
-            r = self.client.get(URL.format(sid=sid), params={"startyear": y, "endyear": y2})
-            body = r.json()
-            if body.get("status") != "REQUEST_SUCCEEDED":
-                raise ValueError(f"BLS error for {sid}: {body.get('message')}")
-            snaps.append(save_raw(self.source, r.content, r.url, dict(params), "json", label=f"{sid}_{y}_{y2}"))
+            y2 = min(end.year, y + years - 1)
+            body = {"seriesid": ids, "startyear": str(y), "endyear": str(y2)}
+            r = self.client.post(URL, json=body | ({"registrationkey": self.key} if self.key else {}))
+            reply = r.json()
+            if reply.get("status") != "REQUEST_SUCCEEDED":
+                raise ValueError(f"BLS error for {ids}: {reply.get('message')}")
+            label = ids[0] if len(ids) == 1 else f"{len(ids)}series_{ids[0]}"
+            params = {"series_ids": ids, "startyear": y, "endyear": y2}
+            if len(ids) == 1:
+                params["series_id"] = ids[0]
+            snaps.append(save_raw(self.source, r.content, URL, params, "json", label=f"{label}_{y}_{y2}"))
             y = y2 + 1
         return snaps
 

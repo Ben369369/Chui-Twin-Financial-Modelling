@@ -43,7 +43,7 @@ signals:
   confidence: 0.5
   half_life_days: 60
   transform: yoy_log
-- series: fred:WPU081
+- series: bls:WPU081
   primitive: input_cost
   confidence: 0.4
   half_life_days: 60

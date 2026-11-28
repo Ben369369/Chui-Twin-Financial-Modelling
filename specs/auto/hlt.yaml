@@ -29,7 +29,7 @@ signals:
   confidence: 0.4
   half_life_days: 30
   transform: yoy_log
-- series: fred:CUSR0000SEHB
+- series: bls:CUSR0000SEHB
   primitive: price
   confidence: 0.6
   half_life_days: 60
